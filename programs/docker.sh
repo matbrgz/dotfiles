@@ -7,12 +7,12 @@ PREVIOUS_PWD="$(jq -r '.pwd' "${HOME}"/tmp/pwd.json)"
 if [ "$(jq -r '.purge' "${PREVIOUS_PWD}"/bootstrap/settings.json)" == y ] ; then
   sudo apt -y purge docker*
 fi
-sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu ${RELEASE_VERSION} stable"
 if ! curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
 then
     echo "Download failed! Exiting."
     exit 1
 fi
+sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu ${RELEASE_VERSION} stable"
 sudo apt-key fingerprint 0EBFCD88
 sudo apt -qq update
 sudo apt -y install docker-ce
