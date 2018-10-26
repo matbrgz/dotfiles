@@ -70,7 +70,7 @@ if [[ ! "$(uname -r)" =~ "Microsoft$" ]] ; then
       echo " Vagrant: $(jq -r '.vagrant' "${PREVIOUS_PWD}"/bootstrap/settings.json)"
       echo " Docker: $(jq -r '.docker' "${PREVIOUS_PWD}"/bootstrap/settings.json)"
       echo " Docker Compose: $(jq -r '.dockercompose' "${PREVIOUS_PWD}"/bootstrap/settings.json)"
-      echo " Kibe CTL: $(jq -r '.kubectl' "${PREVIOUS_PWD}"/bootstrap/settings.json)"
+      echo " Kube CTL: $(jq -r '.kubectl' "${PREVIOUS_PWD}"/bootstrap/settings.json)"
       echo " Kubernetes Helm: $(jq -r '.kuberneteshelm' "${PREVIOUS_PWD}"/bootstrap/settings.json)"
       echo " Mosh: $(jq -r '.dotnet' "${PREVIOUS_PWD}"/bootstrap/settings.json)"
       sleep 3
