@@ -17,12 +17,24 @@ if [[ ! "$(uname -r)" =~ "Microsoft$" ]] ; then
   printf " [ DONE ] Fix Possible Erros ... %s seconds \n" "$((endtime-starttime))"
   printf "\n [ START ] Update & Upgrade \n"
   starttime=$(date +%s)
-  sudo apt -y update && sudo apt -y upgrade && sudo apt -y dist-upgrade
+  #sudo apt -y update && sudo apt -y upgrade && sudo apt -y dist-upgrade
   endtime=$(date +%s)
   printf " [ DONE ] Update & Upgrade ... %s seconds \n" "$((endtime-starttime))"
   printf " [ START ] Common Requirements \n"
   starttime=$(date +%s)
-  sudo apt -y install software-properties-common build-essential apt-transport-https curl jq htop unzip shellcheck libssl-dev ca-certificates
+  apps=(
+      software-properties-common
+      build-essential
+      apt-transport-https
+      curl
+      jq
+      htop
+      unzip
+      shellcheck
+      libssl-dev
+      ca-certificates
+  )
+  sudo apt -y install "${apps[@]}"
   endtime=$(date +%s)
   printf " [ DONE ] Common Requirements ... %s seconds \n" "$((endtime-starttime))"
   PREVIOUS_PWD="${PWD}"
@@ -79,9 +91,16 @@ if [[ ! "$(uname -r)" =~ "Microsoft$" ]] ; then
       printf "\n Default Dev Folder (Default for WSL: '/mnt/c/Dev'): "
       read -r defaultfolder
       if [ -z "${defaultfolder}" ] ; then
-          #mkdir /mnt/c/Dev
           defaultfolder=/mnt/c/Dev
+          if [ ! -d "${defaultfolder}" ]; then
+              mkdir /mnt/c/Dev
+          fi
           printf "/mnt/c/Dev"
+      else
+          if [ ! -d "${defaultfolder}" ]; then
+              echo ${defaultfolder}
+              mkdir ${defaultfolder}
+          fi
       fi
       printf "\n  Install SSH (Y/n): "
       read -r ssh
@@ -302,7 +321,7 @@ if [[ ! "$(uname -r)" =~ "Microsoft$" ]] ; then
       fi
       if [ "$pyenv" == Y ] || [ "$pyenv" == y ] ; then
           pyenv=y
-          printf " Install pyenv-virtualenv: (Y/n): "
+          printf "\n Install pyenv-virtualenv: (Y/n): "
           read -r pyenvvirtualenv
           if [ -z "${pyenvvirtualenv}" ] ; then
               pyenvvirtualenv=y
@@ -313,7 +332,7 @@ if [[ ! "$(uname -r)" =~ "Microsoft$" ]] ; then
       else
           pyenvvirtualenv=n
       fi
-      printf " Install GoLang: (Y/n): "
+      printf "\n Install GoLang: (Y/n): "
       read -r golang
       if [ -z "${golang}" ] ; then
           golang=y
@@ -321,7 +340,7 @@ if [[ ! "$(uname -r)" =~ "Microsoft$" ]] ; then
       elif [ "${golang}" == Y ]; then
           golang=y
       fi
-      printf " Install Ruby Version Manager: (Y/n): "
+      printf "\n Install Ruby Version Manager: (Y/n): "
       read -r rvm
       if [ -z "${rvm}" ] ; then
           rvm=y
@@ -329,7 +348,7 @@ if [[ ! "$(uname -r)" =~ "Microsoft$" ]] ; then
       fi
       if [ "$rvm" == Y ] || [ "$rvm" == y ] ; then
           rvm=y
-          printf " Install Jekyll: (Y/n): "
+          printf "\n Install Jekyll: (Y/n): "
           read -r jekyll
           if [ -z "${jekyll}" ] ; then
               jekyll=y
@@ -340,7 +359,7 @@ if [[ ! "$(uname -r)" =~ "Microsoft$" ]] ; then
       else
           jekyll=n
       fi
-      printf " Install Vagrant: (Y/n): "
+      printf "\n Install Vagrant: (Y/n): "
       read -r vagrant
       if [ -z "${vagrant}" ] ; then
           vagrant=y
@@ -348,7 +367,7 @@ if [[ ! "$(uname -r)" =~ "Microsoft$" ]] ; then
       elif [ "${vagrant}" == Y ]; then
           vagrant=y
       fi
-      printf " Install Docker: (Y/n): "
+      printf "\n Install Docker: (Y/n): "
       read -r docker
       if [ -z "${docker}" ] ; then
           docker=y
@@ -356,7 +375,7 @@ if [[ ! "$(uname -r)" =~ "Microsoft$" ]] ; then
       fi
       if [ "$docker" == Y ] || [ "$docker" == y ] ; then
           docker=y
-          printf " Install Docker Compose: (Y/n): "
+          printf "\n Install Docker Compose: (Y/n): "
           read -r dockercompose
           if [ -z "${dockercompose}" ] ; then
               dockercompose=y
@@ -367,7 +386,7 @@ if [[ ! "$(uname -r)" =~ "Microsoft$" ]] ; then
       else
           dockercompose=n
       fi
-      printf " Install Kubectl: (y/N): "
+      printf "\n Install Kubectl: (y/N): "
       read -r kubectl
       if [ -z "${kubectl}" ] ; then
           kubectl=n
@@ -375,7 +394,7 @@ if [[ ! "$(uname -r)" =~ "Microsoft$" ]] ; then
       fi
       if [ "$kubectl" == Y ] || [ "$kubectl" == y ] ; then
           kubectl=y
-          printf " Install Kubernetes Helm: (Y/n): "
+          printf "\n Install Kubernetes Helm: (Y/n): "
           read -r kuberneteshelm
           if [ -z "${kuberneteshelm}" ] ; then
               kuberneteshelm=y
@@ -386,7 +405,7 @@ if [[ ! "$(uname -r)" =~ "Microsoft$" ]] ; then
       else
           kuberneteshelm=n
       fi
-      printf " Install Mosh: (Y/n): "
+      printf "\n Install Mosh: (Y/n): "
       read -r mosh
       if [ -z "${mosh}" ] ; then
           mosh=y
@@ -394,7 +413,7 @@ if [[ ! "$(uname -r)" =~ "Microsoft$" ]] ; then
       elif [ "${mosh}" == Y ]; then
           mosh=y
       fi
-      printf " Install Netkit: (Y/n): "
+      printf "\n Install Netkit: (Y/n): "
       read -r netkit
       if [ -z "${netkit}" ] ; then
           netkit=n
