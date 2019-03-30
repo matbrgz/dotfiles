@@ -7,10 +7,10 @@ HEADER_TYPE="$(uname -s)"
 ARCHITECTURE_TYPE="$(uname -m)"
 DOCKER_COMPOSE_VERSION="$(jq -r '.DOCKER_COMPOSE_VERSION' "${PREVIOUS_PWD}"/bootstrap/version.json)"
 if ! sudo curl /usr/local/bin/docker-compose \
-          -L "https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-${HEADER_TYPE}-${ARCHITECTURE_TYPE}"
+	-L "https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-${HEADER_TYPE}-${ARCHITECTURE_TYPE}"
 then
-    echo "Download failed! Exiting."
-    exit 1
+	echo "Download failed! Exiting."
+	exit 1
 fi
 sudo chmod +x /usr/local/bin/docker-compose
 endtime=$(date +%s)
