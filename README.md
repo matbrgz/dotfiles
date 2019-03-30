@@ -7,12 +7,12 @@ Since these files are all plain text, we can gather them together in a git repos
 Before installing any Linux distros for WSL, you must ensure that the "Windows Subsystem for Linux" optional feature is enabled:
 
 1. Open PowerShell as Administrator and run:
-`Enable-WindowsOptionalFeature -Online -FeatureName Microsoft-Windows-Subsystem-Linux`
+```Enable-WindowsOptionalFeature -Online -FeatureName Microsoft-Windows-Subsystem-Linux```
 2. Restart your computer when prompted.
 3. To download distros using PowerShell, use the Invoke-WebRequest cmdlet. Here's a sample instruction to download Ubuntu 18.04.
-`Invoke-WebRequest -Uri https://aka.ms/wsl-ubuntu-1804 -OutFile Ubuntu.appx -UseBasicParsing`
+```Invoke-WebRequest -Uri https://aka.ms/wsl-ubuntu-1804 -OutFile Ubuntu.appx -UseBasicParsing```
 or
-`curl.exe -L -o ubuntu-1804.appx https://aka.ms/wsl-ubuntu-1804`
+```curl.exe -L -o ubuntu-1804.appx https://aka.ms/wsl-ubuntu-1804```
 Note: Windows 10 Spring 2018 Update (or later) includes the popular curl command-line utility with which you can invoke web requests from the command line.
 
 ## TODO:
