@@ -6,12 +6,12 @@ ARCHITECTURE_TYPE="$(uname -m)"
 PREVIOUS_PWD="$(jq -r '.pwd' "${HOME}"/tmp/pwd.json)"
 VAGRANT_VERSION="$(jq -r '.VAGRANT_VERSION' "${PREVIOUS_PWD}"/bootstrap/version.json)"
 if [ "$(jq -r '.purge' "${PREVIOUS_PWD}"/bootstrap/settings.json)" == y ] ; then
-  sudo apt -y purge virtualbox* vagrant*
+	sudo apt -y purge virtualbox* vagrant*
 fi
 if ! wget https://releases.hashicorp.com/vagrant/"${VAGRANT_VERSION}"/vagrant_"${VAGRANT_VERSION}"_"${ARCHITECTURE_TYPE,,}".deb
 then
-    echo "Download failed! Exiting."
-    exit 1
+	echo "Download failed! Exiting."
+	exit 1
 fi
 sudo dpkg -i vagrant_"${VAGRANT_VERSION}"_"${ARCHITECTURE_TYPE}".deb
 defaultfolder="$(jq -r '.defaultfolder' "${PREVIOUS_PWD}"/bootstrap/settings.json)"

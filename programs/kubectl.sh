@@ -11,11 +11,11 @@ KUBECTL_VERSION="$(jq -r '.KUBECTL_VERSION' "${PREVIOUS_PWD}"/bootstrap/version.
 # $(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)
 if ! curl -L https://storage.googleapis.com/kubernetes-release/release/v"${KUBECTL_VERSION}"/bin/"${HEADER_TYPE}"/"${ARCHITECTURE_TYPE}"/kubectl
 then
-    echo "Download failed! Exiting."
-    exit 1
+	echo "Download failed! Exiting."
+	exit 1
 fi
 if [ -d /usr/local/bin/kubectl ]; then
-    sudo rm -f -R /usr/local/bin/kubectl
+	sudo rm -f -R /usr/local/bin/kubectl
 fi
 mkdir -p /usr/local/bin/kubectl
 chmod 777 /usr/local/bin/kubectl
@@ -24,6 +24,6 @@ sudo mv ./kubectl /usr/local/bin/kubectl
 endtime=$(date +%s)
 printf " [ DONE ] Kubenetes CTL ... %s seconds \n" "$((endtime-starttime))"
 if [ "$(jq -r '.kuberneteshelm' "${PREVIOUS_PWD}"/bootstrap/settings.json)" == y ] ; then
-    "${PREVIOUS_PWD}"/programs/kubernetes-helm.sh
-    wait
+	"${PREVIOUS_PWD}"/programs/kubernetes-helm.sh
+	wait
 fi

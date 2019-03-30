@@ -4,7 +4,7 @@ starttime=$(date +%s)
 PREVIOUS_PWD="$(jq -r '.pwd' "${HOME}"/tmp/pwd.json)"
 APACHE_VERSION="$(jq -r '.APACHE_VERSION' "${PREVIOUS_PWD}"/bootstrap/version.json)"
 if [ "$(jq -r '.purge' "${PREVIOUS_PWD}"/bootstrap/settings.json)" == y ] ; then
-  sudo apt -y purge apache"${APACHE_VERSION}"*
+	sudo apt -y purge apache"${APACHE_VERSION}"*
 fi
 sudo apt -y install apache"${APACHE_VERSION}"
 dpkg --get-selections | grep apache

@@ -1,8 +1,0 @@
-- [ ] APACHE: Make dynamic the choice of the port heard
-- [ ] APACHE: Improve Configurations
-- [ ] Generate SSL Certificates
-- [ ] Unit Test
-- [X] Improve software selection, input is onlin listing 'y' or 'n', not even 'Y' or 'N'.
-- [ ] Instalations test
-- [ ] Create a default software choose order (MySQL than PHP)
-- [ ] Output normalization

@@ -9,8 +9,8 @@ PREVIOUS_PWD="$(jq -r '.pwd' "${HOME}"/tmp/pwd.json)"
 PROTOC_VERSION="$(jq -r '.APACHE_VERSION' "${PREVIOUS_PWD}"/bootstrap/version.json)"
 if ! curl https://github.com/google/protobuf/releases/download/v"${PROTOC_VERSION}"/protoc-"${PROTOC_VERSION}"-"${HEADER_TYPE}"-"${ARCHITECTURE_TYPE}".zip
 then
-    echo "Download failed! Exiting."
-    exit 1
+	echo "Download failed! Exiting."
+	exit 1
 fi
 unzip protoc-"${PROTOC_VERSION}"-"${HEADER_TYPE}"-"${ARCHITECTURE_TYPE}".zip -o -d protoc3
 sudo mv protoc3/bin/* /usr/local/bin/
