@@ -1,4 +1,5 @@
 #!/bin/bash -e
+defaultfolder="$(jq -r '.defaultfolder' "${PREVIOUS_PWD}"/bootstrap/settings.json)"
 echo "
 # ls aliases
 alias la=\"ls -al\"
@@ -9,6 +10,7 @@ alias lm=\"ll | more\"
 
 # Folder alias
 alias hdir=\"cd ${HOME}\"
+alias homedir=\"cd ${HOME}\"
 # shellcheck disable=SC2139
 alias wdir=\"cd ${defaultfolder}\"
 

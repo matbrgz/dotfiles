@@ -1,11 +1,16 @@
-#!/bin/bash -e
-printf " [ START ] .NET \n"
-starttime=$(date +%s)
-# Bionic, Xenial, Trusty
+#!/bin/bash
+debug="$(jq -r '.debug' "${PREVIOUS_PWD}"/bootstrap/settings.json)"
+if [ "${debug}" == true ]; then
+	# Disable exit on non 0
+	set +e
+else
+	# Enable exit on non 0
+	set -e
+fi
 RELEASE_VERSION="$(lsb_release -cs)"
 PREVIOUS_PWD="$(jq -r '.pwd' "${HOME}"/tmp/pwd.json)"
 DOTNET_VERSION="$(jq -r '.APACHE_VERSION' "${PREVIOUS_PWD}"/bootstrap/version.json)"
-if [ "$(jq -r '.purge' "${PREVIOUS_PWD}"/bootstrap/settings.json)" == y ] ; then
+if [ "$(jq -r '.purge' "${PREVIOUS_PWD}"/bootstrap/settings.json)" == true ] ; then
 	sudo apt -y purge dotnet*
 fi
 sudo echo "deb [arch=amd64] https://packages.microsoft.com/repos/microsoft-ubuntu-${RELEASE_VERSION}-prod ${RELEASE_VERSION} main" | \
