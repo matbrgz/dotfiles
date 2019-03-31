@@ -1,9 +1,13 @@
-#!/bin/bash -e
-printf " [ START ] Protobuf \n"
-starttime=$(date +%s)
-# Linux, Dawrin, BSD etc
+#!/bin/bash
+debug="$(jq -r '.debug' "${PREVIOUS_PWD}"/bootstrap/settings.json)"
+if [ "${debug}" == true ]; then
+	# Disable exit on non 0
+	set +e
+else
+	# Enable exit on non 0
+	set -e
+fi
 HEADER_TYPE="$(uname -s)"
-# Architeture x86_64 amd64
 ARCHITECTURE_TYPE="$(uname -m)"
 PREVIOUS_PWD="$(jq -r '.pwd' "${HOME}"/tmp/pwd.json)"
 PROTOC_VERSION="$(jq -r '.APACHE_VERSION' "${PREVIOUS_PWD}"/bootstrap/version.json)"

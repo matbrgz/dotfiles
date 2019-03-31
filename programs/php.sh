@@ -1,6 +1,12 @@
-#!/bin/bash -e
-printf " [ START ] php \n"
-starttime=$(date +%s)
+#!/bin/bash
+debug="$(jq -r '.debug' "${PREVIOUS_PWD}"/bootstrap/settings.json)"
+if [ "${debug}" == true ]; then
+	# Disable exit on non 0
+	set +e
+else
+	# Enable exit on non 0
+	set -e
+fi
 PREVIOUS_PWD="$(jq -r '.pwd' "${HOME}"/tmp/pwd.json)"
 PHP_VERSION="$(jq -r '.PHP_VERSION' "${PREVIOUS_PWD}"/bootstrap/version.json)"
 APACHE_VERSION="$(jq -r '.APACHE_VERSION' "${PREVIOUS_PWD}"/bootstrap/version.json)"

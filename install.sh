@@ -9,36 +9,48 @@
 		echo " ( PRESS KEY '3' FOR SOFTWARE INSTALL )"
 		printf "\nOption: "
 		read -r instalationtype
-		#printf "\n [ START ] Fix Possible Erros \n"
-		#starttime=$(date +%s)
-		#sudo apt --fix-broken install
-		#sudo dpkg --configure -a
-		#endtime=$(date +%s)
-		#printf " [ DONE ] Fix Possible Erros ... %s seconds \n" "$((endtime-starttime))"
-		printf "\n [ START ] Update & Upgrade \n"
-		starttime=$(date +%s)
-		sudo apt -y update && sudo apt -y upgrade && sudo apt -y dist-upgrade
-		endtime=$(date +%s)
-		printf " [ DONE ] Update & Upgrade ... %s seconds \n" "$((endtime-starttime))"
-		printf " [ START ] Common Requirements \n"
-		starttime=$(date +%s)
-		apps=(
-			software-properties-common
-			build-essential
-			apt-transport-https
-			curl
-			jq
-			htop
-			tmux
-			unzip
-			shellcheck
-			libssl-dev
-			ca-certificates
-		)
-		sudo apt -y install "${apps[@]}"
-		endtime=$(date +%s)
-		printf " [ DONE ] Common Requirements ... %s seconds \n" "$((endtime-starttime))"
+		printf " First time runing script? (Y/n) : "
+		read -r firstrun
 		PREVIOUS_PWD="${PWD}"
+		if [ -z "${firstrun}" ] || [ "${firstrun}" == Y ] || [ "${firstrun}" == y ]; then
+			printf "\n [ START ] Update & Upgrade \n"
+			starttime=$(date +%s)
+			sudo apt -qq update && sudo apt -y upgrade && sudo apt -y dist-upgrade
+			endtime=$(date +%s)
+			printf " [ DONE ] Update & Upgrade ... %s seconds \n" "$((endtime-starttime))"
+			printf " [ START ] Common Requirements \n"
+			starttime=$(date +%s)
+			apps=(
+				software-properties-common
+				build-essential
+				apt-transport-https
+				curl
+				jq
+				htop
+				tmux
+				shellcheck
+				unzip
+				shellcheck
+				libssl-dev
+				ca-certificates
+			)
+			sudo apt -y install "${apps[@]}"
+			endtime=$(date +%s)
+			printf " [ DONE ] Common Requirements ... %s seconds \n" "$((endtime-starttime))"
+			printf "\n [ START ] Alias \n"
+			starttime=$(date +%s)
+			"${PREVIOUS_PWD}"/configurations/alias.sh
+			"${PREVIOUS_PWD}"/configurations/alias-wsl.sh
+			endtime=$(date +%s)
+			printf " [ DONE ] Alias ... %s seconds \n" "$((endtime-starttime))"
+		else
+			printf "\n [ START ] Fix Possible Erros \n"
+			starttime=$(date +%s)
+			sudo apt --fix-broken install
+			sudo dpkg --configure -a
+			endtime=$(date +%s)
+			printf " [ DONE ] Fix Possible Erros ... %s seconds \n" "$((endtime-starttime))"
+		fi
 		if [ -d "${HOME}"/tmp ]; then
 			sudo rm -f -R "${HOME}"/tmp
 		fi
@@ -108,91 +120,91 @@
 			printf "\n  Install SSH (Y/n): "
 			read -r ssh
 			if [ -z "${ssh}" ] || [ "${ssh}" == Y ] || [ "${ssh}" == y ]; then
-				ssh=y
+				ssh=true
 			else
-				ssh=n
+				ssh=false
 			fi
 			printf "\n  Install Protobuf (y/N): "
 			read -r protobuf
 			if [ "${protobuf}" == Y ] || [ "${protobuf}" == y ]; then
-				protobuf=y
+				protobuf=true
 			else
-				protobuf=n
+				protobuf=false
 			fi
 			printf "\n Install Azure CLI (y/N): "
 			read -r azurecli
 			if [ "${azurecli}" == Y ] || [ "${azurecli}" == y ]; then
-				azurecli=y
+				azurecli=true
 			else
-				azurecli=n
+				azurecli=false
 			fi
 			printf "\n Install Heroku CLI (y/N): "
 			read -r herokucli
 			if [ "${herokucli}" == Y ] || [ "${herokucli}" == y ]; then
-				herokucli=y
+				herokucli=true
 			else
-				herokucli=n
+				herokucli=false
 			fi
 			printf "\n Install GoogleCloud CLI (y/N): "
 			read -r gcloudcli
 			if [ "${gcloudcli}" == Y ] || [ "${gcloudcli}" == y ]; then
-				gcloudcli=y
+				gcloudcli=true
 			else
-				gcloudcli=n
+				gcloudcli=false
 			fi
 			printf "\n Install Google SDK (y/N): "
 			read -r gcloudsdk
 			if [ "${gcloudsdk}" == Y ] || [ "${gcloudsdk}" == y ]; then
-				gcloudsdk=y
+				gcloudsdk=true
 			else
-				gcloudsdk=n
+				gcloudsdk=false
 			fi
 			printf "\n Install R (rlang) (y/N): "
 			read -r rlang
 			if [ "${rlang}" == Y ] || [ "${rlang}" == y ]; then
-				rlang=y
+				rlang=true
 			else
-				rlang=n
+				rlang=false
 			fi
 			printf "\n Install .NET (y/N): "
 			read -r dotnet
 			if [ "${dotnet}" == Y ] || [ "${dotnet}" == y ]; then
-				dotnet=y
+				dotnet=true
 			else
-				dotnet=n
+				dotnet=false
 			fi
-			if [ "${dotnet}" == y ]; then
+			if [ "${dotnet}" == true ]; then
 				printf "\n Install .NET NuGET (Y/n): "
 				read -r dotnetnuget
 				if [ -z "${dotnetnuget}" ] || [ "${dotnetnuget}" == Y ] || [ "${dotnetnuget}" == y ]; then
-					dotnetnuget=y
+					dotnetnuget=true
 				else
-					dotnetnuget=n
+					dotnetnuget=false
 				fi
 				printf "\n Install .NET Mono (y/N): "
 				read -r dotnetmono
 				if [ "${dotnetmono}" == Y ] || [ "${dotnetmono}" == y ]; then
-					dotnetmono=y
+					dotnetmono=true
 				else
-					dotnetmono=n
+					dotnetmono=false
 				fi
 			else
-				dotnetnuget=n
-				dotnetmono=n
+				dotnetnuget=false
+				dotnetmono=false
 			fi
 			printf "\n Install Apache (Y/n): "
 			read -r apache
 			if [ -z "${apache}" ] || [ "${apache}" == Y ] || [ "${apache}" == y ]; then
-				apache=y
+				apache=true
 			else
-				apache=n
+				apache=false
 			fi
 			printf "\n Install Nginx (y/N): "
 			read -r nginx
 			if [ "${nginx}" == Y ] || [ "${nginx}" == y ]; then
-				nginx=y
+				nginx=true
 			else
-				nginx=n
+				nginx=false
 			fi
 			printf "\n php Version: (Type 72 for php7.2, type 7.1 for php7.1 or 56 for php5.6 or 'n' to escape): "
 			read -r phpv
@@ -206,35 +218,35 @@
 				phpv=56
 				printf "php7.1"
 			else
-				phpv=n
+				phpv=false
 			fi
-			if [ ! "${phpv}" == n ]; then
+			if [ ! "${phpv}" == false ]; then
 				printf "\n Install Laravel (Y/n): "
 				read -r laravel
 				if [ -z "${laravel}" ] || [ "${laravel}" == Y ] || [ "${laravel}" == y ]; then
-					laravel=y
+					laravel=true
 				else
-					laravel=n
+					laravel=false
 				fi
 				printf "\n Install php Composer (Y/n): "
 				read -r phpcomposer
 				if [ -z "${phpcomposer}" ] || [ "${phpcomposer}" == Y ] || [ "${phpcomposer}" == y ]; then
-					phpcomposer=y
+					phpcomposer=true
 				else
-					phpcomposer=n
+					phpcomposer=false
 				fi
 			else
-				laravel=n
-				phpcomposer=n
+				laravel=false
+				phpcomposer=false
 			fi
 			printf "\n Install MySQL: (Y/n): "
 			read -r mysql
 			if [ -z "${mysql}" ] || [ "${mysql}" == Y ] || [ "${mysql}" == y ]; then
-				mysql=y
+				mysql=true
 			else
-				mysql=n
+				mysql=false
 			fi
-			if [ "$mysql" == y ]; then
+			if [ "$mysql" == true ]; then
 				printf "\n MySQL root Password: (Default: 1234): "
 				read -r mysqlpassword
 				if [ -z "${mysqlpassword}" ]; then
@@ -244,191 +256,191 @@
 				printf "\n Install phpMyAdmin: (Y/n): "
 				read -r phpmyadmin
 				if [ -z "${phpmyadmin}" ] || [ "${phpmyadmin}" == Y ] || [ "${phpmyadmin}" == y ]; then
-					phpmyadmin=y
+					phpmyadmin=true
 				else
-					phpmyadmin=n
+					phpmyadmin=false
 				fi
 			else
-				phpmyadmin=n
+				phpmyadmin=false
 			fi
 			printf "\n Install Postgre: (y/N): "
 			read -r postgre
 			if [ "${postgre}" == Y ] || [ "${postgre}" == y ]; then
-				postgre=y
+				postgre=true
 			else
-				postgre=n
+				postgre=false
 			fi
-			if [ "$postgre" == y ]; then
+			if [ "$postgre" == true ]; then
 				printf "\n PostGIS: (y/N): "
 				read -r postgis
 				if [ "${postgis}" == Y ] || [ "${postgis}" == y ]; then
-					postgis=y
+					postgis=true
 				else
-					postgis=n
+					postgis=false
 				fi
 				printf "\n Install pgAdmin: (Y/n): "
 				read -r pgadmin
 				if [ -z "${pgadmin}" ] || [ "${pgadmin}" == Y ] || [ "${pgadmin}" == y ]; then
-					pgadmin=y
+					pgadmin=true
 				else
-					pgadmin=n
+					pgadmin=false
 				fi
 			else
-				postgis=n
-				pgadmin=n
+				postgis=false
+				pgadmin=false
 			fi
 			printf "\n Install MongoDB: (Y/n): "
 			read -r mongo
 			if [ -z "${mongo}" ] || [ "${mongo}" == Y ] || [ "${mongo}" == y ]; then
-				mongo=y
+				mongo=true
 			else
-				mongo=n
+				mongo=false
 			fi
 			printf "\n Install Redis: (y/N): "
 			read -r redis
 			if [ "${redis}" == Y ] || [ "${redis}" == y ]; then
-				redis=y
+				redis=true
 			else
-				redis=n
+				redis=false
 			fi
 			printf "\n Install Node Version Manager: (Y/n): "
 			read -r nvm
 			if [ -z "${nvm}" ] || [ "${nvm}" == Y ] || [ "${nvm}" == y ]; then
-				nvm=y
+				nvm=true
 			else
-				nvm=n
+				nvm=false
 			fi
-			if [ "$nvm" == y ]; then
+			if [ "$nvm" == true ]; then
 				printf "\n Install Strapi: (Y/n): "
 				read -r strapi
 				if [ -z "${strapi}" ] || [ "${strapi}" == Y ] || [ "${strapi}" == y ]; then
-					strapi=y
+					strapi=true
 				else
-					strapi=n
+					strapi=false
 				fi
 			else
-				nvm=n
+				nvm=false
 			fi
 			printf "\n Install Anaconda: (y/N): "
 			read -r anaconda
 			if [ "${anaconda}" == Y ] || [ "${anaconda}" == y ]; then
-				anaconda=y
+				anaconda=true
 			else
-				anaconda=n
+				anaconda=false
 			fi
 			printf "\n Re-install Python3: (Y/n): "
 			read -r python3
 			if [ -z "${python3}" ] || [ "${python3}" == Y ] || [ "${python3}" == y ]; then
-				python3=y
+				python3=true
 			else
-				python3=n
+				python3=false
 			fi
 			printf "\n Install Python3 Pip: (Y/n): "
 			read -r pythonpip
 			if [ -z "${pythonpip}" ] || [ "${pythonpip}" == Y ] || [ "${pythonpip}" == y ]; then
-				pythonpip=y
+				pythonpip=true
 			else
-				pythonpip=n
+				pythonpip=false
 			fi
 			printf "\n Install pyenv: (y/N): "
 			read -r pyenv
 			if [ "${pyenv}" == Y ] || [ "${pyenv}" == y ]; then
-				pyenv=y
+				pyenv=true
 			else
-				pyenv=n
+				pyenv=false
 			fi
-			if [ "$pyenv" == y ]; then
+			if [ "$pyenv" == true ]; then
 				printf "\n Install pyenv-virtualenv: (Y/n): "
 				read -r pyenvvirtualenv
 				if [ -z "${pyenvvirtualenv}" ] || [ "${pyenvvirtualenv}" == Y ] || [ "${pyenvvirtualenv}" == y ]; then
-					pyenvvirtualenv=y
+					pyenvvirtualenv=true
 				else
-					pyenvvirtualenv=n
+					pyenvvirtualenv=false
 				fi
 			else
-				pyenvvirtualenv=n
+				pyenvvirtualenv=false
 			fi
 			printf "\n Install GoLang: (Y/n): "
 			read -r golang
 			if [ -z "${golang}" ] || [ "${golang}" == Y ] || [ "${golang}" == y ]; then
-				golang=y
+				golang=true
 			else
-				golang=n
+				golang=false
 			fi
 			printf "\n Install Ruby Version Manager: (Y/n): "
 			read -r rvm
 			if [ -z "${rvm}" ] || [ "${rvm}" == Y ] || [ "${rvm}" == y ]; then
-				rvm=y
+				rvm=true
 			else
-				rvm=n
+				rvm=false
 			fi
-			if [ "$rvm" == y ]; then
+			if [ "$rvm" == true ]; then
 				printf "\n Install Jekyll: (Y/n): "
 				read -r jekyll
 				if [ -z "${jekyll}" ] || [ "${jekyll}" == Y ] || [ "${jekyll}" == y ]; then
-					jekyll=y
+					jekyll=true
 				else
-					jekyll=n
+					jekyll=false
 				fi
 			else
-				jekyll=n
+				jekyll=false
 			fi
 			printf "\n Install Vagrant: (Y/n): "
 			read -r vagrant
 			if [ -z "${vagrant}" ] || [ "${vagrant}" == Y ] || [ "${vagrant}" == y ]; then
-				vagrant=y
+				vagrant=true
 			else
-				vagrant=n
+				vagrant=false
 			fi
 			printf "\n Install Docker: (Y/n): "
 			read -r docker
 			if [ -z "${docker}" ] || [ "${docker}" == Y ] || [ "${docker}" == y ]; then
-				docker=y
+				docker=true
 			else
-				docker=n
+				docker=false
 			fi
-			if [ "$docker" == y ]; then
+			if [ "$docker" == true ]; then
 				printf "\n Install Docker Compose: (Y/n): "
 				read -r dockercompose
 				if [ -z "${dockercompose}" ] || [ "${dockercompose}" == Y ] || [ "${dockercompose}" == y ]; then
-					dockercompose=y
+					dockercompose=true
 				else
-					dockercompose=n
+					dockercompose=false
 				fi
 			else
-				dockercompose=n
+				dockercompose=false
 			fi
 			printf "\n Install Kubectl: (y/N): "
 			read -r kubectl
 			if [ "${kubectl}" == Y ] || [ "${kubectl}" == y ]; then
-				kubectl=y
+				kubectl=true
 			else
-				kubectl=n
+				kubectl=false
 			fi
-			if [ "$kubectl" == y ]; then
+			if [ "$kubectl" == true ]; then
 				printf "\n Install Kubernetes Helm: (Y/n): "
 				read -r kuberneteshelm
 				if [ -z "${kuberneteshelm}" ] || [ "${kuberneteshelm}" == Y ] || [ "${kuberneteshelm}" == y ]; then
-					kuberneteshelm=y
+					kuberneteshelm=true
 				else
-					kuberneteshelm=n
+					kuberneteshelm=false
 				fi
 			else
-				kuberneteshelm=n
+				kuberneteshelm=false
 			fi
 			printf "\n Install Mosh: (Y/n): "
 			read -r mosh
 			if [ -z "${mosh}" ] || [ "${mosh}" == Y ] || [ "${mosh}" == y ]; then
-				mosh=y
+				mosh=true
 			else
-				mosh=n
+				mosh=false
 			fi
 			printf "\n Install Netkit: (y/N): "
 			read -r netkit
 			if [ "${netkit}" == Y ] || [ "${netkit}" == y ]; then
-				netkit=y
+				netkit=true
 			else
-				netkit=n
+				netkit=false
 			fi
 			JSON_STRING=$( jq -n \
 					--arg defaultfolder "${defaultfolder}" \
@@ -476,10 +488,14 @@
 		elif [ "${instalationtype}" == 3 ]; then
 			printf "\n Type software name: "
 			read -r program
-			export "${program,,}"=y
-			sudo sed -i "/\"${program,,}\": \"n\"/c\"${program,,}\": \"y\"" "${PREVIOUS_PWD}"/bootstrap/settings.json
+			export "${program,,}"=true
+			sudo sed -i "/\"${program,,}\": \"false\"/c\"${program,,}\": \"true\"" "${PREVIOUS_PWD}"/bootstrap/settings.json
 		fi
 		"${PREVIOUS_PWD}"/bootstrap/main.sh
+		wait
+		"${PREVIOUS_PWD}"/configurations/bashrc.sh &
+		wait
+		"${PREVIOUS_PWD}"/configurations/personal.sh &
 		wait
 		printf " [ START ] Cleaning \n"
 		starttime=$(date +%s)
