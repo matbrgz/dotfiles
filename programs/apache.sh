@@ -1,20 +1,19 @@
 #!/bin/bash
-debug="$(jq -r '.debug' "${PREVIOUS_PWD}"/bootstrap/settings.json)"
-if [ "${debug}" == true ]; then
+PREVIOUS_PWD="$(jq -r '.pwd' "${HOME}"/tmp/pwd.json)"
+if [ "$(jq -r '.configurations.debug' "${PREVIOUS_PWD}"/bootstrap/settings.json)" == true ] ; then
 	# Disable exit on non 0
 	set +e
 else
 	# Enable exit on non 0
 	set -e
 fi
-PREVIOUS_PWD="$(jq -r '.pwd' "${HOME}"/tmp/pwd.json)"
 APACHE_VERSION="$(jq -r '.APACHE_VERSION' "${PREVIOUS_PWD}"/bootstrap/version.json)"
-if [ "$(jq -r '.purge' "${PREVIOUS_PWD}"/bootstrap/settings.json)" == true ] ; then
+if [ "$(jq -r '.configurations.purge' "${PREVIOUS_PWD}"/bootstrap/settings.json)" == true ] ; then
 	sudo apt -y purge apache"${APACHE_VERSION}"*
 fi
 sudo apt -y install apache"${APACHE_VERSION}"
 dpkg --get-selections | grep apache
-printf " [ START ] Apache Default Configuration \n"
+printf "\n [ START ] Apache Default Configuration\n"
 #Config for Dev folder
 starttime=$(date +%s)
 echo " [ DOING ] Apache: Default Dev folder as initial directory on localhost"
@@ -41,4 +40,4 @@ sudo /etc/init.d/apache"${APACHE_VERSION}" start
 echo " [ DOING ] Apache: Allow autoindex for editing apache directory listing"
 sudo a2enmod autoindex
 endtime=$(date +%s)
-printf " [ DONE ] Apache Default Configuration ... %s seconds \n" "$((endtime-starttime))"
+printf " [ DONE ] Apache Default Configuration ... %s seconds\n" "$((endtime-starttime))"

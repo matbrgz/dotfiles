@@ -1,6 +1,6 @@
 #!/bin/bash
-debug="$(jq -r '.debug' "${PREVIOUS_PWD}"/bootstrap/settings.json)"
-if [ "${debug}" == true ]; then
+PREVIOUS_PWD="$(jq -r '.pwd' "${HOME}"/tmp/pwd.json)"
+if [ "$(jq -r '.configurations.debug' "${PREVIOUS_PWD}"/bootstrap/settings.json)" == true ] ; then
 	# Disable exit on non 0
 	set +e
 else
@@ -8,18 +8,16 @@ else
 	set -e
 fi
 ARCHITECTURE_TYPE="$(uname -m)"
-PREVIOUS_PWD="$(jq -r '.pwd' "${HOME}"/tmp/pwd.json)"
 VAGRANT_VERSION="$(jq -r '.VAGRANT_VERSION' "${PREVIOUS_PWD}"/bootstrap/version.json)"
-if [ "$(jq -r '.purge' "${PREVIOUS_PWD}"/bootstrap/settings.json)" == y ] ; then
+if [ "$(jq -r '.configurations.purge' "${PREVIOUS_PWD}"/bootstrap/settings.json)" == y ] ; then
 	sudo apt -y purge virtualbox* vagrant*
 fi
 if ! wget https://releases.hashicorp.com/vagrant/"${VAGRANT_VERSION}"/vagrant_"${VAGRANT_VERSION}"_"${ARCHITECTURE_TYPE,,}".deb
 then
 	echo "Download failed! Exiting."
-	exit 1
+	kill "$0"
 fi
 sudo dpkg -i vagrant_"${VAGRANT_VERSION}"_"${ARCHITECTURE_TYPE}".deb
-# shellcheck disable=SC2034
 defaultfolder="$(jq -r '.defaultfolder' "${PREVIOUS_PWD}"/bootstrap/settings.json)"
 echo '
   export VAGRANT_WSL_ENABLE_WINDOWS_ACCESS="1"

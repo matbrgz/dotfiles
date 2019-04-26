@@ -1,6 +1,6 @@
 #!/bin/bash
-debug="$(jq -r '.debug' "${PREVIOUS_PWD}"/bootstrap/settings.json)"
-if [ "${debug}" == true ]; then
+PREVIOUS_PWD="$(jq -r '.pwd' "${HOME}"/tmp/pwd.json)"
+if [ "$(jq -r '.configurations.debug' "${PREVIOUS_PWD}"/bootstrap/settings.json)" == true ] ; then
 	# Disable exit on non 0
 	set +e
 else
@@ -13,5 +13,3 @@ source "${HOME}"/.bashrc
 #virtualenv -p /usr/bin/python"${PYTHON_VERSION}" venv
 echo "alias venvstart=\"source $VENV_PATH/venv/bin/activate\"" >> "${HOME}"/.bash_aliases
 #source ${VENV_PATH}/venv/bin/activate
-endtime=$(date +%s)
-printf " [ DONE ] PyEnv-VirtualEnv ... %s seconds \n" "$((endtime-starttime))"
