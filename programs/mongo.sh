@@ -1,10 +1,8 @@
 #!/bin/bash
 PREVIOUS_PWD="$(jq -r '.pwd' "${HOME}"/tmp/pwd.json)"
 if [ "$(jq -r '.configurations.debug' "${PREVIOUS_PWD}"/bootstrap/settings.json)" == true ] ; then
-	# Disable exit on non 0
 	set +e
 else
-	# Enable exit on non 0
 	set -e
 fi
 RELEASE_VERSION="$(lsb_release -cs)"
@@ -13,7 +11,7 @@ if [ "$(jq -r '.configurations.purge' "${PREVIOUS_PWD}"/bootstrap/settings.json)
 	echo "MongoDB purge not implemented yet! Skipping."
 fi
 sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 9DA31620334BD75D9DCB49F368818C72E52529D4
-echo "deb [ arch=amd64 ] https://repo.mongodb.org/apt/ubuntu "${RELEASE_VERSION}"/mongodb-org/"${MONGO_VERSION}" multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-"${MONGO_VERSION}".list
+echo "deb [ arch=amd64 ] https://repo.mongodb.org/apt/ubuntu ${RELEASE_VERSION}/mongodb-org/${MONGO_VERSION} multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-"${MONGO_VERSION}".list
 sudo apt -qq update
 sudo apt -y install mongodb-org
 echo "mongodb-org hold" | sudo dpkg --set-selections

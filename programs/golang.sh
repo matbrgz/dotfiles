@@ -1,10 +1,8 @@
 #!/bin/bash
 PREVIOUS_PWD="$(jq -r '.pwd' "${HOME}"/tmp/pwd.json)"
 if [ "$(jq -r '.configurations.debug' "${PREVIOUS_PWD}"/bootstrap/settings.json)" == true ] ; then
-	# Disable exit on non 0
 	set +e
 else
-	# Enable exit on non 0
 	set -e
 fi
 HEADER_TYPE="$(uname -s)"
@@ -17,9 +15,9 @@ if [ "$(jq -r '.configurations.purge' "${PREVIOUS_PWD}"/bootstrap/settings.json)
 	sudo rm -rf "${HOME}"/go/
 	sed -i '/# GoLang/d' "${HOME}"/.bashrc
 	sed -i '/export GOROOT/d' "${HOME}"/.bashrc
-	sed -i '/:$GOROOT/d' "${HOME}"/.bashrc
+	sed -i '/:'"$GOROOT"'/d' "${HOME}"/.bashrc
 	sed -i '/export GOPATH/d' "${HOME}"/.bashrc
-	sed -i '/:$GOPATH/d' "${HOME}"/.bashrc
+	sed -i '/:'"$GOPATH"'/d' "${HOME}"/.bashrc
 fi
 if [ -d /usr/local/go ] || [ -d "${HOME}"/go ] ; then
 	echo "The 'go' or '.go' directories already exist. Exiting."

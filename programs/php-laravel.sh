@@ -1,13 +1,12 @@
 #!/bin/bash
 PREVIOUS_PWD="$(jq -r '.pwd' "${HOME}"/tmp/pwd.json)"
 if [ "$(jq -r '.configurations.debug' "${PREVIOUS_PWD}"/bootstrap/settings.json)" == true ] ; then
-	# Disable exit on non 0
 	set +e
 else
-	# Enable exit on non 0
 	set -e
 fi
 composer global require "laravel/installer"
+#TODO: Need refactory this if
 if [ "$(jq -r '.programs[].mysql.instalation' "${PREVIOUS_PWD}"/bootstrap/settings.json)" == false ]; then
 	printf "\n [ START ] Laravel Default MySQL Configuration\n"
 	starttime=$(date +%s)

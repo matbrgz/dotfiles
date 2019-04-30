@@ -3,7 +3,7 @@
     "name": "Matheus Rocha Vieira",
     "email": "matheusrv@email.com",
     "githubuser": "MatheusRV",
-    "defaultfolder": "/mnt/d/Cloud/GitHub"
+    "defaultfolder": "/mnt/c/Dev"
   },
   "programs": [
     {
@@ -70,7 +70,8 @@
       "program": "apache",
       "name": "Apache",
       "installation": "true",
-      "default": "true"
+      "default": "true",
+      "port": "8080"
     },
     {
       "program": "nginx",
@@ -238,8 +239,5 @@
   "configurations": {
     "debug": "true",
     "purge": "false"
-  },
-  "ssh": {
-    "installation": "false"
   }
 }
