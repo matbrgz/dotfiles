@@ -1,6 +1,6 @@
 #!/bin/bash
 PREVIOUS_PWD="$(jq -r '.pwd' "${HOME}"/tmp/pwd.json)"
-if [ "$(jq -r '.configurations.debug' "${PREVIOUS_PWD}"/bootstrap/settings.json)" == true ] ; then
+if [ "$(jq -r '.configurations.debug' "${PREVIOUS_PWD}"/bootstrap/settings.json)" == true ]; then
 	set +e
 else
 	set -e
@@ -8,11 +8,10 @@ fi
 HEADER_TYPE="$(uname -s)"
 ARCHITECTURE_TYPE="$(uname -m)"
 KUBERNETES_HELM_VERSION="$(jq -r '.KUBERNETES_HELM_VERSION' "${PREVIOUS_PWD}"/bootstrap/version.json)"
-if [ "$(jq -r '.configurations.purge' "${PREVIOUS_PWD}"/bootstrap/settings.json)" == true ] ; then
+if [ "$(jq -r '.configurations.purge' "${PREVIOUS_PWD}"/bootstrap/settings.json)" == true ]; then
 	echo "Kubernetes Helm purge not implemented yet! Skipping."
 fi
-if ! curl -L https://storage.googleapis.com/kubernetes-helm/helm-v"${KUBERNETES_HELM_VERSION}"-"${HEADER_TYPE}"-"${ARCHITECTURE_TYPE}".tar.gz
-then
+if ! curl -L https://storage.googleapis.com/kubernetes-helm/helm-v"${KUBERNETES_HELM_VERSION}"-"${HEADER_TYPE}"-"${ARCHITECTURE_TYPE}".tar.gz; then
 	echo "Kubernetes Helm Download failed! Exiting."
 	kill "$0"
 fi
