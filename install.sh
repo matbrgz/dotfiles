@@ -3,9 +3,10 @@
 	clear && clear
 	starttotaltime=$(date +%s)
 	printf "\n Welcome to Windows Subsystem Linux Bootstrap Script\n
-	Initializating script, please waiting until program configure itself.\n
-	This may take a few minutes and you will be prompted for the password\n
-	to elevate the user's permission.\n\n"
+ Initializating script, please waiting until program configure itself.
+ This may take a few minutes and you will be prompted for the password
+ to elevate the user's permission.\n\n"
+ 	sudo apt -qq update
 	sudo apt -y install jq
 	PREVIOUS_PWD="${PWD}"
 	if [ -d "${HOME}"/tmp ]; then
@@ -20,12 +21,16 @@
 	else
 		set -e
 	fi
+	echo " ( PRESS KEY '1' FOR EXPRESS INSTALL )"
+	echo " ( PRESS KEY '2' FOR CUSTOM INSTALL )"
+	printf "\n Option: "
+	read -r instalationtype
 	printf "\n First time runing script? (Y/n): "
 	read -r firstrun
 	if [ -z "${firstrun}" ] || [ "${firstrun}" == Y ] || [ "${firstrun}" == y ]; then
 		printf "\n [ START ] Update & Upgrade\n"
 		starttime=$(date +%s)
-		sudo apt -qq update && sudo apt -y upgrade && sudo apt -y dist-upgrade
+		sudo apt -y upgrade && sudo apt -y dist-upgrade
 		endtime=$(date +%s)
 		printf " [ DONE ] Update & Upgrade ... %s seconds\n" "$((endtime - starttime))"
 		printf "\n [ START ] Common Requirements\n"
@@ -59,10 +64,6 @@
 		printf " [ DONE ] Fix Possible Erros ... %s seconds\n" "$((endtime - starttime))"
 	fi
 	unset firstrun
-	echo " ( PRESS KEY '1' FOR EXPRESS INSTALL )"
-	echo " ( PRESS KEY '2' FOR CUSTOM INSTALL )"
-	printf "\n Option: "
-	read -r instalationtype
 	if [ "${instalationtype}" == 1 ]; then
 		printf "\n [ START ] Software Instalation List\n"
 		starttime=$(date +%s)
