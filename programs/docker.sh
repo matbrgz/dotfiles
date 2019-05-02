@@ -12,6 +12,7 @@ if ! curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add 
 	echo "Docker Download failed! Skipping."
 	kill "$0"
 fi
+RELEASE_VERSION="$(lsb_release -cs)"
 sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu ${RELEASE_VERSION} stable"
 sudo apt-key fingerprint 0EBFCD88
 sudo apt -qq update

@@ -87,29 +87,31 @@
       "default": "true"
     },
     {
-      "program": "phpcomposer",
-      "name": "PHP Hypertext Preprocessor",
-      "installation": "true",
-      "default": "true"
+      "program": "php-composer",
+      "name": "PHP Composer",
+      "installation": "false",
+      "default": "true",
+      "dependencies": "php"
     },
     {
-      "program": "laravel",
+      "program": "php-laravel",
       "name": "Laravel",
-      "installation": "true",
+      "installation": "false",
       "default": "true",
       "dependencies": "php"
     },
     {
       "program": "mysql",
       "name": "MySQL",
-      "installation": "true",
+      "installation": "false",
       "default": "true"
     },
     {
-      "program": "phpmyadmin",
+      "program": "mysql-phpmyadmin",
       "name": "phpMyAdmin",
       "installation": "true",
-      "default": "true"
+      "default": "true",
+      "dependencies": "mysql"
     },
     {
       "program": "postgre",
@@ -118,16 +120,18 @@
       "default": "false"
     },
     {
-      "program": "postgis",
+      "program": "postgre-postgis",
       "name": "PostGIS",
       "installation": "false",
-      "default": "false"
+      "default": "false",
+      "dependencies": "postgre"
     },
     {
-      "program": "pgadmin",
+      "program": "postgre-pgadmin",
       "name": "pgAdmin",
       "installation": "false",
-      "default": "false"
+      "default": "false",
+      "dependencies": "postgre"
     },
     {
       "program": "mongo",
@@ -148,10 +152,18 @@
       "default": "true"
     },
     {
-      "program": "strapi",
+      "program": "node-strapi",
       "name": "Strapi",
+      "installation": "false",
+      "default": "true",
+      "dependencies": "nvm"
+    },
+    {
+      "program": "node-localtunnel",
+      "name": "Local Tunnel",
       "installation": "true",
-      "default": "true"
+      "default": "true",
+      "dependencies": "nvm"
     },
     {
       "program": "anaconda",
@@ -166,10 +178,11 @@
       "default": "true"
     },
     {
-      "program": "pythonpip",
+      "program": "python-pip",
       "name": "Python PIP",
       "installation": "true",
-      "default": "true"
+      "default": "true",
+      "dependencies": "python3"
     },
     {
       "program": "pyenv",
@@ -178,28 +191,30 @@
       "default": "false"
     },
     {
-      "program": "pyenvvirtualenv",
+      "program": "pyenv-virtualenv",
       "name": "Python Env Virtual Env",
       "installation": "false",
-      "default": "false"
+      "default": "false",
+      "dependencies": "pyenv"
     },
     {
       "program": "golang",
-      "name": "GO Land",
+      "name": "GoLang",
       "installation": "false",
       "default": "true"
     },
     {
       "program": "rvm",
       "name": "Ruvy Version Manager",
-      "installation": "true",
+      "installation": "false",
       "default": "true"
     },
     {
-      "program": "jekyll",
+      "program": "ruby-jekyll",
       "name": "Jekyll",
-      "installation": "true",
-      "default": "true"
+      "installation": "false",
+      "default": "true",
+      "dependencies": "rvm"
     },
     {
       "program": "vagrant",
@@ -214,22 +229,24 @@
       "default": "true"
     },
     {
-      "program": "dockercompose",
+      "program": "docker-compose",
       "name": "Docker Compose",
-      "installation": "true",
-      "default": "true"
+      "installation": "false",
+      "default": "true",
+      "dependencies": "docker"
     },
     {
       "program": "kubectl",
       "name": "Kubernetes",
-      "installation": "true",
+      "installation": "false",
       "default": "true"
     },
     {
-      "program": "kuberneteshelm",
+      "program": "kubernetes-helm",
       "name": "Kubernetes Helm",
       "installation": "false",
-      "default": "false"
+      "default": "false",
+      "dependencies": "kubectl"
     },
     {
       "program": "mosh",
