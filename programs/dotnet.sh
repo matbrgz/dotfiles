@@ -14,7 +14,7 @@ sudo echo "deb [arch=amd64] https://packages.microsoft.com/repos/microsoft-ubunt
 	sudo tee /etc/apt/sources.list.d/dotnetdev.list
 if ! curl -L https://packages.microsoft.com/keys/microsoft.asc | sudo apt-key add -; then
 	echo "Download failed! Exiting."
-	kill "$0"
+	kill $$
 fi
 sudo apt -qq update
 sudo apt -y install dotnet-sdk-"${DOTNET_VERSION}"

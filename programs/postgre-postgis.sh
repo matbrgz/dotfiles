@@ -15,7 +15,7 @@ sudo apt -y install libgeos-"${LIBGEOS_VERSION}"
 sudo apt -y install proj-bin
 if ! curl https://download.osgeo.org/postgis/source/postgis-"${POSTGIS_VERSION}".tar.gz; then
 	echo "Download failed! Exiting."
-	kill "$0"
+	kill $$
 fi
 tar -xjSf postgis-"${POSTGIS_VERSION}".tar.gz
 cd postgis-"${POSTGIS_VERSION}"

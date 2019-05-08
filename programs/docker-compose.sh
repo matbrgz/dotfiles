@@ -14,6 +14,6 @@ fi
 if ! sudo curl /usr/local/bin/docker-compose \
 	-L "https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-${HEADER_TYPE}-${ARCHITECTURE_TYPE}"; then
 	echo "Docker Compose Download failed! Skipping."
-	kill "$0"
+	kill $$
 fi
 sudo chmod +x /usr/local/bin/docker-compose

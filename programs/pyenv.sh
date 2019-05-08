@@ -13,7 +13,6 @@ git clone https://github.com/pyenv/pyenv.git "${HOME}"/.pyenv
 		eval "$(pyenv init -)"
 	fi
 } >>~/.bashrc
-source "${HOME}"/.bashrc
-#pyenv install "${PYTHON_VERSION}"
-source "${HOME}"/.bashrc
-dpkg --get-selections | grep python
+export PYENV_ROOT="$HOME/.pyenv"
+export PATH="$PYENV_ROOT/bin:$PATH"
+pyenv install "${PYTHON_VERSION}"

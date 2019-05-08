@@ -10,6 +10,6 @@ if [ "$(jq -r '.configurations.purge' "${PREVIOUS_PWD}"/bootstrap/settings.json)
 fi
 if ! curl /usr/local/bin/nuget.exe https://dist.nuget.org/win-x86-commandline/latest/nuget.exe; then
 	echo "NuGet Download failed! Exiting."
-	kill "$0"
+	kill $$
 fi
 sudo chmod 755 /usr/local/bin/nuget.exe

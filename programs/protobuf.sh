@@ -10,7 +10,7 @@ ARCHITECTURE_TYPE="$(uname -m)"
 PROTOC_VERSION="$(jq -r '.APACHE_VERSION' "${PREVIOUS_PWD}"/bootstrap/version.json)"
 if ! curl https://github.com/google/protobuf/releases/download/v"${PROTOC_VERSION}"/protoc-"${PROTOC_VERSION}"-"${HEADER_TYPE}"-"${ARCHITECTURE_TYPE}".zip; then
 	echo "Protobuf download failed! Exiting."
-	kill "$0"
+	kill $$
 fi
 unzip protoc-"${PROTOC_VERSION}"-"${HEADER_TYPE}"-"${ARCHITECTURE_TYPE}".zip -o -d protoc3
 sudo mv protoc3/bin/* /usr/local/bin/

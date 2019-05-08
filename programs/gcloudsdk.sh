@@ -13,7 +13,7 @@ echo "deb http://packages.cloud.google.com/apt cloud-sdk-${RELEASE_VERSION} main
 	sudo tee -a /etc/apt/sources.list.d/google-cloud-sdk.list
 if ! curl -fsSL https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -; then
 	echo "GCloudSDK Download failed! Exiting."
-	kill "$0"
+	kill $$
 fi
 sudo apt -qq update
 sudo apt -y install google-cloud-sdk
