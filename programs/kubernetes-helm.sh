@@ -13,7 +13,7 @@ if [ "$(jq -r '.configurations.purge' "${PREVIOUS_PWD}"/bootstrap/settings.json)
 fi
 if ! curl -L https://storage.googleapis.com/kubernetes-helm/helm-v"${KUBERNETES_HELM_VERSION}"-"${HEADER_TYPE}"-"${ARCHITECTURE_TYPE}".tar.gz; then
 	echo "Kubernetes Helm Download failed! Exiting."
-	kill "$0"
+	kill $$
 fi
 if [ -d /usr/local/bin/helm ]; then
 	sudo rm -f -R /usr/local/bin/helm
