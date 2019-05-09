@@ -4,8 +4,6 @@
     PREVIOUS_PWD="$1"
     printf "\n [ START ] Configuring System Run\n"
     starttime=$(date +%s)
-    JSON_STRING=$(jq -n --arg pwd "${PREVIOUS_PWD}" '{pwd: $pwd}')
-    echo "${JSON_STRING}" >>"${HOME}"/tmp/pwd.json
     sudo apt -qq update
     endtime=$(date +%s)
     printf " [ DONE ] Configuring System Run ... %s seconds\n" "$((endtime - starttime))"
@@ -13,12 +11,12 @@
     starttime=$(date +%s)
     trap '' 2
     if ! git clone https://github.com/molovo/lumberjack; then
-		echo "Download failed downloading molovo/lumberjack! Exiting."
-		kill $$
-	fi
+        echo "Download failed downloading molovo/lumberjack! Exiting."
+        kill $$
+    fi
     if [ -d /usr/local/bin/lj ]; then
         sudo rm -f -R /usr/local/bin/lj
-	    sudo mv lumberjack/lj /usr/local/bin
+        sudo mv lumberjack/lj /usr/local/bin
     fi
     sudo apt -y install jq moreutils
     if [ ! -n "$(command -v jq)" ] || [ ! -n "$(command -v sponge)" ]; then
@@ -73,7 +71,7 @@
         lj " [ DONE ] Instaling Common Requirements ... %s seconds\n" "$((endtime - starttime))"
         printf "\n [ START ] Configurating Command Alias\n"
         starttime=$(date +%s)
-        "${PREVIOUS_PWD}"/configurations/alias.sh
+        "${PREVIOUS_PWD}"/configurations/alias.sh "${PREVIOUS_PWD}"
         wait
         endtime=$(date +%s)
         printf " [ DONE ] Configurating Command Alias ... %s seconds\n" "$((endtime - starttime))"
@@ -183,30 +181,42 @@
             _jq() {
                 echo "${row}" | base64 --decode | jq -r "${1}"
             }
-            programdefault=$(_jq '.default')
-            if [ "$programdefault" == true ]; then
-                defaultoption="(Y/n)"
+            programslug="$(_jq '.program')"
+            programdependencies="$(jq -r '.programs[] | select(.program=="'"${programslug}"'").dependencies' "${PREVIOUS_PWD}"/bootstrap/settings.json)"
+            dependencieinstallation="$(jq -r '.programs[] | select(.program=="'"${programdependencies}"'").installation' "${PREVIOUS_PWD}"/bootstrap/settings.json)"
+            if [ "${programdependencies}" == "null" ] || [ "${dependencieinstallation}" == true ]; then
+                programdefault=$(_jq '.default')
+                if [ "$programdefault" == true ]; then
+                    defaultoption="(Y/n)"
+                else
+                    defaultoption="(y/N)"
+                fi
+                printf "\n Install %s %s: " "$(_jq '.name')" "$defaultoption"
+                read -r programname
+                if [ "$programname" == Y ] || [ "$programname" == y ]; then
+                    programinstallation=true
+                elif [ -z "$programname" ]; then
+                    programinstallation="${programdefault}"
+                    echo "${programdefault}"
+                else
+                    programinstallation=false
+                fi
+                jq '.programs['"${i}"'].installation = "'"${programinstallation}"'"' "${PREVIOUS_PWD}"/bootstrap/settings.json | sponge "${PREVIOUS_PWD}"/bootstrap/settings.json
             else
-                defaultoption="(y/N)"
+                programname="$(_jq '.name')"
+                printf "\n You can't install %s without %s\n" "$programname" "$programdependencies"
             fi
-            printf "\n Install %s %s: " "$(_jq '.name')" "$defaultoption"
-            read -r programname
-            if [ "$programname" == Y ] || [ "$programname" == y ]; then
-                programinstallation=true
-            elif [ -z "$programname" ]; then
-                programinstallation="${programdefault}"
-                echo "${programdefault}"
-            else
-                programinstallation=false
-            fi
-            jq '.programs['"${i}"'].installation = "'"${programinstallation}"'"' "${PREVIOUS_PWD}"/bootstrap/settings.json | sponge "${PREVIOUS_PWD}"/bootstrap/settings.json
             ((i++))
+            unset programname
         done
-        unset programinstallation
-        unset programdefault
-        unset programname
-        unset defaultoption
-        unset i
+        variables=(
+            programname
+            programdefault
+            programinstallation
+            defaultoption
+            i
+        )
+        unset "${variables[@]}"
     else
         kill $$
     fi
@@ -230,11 +240,6 @@
             if [ "${installflag}" == true ]; then
                 printf "\n [ START ] %s\n" "$($programname)"
                 starttime=$(date +%s)
-                #if [ ! -f "${PREVIOUS_PWD}"/programs/"${programslug}".sh ]; then
-                #	if ! curl programs/"${programslug}".sh -L https://raw.githubusercontent.com/MatheusRV/dotfiles/master/programs/"${programslug}".sh --create-dirs -o "${PREVIOUS_PWD}"//,sh ; then
-                #		echo "${programslug} download failed! Exiting."
-                #	fi
-                #i
                 "${PREVIOUS_PWD}"/programs/"${programslug}".sh "${PREVIOUS_PWD}" || installationerror=true
                 wait
                 if [ "${installationerror}" == true ]; then
@@ -260,11 +265,13 @@
             fi
         fi
     done
-    unset installflag
-    unset installationerror
-    unset programname
-    unset programdependencies
-    unset dependencieinstallation
+    variables=(
+        installflag
+        installationerror
+        programname
+        dependencieinstallation
+    )
+    unset "${variables[@]}"
     printf "\n [ START ] Common Requirements\n"
     starttime=$(date +%s)
     apps=(
@@ -273,7 +280,6 @@
         shellcheck
     )
     sudo apt -y install "${apps[@]}"
-    unset apps
     endtime=$(date +%s)
     printf " [ DONE ] Common Requirements ... %s seconds\n" "$((endtime - starttime))"
     printf "\n [ START ] Cleaning\n"
@@ -285,4 +291,13 @@
     printf " [ DONE ] Cleaning ... %s seconds\n" "$((endtime - starttime))"
     endtotaltime=$(date +%s)
     printf "\n Total Execution Time ... %s seconds\n" "$((endtotaltime - starttotaltime))"
+    variables=(
+        PREVIOUS_PWD
+        starttotaltime
+        endtotaltime
+        starttime
+        endtime
+        apps
+    )
+    unset "${variables[@]}"
 }
