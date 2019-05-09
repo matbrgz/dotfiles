@@ -6,7 +6,8 @@ else
 	set -e
 fi
 RUBY_VERSION="$(jq -r '.RUBY_VERSION' "${PREVIOUS_PWD}"/bootstrap/version.json)"
-export $PATH:"${USER}"/.rvm/scripts/rvm
+export PATH="$PATH:$HOME/.rvm/bin"
+[[ -s "$HOME/.rvm/scripts/rvm" ]] && source "$HOME/.rvm/scripts/rvm"
 rvm install "${RUBY_VERSION}"
 /bin/bash --login
 rvm use "${RUBY_VERSION}"
