@@ -9,7 +9,7 @@
     {
       "program": "ssh",
       "name": "Secure Shell (SSH)",
-      "installation": "true",
+      "installation": "false",
       "default": "true"
     },
     {
@@ -179,13 +179,13 @@
     {
       "program": "python3",
       "name": "Python3",
-      "installation": "true",
+      "installation": "false",
       "default": "true"
     },
     {
       "program": "python-pip",
       "name": "Python PIP",
-      "installation": "true",
+      "installation": "false",
       "default": "true",
       "dependencies": "python3"
     },
@@ -257,7 +257,7 @@
     {
       "program": "mosh",
       "name": "Mosh",
-      "installation": "true",
+      "installation": "false",
       "default": "true"
     },
     {
