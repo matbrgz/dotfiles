@@ -3,13 +3,13 @@
     "name": "Matheus Rocha Vieira",
     "email": "matheusrv@email.com",
     "githubuser": "MatheusRV",
-    "defaultfolder": "/mnt/c/Dev"
+    "defaultfolder": "/mnt/d/Cloud/GitHub"
   },
   "programs": [
     {
       "program": "ssh",
       "name": "Secure Shell (SSH)",
-      "installation": "false",
+      "installation": "true",
       "default": "true"
     },
     {
@@ -71,7 +71,7 @@
     {
       "program": "apache",
       "name": "Apache",
-      "installation": "false",
+      "installation": "true",
       "default": "false",
       "config": "true",
       "port": "8080"
@@ -85,20 +85,20 @@
     {
       "program": "php",
       "name": "PHP Hypertext Preprocessor",
-      "installation": "false",
+      "installation": "true",
       "default": "false"
     },
     {
       "program": "php-composer",
       "name": "PHP Composer",
-      "installation": "false",
+      "installation": "true",
       "default": "false",
       "dependencies": "php"
     },
     {
       "program": "php-laravel",
       "name": "Laravel",
-      "installation": "false",
+      "installation": "true",
       "default": "false",
       "dependencies": "php"
     },
@@ -157,7 +157,7 @@
     {
       "program": "node-strapi",
       "name": "Strapi",
-      "installation": "false",
+      "installation": "true",
       "default": "false",
       "dependencies": "nvm"
     },
@@ -179,13 +179,13 @@
     {
       "program": "python3",
       "name": "Python3",
-      "installation": "false",
+      "installation": "true",
       "default": "true"
     },
     {
       "program": "python-pip",
       "name": "Python PIP",
-      "installation": "false",
+      "installation": "true",
       "default": "true",
       "dependencies": "python3"
     },
@@ -225,7 +225,7 @@
     {
       "program": "vagrant",
       "name": "Vagrant",
-      "installation": "false",
+      "installation": "true",
       "default": "false"
     },
     {
@@ -257,7 +257,7 @@
     {
       "program": "mosh",
       "name": "Mosh",
-      "installation": "false",
+      "installation": "true",
       "default": "true"
     },
     {
