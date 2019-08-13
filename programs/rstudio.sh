@@ -6,14 +6,14 @@ else
 	set -e
 fi
 RELEASE_VERSION="$(lsb_release -cs)"
-ANACONDA_VERSION="$(jq -r '.RSTUDIO_VERSION' "${PREVIOUS_PWD}"/bootstrap/settings.json)"
+RSTUDIO_VERSION="$(jq -r '.RSTUDIO_VERSION' "${PREVIOUS_PWD}"/bootstrap/settings.json)"
 if [ "$(jq -r '.configurations.purge' "${PREVIOUS_PWD}"/bootstrap/settings.json)" == y ]; then
 	sudo apt -y purge rbase*
 fi
 sudo apt update
 sudo apt install -y gdebi-core gfortran libgdal-dev libgeos-dev libpng-dev
 sudo apt-get install -y libjpeg62-dev libjpeg8-dev libcairo-dev libssl-dev
-if ! curl https://download2.rstudio.org/server/"${RELEASE_VERSION}"/amd64/rstudio-server-"${RSTUDIO_VERSION}"-amd64.deb | bash; then
+if ! curl https://download2.rstudio.org/server/"${RELEASE_VERSION}"/amd64/rstudio-server-"${RSTUDIO_VERSION}"-amd64.deb -o rstudio-server-"${RSTUDIO_VERSION}"-amd64.deb && dpkg -i rstudio-server-"${RSTUDIO_VERSION}"-amd64.deb ; then
 	echo "RStudio Download failed! Skipping."
 	kill $$
 fi
