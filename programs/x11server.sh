@@ -7,6 +7,7 @@ else
 fi
 sudo apt -y install x11-apps
 {
+	# X11 Config
 	DISPLAY=:0.0
     export DISPLAY
 } >>"${HOME}"/.bashrc
