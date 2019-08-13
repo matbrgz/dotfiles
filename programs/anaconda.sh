@@ -7,7 +7,7 @@ else
 fi
 HEADER_TYPE="$(uname -s)"
 ARCHITECTURE_TYPE="$(uname -m)"
-ANACONDA_VERSION="$(jq -r '.anaconda' "${PREVIOUS_PWD}"/bootstrap/settings.json)"
+ANACONDA_VERSION="$(jq -r '.ANACONDA_VERSION' "${PREVIOUS_PWD}"/bootstrap/settings.json)"
 if [ "$(jq -r '.configurations.purge' "${PREVIOUS_PWD}"/bootstrap/settings.json)" == true ]; then
 	echo "Anaconda purge not implemented yet! Skipping."
 fi
