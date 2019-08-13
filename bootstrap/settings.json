@@ -3,13 +3,13 @@
     "name": "Matheus Rocha Vieira",
     "email": "matheusrv@email.com",
     "githubuser": "MatheusRV",
-    "defaultfolder": "/mnt/d/Cloud/GitHub"
+    "defaultfolder": "/mnt/d/Cloud"
   },
   "programs": [
     {
       "program": "ssh",
       "name": "Secure Shell (SSH)",
-      "installation": "true",
+      "installation": "false",
       "default": "true"
     },
     {
@@ -71,7 +71,7 @@
     {
       "program": "apache",
       "name": "Apache",
-      "installation": "true",
+      "installation": "false",
       "default": "false",
       "config": "true",
       "port": "8080"
@@ -85,7 +85,7 @@
     {
       "program": "php",
       "name": "PHP Hypertext Preprocessor",
-      "installation": "true",
+      "installation": "false",
       "default": "false"
     },
     {
@@ -98,7 +98,7 @@
     {
       "program": "php-laravel",
       "name": "Laravel",
-      "installation": "false",
+      "installation": "true",
       "default": "false",
       "dependencies": "php"
     },
@@ -150,7 +150,7 @@
     {
       "program": "nvm",
       "name": "Node Version Manager",
-      "installation": "true",
+      "installation": "false",
       "default": "true",
       "config": "true"
     },
@@ -179,7 +179,7 @@
     {
       "program": "python3",
       "name": "Python3",
-      "installation": "true",
+      "installation": "false",
       "default": "true"
     },
     {
@@ -205,20 +205,20 @@
     {
       "program": "golang",
       "name": "GoLang",
-      "installation": "false",
+      "installation": "true",
       "default": "false"
     },
     {
       "program": "rvm",
       "name": "Ruby Version Manager",
-      "installation": "true",
+      "installation": "false",
       "default": "false",
       "config": "true"
     },
     {
       "program": "ruby-jekyll",
       "name": "Jekyll",
-      "installation": "false",
+      "installation": "true",
       "default": "false",
       "dependencies": "rvm"
     },
