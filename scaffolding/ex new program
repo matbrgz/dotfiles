@@ -10,8 +10,11 @@ defaultfolder="$(jq -r '.defaultfolder' "${PREVIOUS_PWD}"/bootstrap/settings.jso
 HEADER_TYPE="$(uname -s)"
 # Architeture x86_64 amd64
 ARCHITECTURE_TYPE="$(uname -m)"
+
 # Bionic, Xenial, Trusty
 RELEASE_VERSION="$(lsb_release -cs)"
+# 18.04
+$(lsb_release -rs)
 DOCKER_COMPOSE_VERSION="$(jq -r '.DOCKER_COMPOSE_VERSION' "${PREVIOUS_PWD}"/bootstrap/version.json)"/
 if [ "$(jq -r '.configurations.purge' "${PREVIOUS_PWD}"/bootstrap/settings.json)" == true ]; then
 	echo "Anaconda purge not implemented yet! Skipping."
