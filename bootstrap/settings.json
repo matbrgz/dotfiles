@@ -168,20 +168,34 @@
       "config": "true"
     },
     {
-      "program": "node-strapi",
+      "program": "yarn-strapi",
       "name": "Strapi",
       "installation": "false",
       "default": "false",
       "dependencies": "nvm"
     },
     {
-      "program": "node-localtunnel",
+      "program": "yarn-localtunnel",
       "name": "LocalTunnel",
       "installation": "false",
       "default": "true",
       "dependencies": "nvm",
       "hostname": "matheusrv1",
       "port": "60000"
+    },
+    {
+      "program": "yarn-prettier",
+      "name": "Prettier",
+      "installation": "false",
+      "default": "true",
+      "dependencies": "nvm",
+    },
+    {
+      "program": "yarn-leasot",
+      "name": "Leasot",
+      "installation": "false",
+      "default": "true",
+      "dependencies": "nvm",
     },
     {
       "program": "anaconda",
@@ -201,6 +215,13 @@
       "installation": "true",
       "default": "true",
       "dependencies": "python3"
+    },
+    {
+      "program": "pip-beautysh",
+      "name": "Beautysh",
+      "installation": "true",
+      "default": "true",
+      "dependencies": "python-pip"
     },
     {
       "program": "pyenv",
@@ -276,6 +297,12 @@
     {
       "program": "shfmt",
       "name": "shfmt",
+      "installation": "true",
+      "default": "true"
+    },
+    {
+      "program": "shellcheck",
+      "name": "ShellCheck",
       "installation": "true",
       "default": "true"
     },

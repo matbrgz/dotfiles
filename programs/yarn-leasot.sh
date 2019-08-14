@@ -5,4 +5,4 @@ if [ "$(jq -r '.configurations.debug' "${PREVIOUS_PWD}"/bootstrap/settings.json)
 else
 	set -e
 fi
-npm install strapi@alpha -g
+yarn global add leasot
