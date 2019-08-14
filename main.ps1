@@ -59,7 +59,7 @@ Install-WindowsUpdate -acceptEula
  
 #--- Rename the Computer ---
 # Requires restart, or add the -Restart flag
-$NameList = "Turing", "Knuth", "Berners-Lee", "Torvalds", "Hopper", "Ritchie", "Stallman", "Gosling", "Church", "Dijkstra", "Cooper", "Gates", "Jobs", "Wozniak", "Zuckerberg", "Musk", "Nakamoto", "Dotcom", "Snowden"
+$NameList = "Turing", "Knuth", "Berners-Lee", "Torvalds", "Hopper", "Ritchie", "Stallman", "Gosling", "Church", "Dijkstra", "Cooper", "Gates", "Jobs", "Wozniak", "Zuckerberg", "Musk", "Nakamoto", "Dotcom", "Snowden", "Kruskal", "Neumann"
 
 $ComputerName = Get-Random -InputObject $NameList
 if ($env:computername -ne $ComputerName) {
