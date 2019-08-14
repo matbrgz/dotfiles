@@ -30,8 +30,8 @@ sudo echo "<VirtualHost *:${port}>
      ErrorLog ${APACHE_LOG_DIR}/error.log
      CustomLog ${APACHE_LOG_DIR}/access.log combined
 </VirtualHost>" | sudo tee -a /etc/apache"${APACHE_VERSION}"/sites-available/000-default.conf
-if [ ${port} != 80 ]; then
-      sudo sed -i "/Listen 80/c\Listen "${port}"" /etc/apache2/ports.conf
+if [ "${port}" != 80 ]; then
+      sudo sed -i "/Listen 80/c\Listen ${port}" /etc/apache2/ports.conf
 fi
 sudo /etc/init.d/apache"${APACHE_VERSION}" stop
 echo " [ DOING ] Apache: Allowing mod rewrite rules"
