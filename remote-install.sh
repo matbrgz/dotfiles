@@ -1,19 +1,6 @@
 #!/bin/bash
 {
-	clear && clear
-	PREVIOUS_PWD="${PWD}"
-	cat <<EOF
- Welcome to Windows Subsystem Linux Bootstrap Script
- Initializating script, please waiting until program configure itself.
- This may take a few minutes and you will be prompted for the password
- to elevate the user's permission.
-EOF
-	if [ -d "${HOME}"/tmp ]; then
-		sudo rm -f -R "${HOME}"/tmp
-	fi
-	mkdir -p "${HOME}"/tmp
-	cd "${HOME}"/tmp || return
-	#TODO: Manage PowerShell install files dynamic
+	
 	: '
 	printf "\n [ START ] Version Management Control\n"
 	starttime=$(date +%s)
