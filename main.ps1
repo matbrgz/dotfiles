@@ -256,8 +256,8 @@ if (([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::
         ForEach-Object { $_.DoIt() }
         $StopWatch.Stop()
         Write-Output "\n [ DONE ] Unistall Windows10 Unnecessary and Blotware Apps ... "$StopWatch.Elapsed.TotalSeconds" seconds\n"
-
-        #Remove Windows Registries
+        Write-Output "\n [ START ] Remove Unnecessary Windows Registries\n"
+        $StopWatch = [System.Diagnostics.Stopwatch]::StartNew()
         $Keys = @(
             "HKCR:\Extensions\ContractId\Windows.BackgroundTasks\PackageId\46928bounde.EclipseManager_2.2.4.51_neutral__a5h4egax66k6y"
             "HKCR:\Extensions\ContractId\Windows.BackgroundTasks\PackageId\ActiproSoftwareLLC.562882FEEB491_2.6.18.18_neutral__24pqs290vpjk0"
@@ -294,7 +294,8 @@ if (([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::
             Write-Output "Removing $Key from registry"
             Remove-Item $Key -Recurse
         }
-  
+        $StopWatch.Stop()
+        Write-Output "\n [ DONE ] Remove Unnecessary Windows Registries ... "$StopWatch.Elapsed.TotalSeconds" seconds\n"
         ipconfig /flushdns
         netsh winsock reset
 

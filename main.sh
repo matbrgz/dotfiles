@@ -32,7 +32,7 @@ EOF
     printf " [ DONE ] Instaling Major Requirements ... %s seconds\n" "$((endtime - starttime))"
     cat <<EOF
   Welcome to Windows Subsystem Linux Ubuntu Bootstrap Script v0.9.0
-\n
+
                    .88888888:.
                   88888888.88888.
                 .8888888888888888.
@@ -59,11 +59,10 @@ EOF
   :::::::::::::::88:.__..:88888:::::::::::'
     `'.:::::::::::88888888888.88:::::::::'
           `':::_:' -- '' -'-' `':_::::'`
-\n
- ( PRESS KEY '1' FOR EXPRESS INSTALL )
- ( PRESS KEY '2' FOR CUSTOM INSTALL )\n
- Option: 
 EOF
+    printf "\n ( PRESS KEY '1' FOR EXPRESS INSTALL )
+ ( PRESS KEY '2' FOR CUSTOM INSTALL )\n
+ Option: "
     read -r instalationtype
     printf "\n Enable Debug Mode (y/N): "
     read -r debugmode
@@ -182,7 +181,9 @@ EOF
             echo "$email"
         fi
         git config --global user.email "${email}"
-        ssh-keygen -t rsa -b 4096 -C "${email}"
+        if [ ! -d ~/.ssh ]; then
+            ssh-keygen -t rsa -b 4096 -C "${email}"
+        fi
         jq '.personal.email = "'"${email}"'"' "${PREVIOUS_PWD}"/bootstrap/settings.json | sponge "${PREVIOUS_PWD}"/bootstrap/settings.json
         unset email
         printf "\n Your GitHub Username (Default: MatheusRV): "
@@ -193,7 +194,7 @@ EOF
         fi
         jq '.personal.githubuser = "'"${githubuser}"'"' "${PREVIOUS_PWD}"/bootstrap/settings.json | sponge "${PREVIOUS_PWD}"/bootstrap/settings.json
         unset githubuser
-        if [[ ! "$(uname -r)" =~ "Microsoft$" ]]; then
+        if [[ "$(uname -r)" =~ "Microsoft$" ]]; then
             defaultoption="(Default for WSL: '/mnt/c/Dev')"
         else
             defaultoption="(Default for Unix-like: '~/Dev')"
@@ -201,10 +202,10 @@ EOF
         printf "\n Default Dev Folder %s: " "$defaultoption"
         read -r defaultfolder
         if [ -z "${defaultfolder}" ]; then
-            if [[ ! "$(uname -r)" =~ "Microsoft$" ]]; then
+            if [[ "$(uname -r)" =~ "Microsoft$" ]]; then
                 defaultfolder=/mnt/c/Dev
             else
-                defaultfolder=~/Dev
+                defaultfolder=/opt/Dev
             fi
             if [ ! -d "${defaultfolder}" ]; then
                 mkdir "${defaultfolder}"
@@ -213,7 +214,7 @@ EOF
         else
             if [ ! -d "${defaultfolder}" ]; then
                 mkdir ${defaultfolder}
-                echo "${defaultfolder}"
+                echo " [ DOING ] mkdir ${defaultfolder}"
             fi
         fi
         jq '.personal.defaultfolder = "'"${defaultfolder}"'"' "${PREVIOUS_PWD}"/bootstrap/settings.json | sponge "${PREVIOUS_PWD}"/bootstrap/settings.json
