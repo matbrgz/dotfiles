@@ -205,7 +205,7 @@ EOF
             if [[ "$(uname -r)" =~ "Microsoft$" ]]; then
                 defaultfolder=/mnt/c/Dev
             else
-                defaultfolder=/opt/Dev
+                defaultfolder=~/Dev
             fi
             if [ ! -d "${defaultfolder}" ]; then
                 mkdir "${defaultfolder}"
