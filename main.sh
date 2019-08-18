@@ -304,11 +304,11 @@ EOF
                             installationerror=false
                             printf "\n [ ERROR ] %s configuration returns a non-zero exit status\n" "$($programname)"
                         else
-                            printf "\n [ DONE ] %s configuration\n" "$($programname)"
+                            printf " [ DONE ] %s configuration\n" "$($programname)"
                         fi
                     fi
                     endtime=$(date +%s)
-                    printf "\n [ DONE ] %s ... %s seconds\n" "$($programname)" "$((endtime - starttime))"
+                    printf " [ DONE ] %s ... %s seconds\n" "$($programname)" "$((endtime - starttime))"
                 fi
             fi
         fi
@@ -330,7 +330,7 @@ EOF
     sudo apt -y install "${apps[@]}"
     trap 2
     endtime=$(date +%s)
-    printf "\n [ DONE ] Common Requirements ... %s seconds\n" "$((endtime - starttime))"
+    printf " [ DONE ] Common Requirements ... %s seconds\n" "$((endtime - starttime))"
     printf "\n [ START ] Cleaning\n"
     starttime=$(date +%s)
     trap '' 2
@@ -348,7 +348,7 @@ EOF
     )
     unset "${variables[@]}"
     endtime=$(date +%s)
-    printf "\n [ DONE ] Cleaning ... %s seconds\n" "$((endtime - starttime))"
+    printf " [ DONE ] Cleaning ... %s seconds\n" "$((endtime - starttime))"
 
     endtotaltime=$(date +%s)
     printf "\n Total Execution Time ... %s seconds\n" "$((endtotaltime - starttotaltime))"
