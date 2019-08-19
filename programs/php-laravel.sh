@@ -1,13 +1,13 @@
 #!/bin/bash
 PREVIOUS_PWD="$1"
-if [ "$(jq -r '.configurations.debug' "${PREVIOUS_PWD}"/bootstrap/settings.json)" == true ]; then
+if [ "$(jq -r '.configurations.debug' "${PREVIOUS_PWD}"/bootstrap/unix-settings.json)" == true ]; then
 	set +e
 else
 	set -e
 fi
 composer global require "laravel/installer"
 #TODO: Need refactory this if
-if [ "$(jq -r '.programs[].mysql.instalation' "${PREVIOUS_PWD}"/bootstrap/settings.json)" == true ]; then
+if [ "$(jq -r '.programs[].mysql.instalation' "${PREVIOUS_PWD}"/bootstrap/unix-settings.json)" == true ]; then
 	printf "\n [ START ] Laravel Default MySQL Configuration\n"
 	starttime=$(date +%s)
 	echo " [ DOING ] Setting Laravel Default .env DB user on MySQL (user & db 'homestead', password 'secret')"

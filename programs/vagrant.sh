@@ -1,13 +1,13 @@
 #!/bin/bash
 PREVIOUS_PWD="$1"
-if [ "$(jq -r '.configurations.debug' "${PREVIOUS_PWD}"/bootstrap/settings.json)" == true ]; then
+if [ "$(jq -r '.configurations.debug' "${PREVIOUS_PWD}"/bootstrap/unix-settings.json)" == true ]; then
   set +e
 else
   set -e
 fi
 ARCHITECTURE_TYPE="$(uname -m)"
 VAGRANT_VERSION="$(jq -r '.VAGRANT_VERSION' "${PREVIOUS_PWD}"/bootstrap/version.json)"
-if [ "$(jq -r '.configurations.purge' "${PREVIOUS_PWD}"/bootstrap/settings.json)" == y ]; then
+if [ "$(jq -r '.configurations.purge' "${PREVIOUS_PWD}"/bootstrap/unix-settings.json)" == y ]; then
   sudo apt -y purge virtualbox* vagrant*
 fi
 if ! wget https://releases.hashicorp.com/vagrant/"${VAGRANT_VERSION}"/vagrant_"${VAGRANT_VERSION}"_"${ARCHITECTURE_TYPE,,}".deb; then
@@ -15,7 +15,7 @@ if ! wget https://releases.hashicorp.com/vagrant/"${VAGRANT_VERSION}"/vagrant_"$
   kill $$
 fi
 sudo dpkg -i vagrant_"${VAGRANT_VERSION}"_"${ARCHITECTURE_TYPE}".deb
-defaultfolder="$(jq -r '.personal.defaultfolder' "${PREVIOUS_PWD}"/bootstrap/settings.json)"
+defaultfolder="$(jq -r '.personal.defaultfolder' "${PREVIOUS_PWD}"/bootstrap/unix-settings.json)"
 if [[ ! "$(uname -r)" =~ "Microsoft$" ]]; then
 {
 # Vagrant Config

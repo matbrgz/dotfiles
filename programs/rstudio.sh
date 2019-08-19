@@ -1,13 +1,13 @@
 #!/bin/bash
 PREVIOUS_PWD="$1"
-if [ "$(jq -r '.configurations.debug' "${PREVIOUS_PWD}"/bootstrap/settings.json)" == true ]; then
+if [ "$(jq -r '.configurations.debug' "${PREVIOUS_PWD}"/bootstrap/unix-settings.json)" == true ]; then
 	set +e
 else
 	set -e
 fi
 RELEASE_VERSION="$(lsb_release -cs)"
-RSTUDIO_VERSION="$(jq -r '.RSTUDIO_VERSION' "${PREVIOUS_PWD}"/bootstrap/settings.json)"
-if [ "$(jq -r '.configurations.purge' "${PREVIOUS_PWD}"/bootstrap/settings.json)" == y ]; then
+RSTUDIO_VERSION="$(jq -r '.RSTUDIO_VERSION' "${PREVIOUS_PWD}"/bootstrap/unix-settings.json)"
+if [ "$(jq -r '.configurations.purge' "${PREVIOUS_PWD}"/bootstrap/unix-settings.json)" == y ]; then
 	sudo apt -y purge rbase*
 fi
 sudo apt update
