@@ -1,17 +1,17 @@
 #!/bin/bash
 PREVIOUS_PWD="$1"
-if [ "$(jq -r '.configurations.debug' "${PREVIOUS_PWD}"/bootstrap/settings.json)" == true ]; then
+if [ "$(jq -r '.configurations.debug' "${PREVIOUS_PWD}"/bootstrap/unix-settings.json)" == true ]; then
       set +e
 else
       set -e
 fi
 APACHE_VERSION="$(jq -r '.APACHE_VERSION' "${PREVIOUS_PWD}"/bootstrap/version.json)"
-if [ "$(jq -r '.configurations.purge' "${PREVIOUS_PWD}"/bootstrap/settings.json)" == true ]; then
+if [ "$(jq -r '.configurations.purge' "${PREVIOUS_PWD}"/bootstrap/unix-settings.json)" == true ]; then
       sudo apt -y purge apache"${APACHE_VERSION}"*
 fi
 echo " [ DOING ] Apache: Default Dev folder as initial directory on localhost"
-port="$(jq -r '.programs[] | select(.program=="apache").port' "${PREVIOUS_PWD}"/bootstrap/settings.json)"
-defaultfolder="$(jq -r '.personal.defaultfolder' "${PREVIOUS_PWD}"/bootstrap/settings.json)"
+port="$(jq -r '.programs[] | select(.program=="apache").port' "${PREVIOUS_PWD}"/bootstrap/unix-settings.json)"
+defaultfolder="$(jq -r '.personal.defaultfolder' "${PREVIOUS_PWD}"/bootstrap/unix-settings.json)"
 if [ -d /var/www ]; then
       sudo rm -f -R /var/www
 fi
