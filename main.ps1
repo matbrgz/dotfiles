@@ -1,18 +1,23 @@
 if (([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
     $GlobalStopWatch = New-Object System.Diagnostics.Stopwatch
     $GlobalStopWatch.Start()
-    Write-Output "`n [ START ] Configuring System Run`n"
+    Write-Output "`n [ START ] Configuring System Run"
     $StopWatch = [System.Diagnostics.Stopwatch]::StartNew()
     Set-ExecutionPolicy RemoteSigned
-    Disable-WindowsUpdate
     Disable-UAC
     $ComputerName = Get-Random -InputObject "Turing", "Knuth", "Berners-Lee", "Torvalds", "Hopper", "Ritchie", "Stallman", "Gosling", "Church", "Dijkstra", "Cooper", "Gates", "Jobs", "Wozniak", "Zuckerberg", "Musk", "Nakamoto", "Dotcom", "Snowden", "Kruskal", "Neumann"
     $StopWatch.Stop()
     $StopWatchElapsed = $StopWatch.Elapsed.TotalSeconds
     Write-Output " [ DONE ] Configuring System Run ... $StopWatchElapsed seconds`n"
-    $firstrun = Read-Host -Prompt "`n First time runing script? (Y/n)"
-    if ([string]::IsNullOrWhiteSpace($firstrun) -Or $firstrun -eq 'Y' -Or $firstrun -eq 'y') {
-        Write-Output "`n [ START ] Instaling Common Requirements`n"
+    Write-Output " ( PRESS KEY '1' FOR EXPRESS INSTALL )
+ ( PRESS KEY '2' FOR CUSTOM INSTALL )"
+    $InstalationType = Read-Host -Prompt " Option"
+    $DebugMode = Read-Host -Prompt "`n Enable Debug Mode (y/N)"
+    if ($DebugMode -eq 'Y' -Or $DebugMode -eq 'y') {
+    }
+    $FirstRun = Read-Host -Prompt "`n First time runing script? (Y/n)"
+    if ([string]::IsNullOrWhiteSpace($FirstRun) -Or $FirstRun -eq 'Y' -Or $FirstRun -eq 'y') {
+        Write-Output "`n [ START ] Instaling Common Requirements"
         $StopWatch = [System.Diagnostics.Stopwatch]::StartNew()
         Set-ExecutionPolicy Bypass -Scope Process -Force; Invoke-Expression ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
         refreshenv
@@ -20,12 +25,12 @@ if (([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::
         $StopWatch.Stop()
         $StopWatchElapsed = $StopWatch.Elapsed.TotalSeconds
         Write-Output " [ DONE ] Instaling Common Requirements ... $StopWatchElapsed seconds`n"
-        Write-Output "`n [ START ] Windows Update`n"
+        Write-Output "`n [ START ] Windows Update"
         $StopWatch = [System.Diagnostics.Stopwatch]::StartNew()
         Enable-UAC
         Enable-MicrosoftUpdate
         Update-Help
-        Install-WindowsUpdate
+        Install-WindowsUpdate -acceptEula
         Disable-WindowsUpdate
         Disable-UAC
         $StopWatch.Stop()
@@ -33,7 +38,7 @@ if (([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::
         Write-Output " [ DONE ] Windows Update ... $StopWatchElapsed seconds`n"
         $Privacy = Read-Host -Prompt "`n Do you care about privacy? (Y/n)"
         if ([string]::IsNullOrWhiteSpace($Privacy) -Or $Privacy -eq 'Y' -Or $Privacy -eq 'y') {
-            Write-Output "`n [ START ] Protecting Privacy`n"
+            Write-Output "`n [ START ] Protecting Privacy"
             $StopWatch = [System.Diagnostics.Stopwatch]::StartNew()
             #Disables Windows Feedback Experience
             Write-Output " [ DOING ] Disabling Windows Feedback Experience program"
@@ -160,7 +165,30 @@ if (([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::
             $StopWatchElapsed = $StopWatch.Elapsed.TotalSeconds
             Write-Output " [ DONE ] Protecting Privacy ... $StopWatchElapsed seconds`n"
         }
-        Write-Output "`n [ START ] Unistall Windows10 Unnecessary and Blotware Apps `n"
+        $WindowsConfig = Read-Host -Prompt "`n Do wish configure Windows? (Y/n)"
+        if ([string]::IsNullOrWhiteSpace($WindowsConfig) -Or $WindowsConfig -eq 'Y' -Or $WindowsConfig -eq 'y') {
+            Write-Output "`n [ DOING ] Setting network category to private"
+            Set-NetConnectionProfile -NetworkCategory Private
+            Write-Output "`n [ DOING ] Setting dark theme as default"
+            Set-ItemProperty -Path HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize -Name AppsUseLightTheme -Value 0
+            Write-Output "`n [ DOING ] Show hidden files, Show protected OS files, Show file extensions"
+            Set-WindowsExplorerOptions -EnableShowHiddenFilesFoldersDrives -EnableShowProtectedOSFiles -EnableShowFileExtensions
+            #--- File Explorer Settings ---
+            Write-Output "`n [ DOING ] Adds things back in your left pane like recycle bin"
+            Set-ItemProperty -Path HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced -Name NavPaneExpandToCurrentFolder -Value 1
+            Set-ItemProperty -Path HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced -Name NavPaneShowAllFolders -Value 1
+            Write-Output "`n [ DOING ] Opens PC to This PC, not quick access"
+            Set-ItemProperty -Path HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced -Name LaunchTo -Value 1
+            Write-Output "`n [ DOING ] Taskbar where window is open for multi-monitor"
+            Set-ItemProperty -Path HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced -Name MMTaskbarMode -Value 2
+            Write-Output "`n [ DOING ] Disable Quick Access: Recent Files"
+            Set-ItemProperty -Path HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer -Name ShowRecent -Type DWord -Value 0
+            Write-Output "`n [ DOING ] Disable Quick Access: Frequent Folders"
+            Set-ItemProperty -Path HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer -Name ShowFrequent -Type DWord -Value 0
+        }
+        Write-Output "`n [ DOING ] Enable developer mode on the system"
+        Set-ItemProperty -Path HKLM:\Software\Microsoft\Windows\CurrentVersion\AppModelUnlock -Name AllowDevelopmentWithoutDevLicense -Value 1
+        Write-Output "`n [ START ] Unistall Windows10 Unnecessary and Blotware Apps"
         $StopWatch = [System.Diagnostics.Stopwatch]::StartNew()
         $AppXApps = @(
             "*Microsoft.BingNews*"
@@ -240,7 +268,7 @@ if (([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::
         $StopWatch.Stop()
         $StopWatchElapsed = $StopWatch.Elapsed.TotalSeconds
         Write-Output " [ DONE ] Unistall Windows10 Unnecessary and Blotware Apps ... $StopWatchElapsed seconds`n"
-        Write-Output "`n [ START ] Remove Unnecessary Windows Registries`n"
+        Write-Output "`n [ START ] Remove Unnecessary Windows Registries"
         $StopWatch = [System.Diagnostics.Stopwatch]::StartNew()
         $Keys = @(
             "HKCR:\Extensions\ContractId\Windows.BackgroundTasks\PackageId\46928bounde.EclipseManager_2.2.4.51_neutral__a5h4egax66k6y"
@@ -278,28 +306,66 @@ if (([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::
             Rename-Computer -NewName $ComputerName
         }
     }
-    $AllPrograms = Get-Content 'bootstrap\w10-settings.json' | Out-String | ConvertFrom-Json
-    ForEach ($row in $AllPrograms.programs) {
-        $ProgramName = $row.name
-        if ($row.default -eq $true) {
-            $DefaultOption='(Y/n)'
-        } else  {
-            $DefaultOption='(y/N)'
+    else {
+        $PurgeMode = Read-Host -Prompt "`n Enable Purge Mode (y/N)"
+        if ($PurgeMode -eq 'Y' -Or $PurgeMode -eq 'y') {
         }
-        $ProgramOption = Read-Host -Prompt "`n Install $ProgramName ? $DefaultOption"
-        if ($ProgramOption -eq $true -Or $ProgramOption -eq 'Y' -Or $ProgramOption -eq 'y') {
-            $ProgramInstallation = $true
-        } elseif ([string]::IsNullOrWhiteSpace($ProgramOption)) {
-            $ProgramInstallation = $ProgramDefault
-        } else {
-            $ProgramInstallation = $false
-        }
-        $row.installation = $ProgramInstallation
     }
-    $AllPrograms | ConvertTo-Json | Set-Content 'bootstrap\w10-settings.json'
+    $AllPrograms = Get-Content 'bootstrap\w10-settings.json' | Out-String | ConvertFrom-Json
+    if ($InstalationType -eq '1') {
+        Write-Output "`n [ START ] Software Instalation List"
+        $StopWatch = [System.Diagnostics.Stopwatch]::StartNew()
+        $DefaultProgram = Read-Host -Prompt "`n Use default program instalation (y/N)"
+        ForEach ($row in $AllPrograms.programs) {
+            if ($DefaultProgram -eq 'Y' -Or $DefaultProgram -eq 'y') {
+                $row.installation = $row.default
+            }
+        }
+        $AllPrograms | ConvertTo-Json -depth 100 | Out-File -Encoding UTF8NoBOM 'bootstrap\w10-settings.json'
+        ForEach ($row in $AllPrograms.programs) {
+            $ProgramName = $row.name
+            $ProgramInstallation = $row.installation
+            Write-Output "$ProgramName : $ProgramInstallation"
+        }
+        Start-Sleep -s 3
+        $StopWatch.Stop()
+        $StopWatchElapsed = $StopWatch.Elapsed.TotalSeconds
+        Write-Output " [ DONE ] Software Instalation List ... $StopWatchElapsed seconds`n"
+    }
+    elseif ($InstalationType -eq '2') {
+        ForEach ($row in $AllPrograms.programs) {
+            $ProgramName = $row.name
+            $ProgramDefault = $row.default
+            if ($row.default -eq $true) {
+                $DefaultOption = '(Y/n)'
+            }
+            else {
+                $DefaultOption = '(y/N)'
+            }
+            $ProgramOption = Read-Host -Prompt "`n Install $ProgramName ? $DefaultOption"
+            if ($ProgramOption -eq 'Y' -Or $ProgramOption -eq 'y') {
+                $ProgramInstallation = $true
+            }
+            elseif ([string]::IsNullOrWhiteSpace($ProgramOption)) {
+                $ProgramInstallation = $ProgramDefault
+            }
+            else {
+                $ProgramInstallation = $false
+            }
+            $row.installation = $ProgramInstallation
+        }
+        $AllPrograms | ConvertTo-Json -depth 100 | Out-File -Encoding UTF8NoBOM 'bootstrap\w10-settings.json'
+    }
+    else {
+        
+    }
     $Programs = @(
         #Fonts
-        "hackfont firacode inconsolata dejavufonts robotofonts droidfonts"
+        "hackfont"
+        "firacode"
+        "inconsolata"
+        "dejavufonts"
+        "robotofonts"
         #Default Install
         "k-litecodecpackfull"
         "ffmpeg"
@@ -308,38 +374,36 @@ if (([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::
         "googlechrome"
         "autohotkey"
         "sysinternals"
-        "geforce-game-ready-driver"
         # Dev Tools Must Have
-        "git"
+        "git.install"
         "powershell"
         "virtualbox"
         "vagrant"
         "putty"
     )
     ForEach ($Program in $Programs) {
-        Write-Output "`n [ START ] $Program `n"
+        Write-Output "`n [ START ] $Program"
         $StopWatch = [System.Diagnostics.Stopwatch]::StartNew()
         cinst -y $Program
         $StopWatch.Stop()
         $StopWatchElapsed = $StopWatch.Elapsed.TotalSeconds
         Write-Output " [ DONE ] $Program ... $StopWatchElapsed seconds`n"
     }
-    $AllPrograms = Get-Content 'w10-settings.json' | Out-String | ConvertFrom-Json
+    $AllPrograms = Get-Content 'bootstrap\w10-settings.json' | Out-String | ConvertFrom-Json
     ForEach ($row in $AllPrograms.programs) {
         $ProgramName = $row.name
-        $ProgramSlug = $row.program
         $ProgramInstallation = $row.installation
         if ($ProgramInstallation -eq $true) {
-            Write-Output "`n [ START ] $ProgramName `n"
+            Write-Output "`n [ START ] $ProgramName"
             $StopWatch = [System.Diagnostics.Stopwatch]::StartNew()
-            Start-Process "./programs/$ProgramSlug.ps1" -Wait
+            $ProgramSlug = $row.program
+            Invoke-Expression ".\programs\$ProgramSlug.ps1"
             $StopWatch.Stop()
             $StopWatchElapsed = $StopWatch.Elapsed.TotalSeconds
             Write-Output " [ DONE ] $ProgramName ... $StopWatchElapsed  seconds`n"
         }
     }
     Enable-UAC
-    Enable-MicrosoftUpdate
     refreshenv
     $GlobalStopWatch.Stop()
     $GlobalStopWatchElapsed = $StopWatch.Elapsed.TotalSeconds

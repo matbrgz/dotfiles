@@ -1,0 +1,1 @@
+cinst -y geforce-game-ready-driver
