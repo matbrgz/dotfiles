@@ -1,45 +1,51 @@
-{
+﻿{
     "programs":  [
                      {
                          "program":  "geforce-experience",
                          "name":  "GeForce Experience",
-                         "installation":  false,
+                         "installation":  true,
                          "default":  true
                      },
                      {
                          "program":  "geforce-driver",
                          "name":  "GeForce Game Ready Driver",
-                         "installation":  false,
+                         "installation":  true,
                          "default":  true
                      },
                      {
                          "program":  "docker-desktop",
                          "name":  "Docker Desktop",
-                         "installation":  false,
+                         "installation":  true,
                          "default":  true
                      },
                      {
                          "program":  "dotnet",
                          "name":  "dotNet Framework 3.5 (include dotNet 2.5 and 3.0)",
-                         "installation":  false,
+                         "installation":  true,
                          "default":  true
                      },
                      {
                          "program":  "github-desktop",
                          "name":  "GitHub Desktop",
-                         "installation":  false,
+                         "installation":  true,
                          "default":  true
                      },
                      {
+                        "program":  "vscode",
+                        "name":  "VSCode",
+                        "installation":  true,
+                        "default":  true
+                    },
+                     {
                          "program":  "hyperv",
                          "name":  "Hyper-V",
-                         "installation":  false,
+                         "installation":  true,
                          "default":  true
                      },
                      {
                          "program":  "insomnia",
                          "name":  "Insomnia REST API Client",
-                         "installation":  true,
+                         "installation":  false,
                          "default":  true
                      },
                      {
@@ -51,7 +57,7 @@
                      {
                          "program":  "wsl",
                          "name":  "Windows Linux Subsystem (Ubuntu 18.04)",
-                         "installation":  true,
+                         "installation":  false,
                          "default":  true
                      },
                      {
@@ -63,49 +69,49 @@
                      {
                          "program":  "httrack",
                          "name":  "HTTrack",
-                         "installation":  false,
+                         "installation":  true,
                          "default":  false
                      },
                      {
                          "program":  "bitwarden",
                          "name":  "BitWarden",
-                         "installation":  false,
+                         "installation":  true,
                          "default":  false
                      },
                      {
                          "program":  "ccleaner",
                          "name":  "CCleaner",
-                         "installation":  false,
+                         "installation":  true,
                          "default":  false
                      },
                      {
                          "program":  "polar",
                          "name":  "Polar Bookshelf",
-                         "installation":  false,
+                         "installation":  true,
                          "default":  false
                      },
                      {
                          "program":  "qbittorrent",
                          "name":  "qBitorrent",
-                         "installation":  false,
+                         "installation":  true,
                          "default":  false
                      },
                      {
                          "program":  "sharex",
                          "name":  "ShareX",
-                         "installation":  false,
+                         "installation":  true,
                          "default":  false
                      },
                      {
                          "program":  "station",
                          "name":  "Station",
-                         "installation":  false,
+                         "installation":  true,
                          "default":  false
                      },
                      {
                          "program":  "vlc",
                          "name":  "VLC Media Player",
-                         "installation":  false,
+                         "installation":  true,
                          "default":  false
                      },
                      {
@@ -117,37 +123,37 @@
                      {
                          "program":  "discord",
                          "name":  "Discord",
-                         "installation":  false,
+                         "installation":  true,
                          "default":  false
                      },
                      {
                          "program":  "steam",
                          "name":  "Steam",
-                         "installation":  false,
+                         "installation":  true,
                          "default":  false
                      },
                      {
                          "program":  "google-backup-and-sync",
                          "name":  "Google Backup and Sync",
-                         "installation":  false,
+                         "installation":  true,
                          "default":  true
                      },
                      {
                          "program":  "dropbox",
                          "name":  "Dropbox",
-                         "installation":  false,
+                         "installation":  true,
                          "default":  true
                      },
                      {
                          "program":  "megasync",
                          "name":  "Mega",
-                         "installation":  false,
+                         "installation":  true,
                          "default":  true
                      },
                      {
                          "program":  "dell-update",
                          "name":  "Dell Update",
-                         "installation":  false,
+                         "installation":  true,
                          "default":  true
                      }
                  ]

@@ -1,4 +1,4 @@
-cinst -y vscodium
+cinst -y vscode
 
 $Extensions = @(
     "aaron-bond.better-comments"
