@@ -11,4 +11,4 @@ if [ "$(jq -r '.configurations.purge' "${PREVIOUS_PWD}"/bootstrap/unix-settings.
 fi
 sudo apt -y install python-pip
 pip install --upgrade pip
-echo "export PATH=\"${HOME}/.local/bin:$PATH\"" >>"${HOME}"/.bashrc
+echo "export PATH=\"${HOME}/.local/bin:${PATH}\"" >>"${HOME}"/.bashrc
