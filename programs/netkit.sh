@@ -29,7 +29,7 @@ tar -xjSf netkit-kernel-i386-K"${NETKIT_VERSION}".tar.bz2
 	#NetKit Config
 	export NETKIT_HOME="${HOME}"/netkit
 	export MANPATH=:${NETKIT_HOME}/man
-	export PATH=${NETKIT_HOME}/bin:$PATH
+	export PATH=${PATH}:${NETKIT_HOME}/bin
 
 } >>"${HOME}"/.bashrc
 chmod a+x /netkit/check_configuration.sh

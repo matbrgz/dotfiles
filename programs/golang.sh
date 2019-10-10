@@ -9,15 +9,7 @@ HEADER_TYPE="$(uname -s)"
 ARCHITECTURE_TYPE="$(dpkg --print-architecture)"
 GOLANG_VERSION="$(jq -r '.GOLANG_VERSION' "${PREVIOUS_PWD}"/bootstrap/version.json)"
 if [ "$(jq -r '.configurations.purge' "${PREVIOUS_PWD}"/bootstrap/unix-settings.json)" == true ]; then
-	sudo rm -f -R /usr/local/go
-	sudo rm -f -R /usr/local/.go
-	sudo rm -rf "${HOME}"/.go/
-	sudo rm -rf "${HOME}"/go/
-	sed -i '/# GoLang/d' "${HOME}"/.bashrc
-	sed -i '/export GOROOT/d' "${HOME}"/.bashrc
-	sed -i '/:'"$GOROOT"'/d' "${HOME}"/.bashrc
-	sed -i '/export GOPATH/d' "${HOME}"/.bashrc
-	sed -i '/:'"$GOPATH"'/d' "${HOME}"/.bashrc
+	echo "GoLang purge not implemented yet! Skipping."
 fi
 if [ -d /usr/local/go ] || [ -d "${HOME}"/go ]; then
 	echo "The 'go' or '.go' directories already exist. Exiting."
@@ -36,6 +28,6 @@ sudo tar -C "/usr/local" -xzf go"${GOLANG_VERSION,,}"."${HEADER_TYPE,,}"-"${ARCH
 {
 	#Go Lang Config
 	export GOBIN=${HOME}/go/bin
-	export PATH=$PATH:/usr/local/go/bin:${HOME}/go
+	export PATH=${PATH}:/usr/local/go/bin:${HOME}/go
 
 } >>"${HOME}"/.bashrc

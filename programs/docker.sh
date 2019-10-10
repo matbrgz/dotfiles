@@ -18,7 +18,3 @@ sudo apt-key fingerprint 0EBFCD88
 sudo apt -qq update
 sudo apt -y install docker-ce
 dpkg --get-selections | grep docker
-sudo groupadd docker || true
-sudo usermod -aG docker "${USER}" || true
-docker -H localhost:2375 images
-echo "export DOCKER_HOST=\"tcp://0.0.0.0:2375\"" >>"${HOME}"/.bashrc

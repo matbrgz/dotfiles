@@ -39,5 +39,4 @@ sudo a2enmod rewrite
 sudo /etc/init.d/apache"${APACHE_VERSION}" start
 echo " [ DOING ] Apache: Allow autoindex for editing apache directory listing"
 sudo a2enmod autoindex
-
 sudo service apache2 restart || sudo service apache2 start
