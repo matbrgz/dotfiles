@@ -1,1 +1,1 @@
-code .
+vscode .
