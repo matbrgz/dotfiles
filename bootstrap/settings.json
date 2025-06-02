@@ -1,0 +1,1033 @@
+{
+  "personal": {
+    "name": "matbrgz",
+    "email": "matbrgz@gmail.com",
+    "githubuser": "matbrgz",
+    "defaultfolder": {
+      "linux": "~/dev",
+      "wsl": "~/dev",
+      "windows": "~/dev"
+    }
+  },
+  "system": {
+    "detection": {
+      "auto_detect_os": true,
+      "auto_detect_package_manager": true,
+      "supported_package_managers": ["apt", "pacman", "yay", "dnf", "zypper", "snap", "flatpak", "brew", "choco"]
+    },
+    "behavior": {
+      "debug_mode": false,
+      "purge_mode": false,
+      "parallel_installs": true,
+      "continue_on_error": false,
+      "backup_configs": true
+    }
+  },
+  "categories": {
+    "essential": {
+      "name": "Essential Tools",
+      "description": "Must-have tools for development",
+      "programs": ["git", "curl", "wget", "unzip", "htop", "tmux", "vim", "ssh"]
+    },
+    "development": {
+      "name": "Development Environment", 
+      "description": "Programming languages and development tools",
+      "programs": ["nodejs", "python3", "golang", "docker", "vscode", "jdk", "dotnet", "rvm", "nvm", "pyenv", "anaconda"]
+    },
+    "web": {
+      "name": "Web Development",
+      "description": "Web servers and related tools", 
+      "programs": ["apache", "nginx", "php", "mysql", "mongodb", "redis", "php-composer", "php-laravel"]
+    },
+    "devops": {
+      "name": "DevOps Tools",
+      "description": "Infrastructure and deployment tools",
+      "programs": ["docker", "kubectl", "kubernetes-helm", "terraform", "ansible", "vagrant", "azurecli", "gcloudsdk", "powershell"]
+    },
+    "desktop": {
+      "name": "Desktop Applications", 
+      "description": "GUI applications for productivity",
+      "programs": ["chrome", "firefox", "vscode", "discord", "spotify", "vlc", "steam", "qbittorrent", "insomnia"]
+    },
+    "utilities": {
+      "name": "System Utilities",
+      "description": "System tools and utilities",
+      "programs": ["shellcheck", "shfmt", "mosh", "x11server", "protobuf", "netkit"]
+    },
+    "cloud": {
+      "name": "Cloud Services",
+      "description": "Cloud storage and backup services", 
+      "programs": ["dropbox", "megasync", "google-backup-and-sync"]
+    },
+    "security": {
+      "name": "Security Tools",
+      "description": "Security and password management",
+      "programs": ["bitwarden"]
+    },
+    "media": {
+      "name": "Media & Entertainment",
+      "description": "Media players and entertainment",
+      "programs": ["vlc", "spotify", "steam"]
+    },
+    "productivity": {
+      "name": "Productivity",
+      "description": "Office and productivity applications",
+      "programs": ["polar", "station", "sharex", "httrack", "ccleaner"]
+    }
+  },
+  "programs": {
+    "git": {
+      "name": "Git",
+      "description": "Distributed version control system",
+      "category": "essential",
+      "enabled": true,
+      "default": true,
+      "install_methods": {
+        "apt": "git git-lfs",
+        "pacman": "git git-lfs", 
+        "yay": "git git-lfs",
+        "dnf": "git git-lfs",
+        "zypper": "git git-lfs",
+        "snap": "git",
+        "brew": "git git-lfs",
+        "choco": "git"
+      },
+      "post_install": ["git_config"],
+      "config_file": "git-config.sh"
+    },
+    "nodejs": {
+      "name": "Node.js",
+      "description": "JavaScript runtime built on Chrome's V8 engine", 
+      "category": "development",
+      "enabled": false,
+      "default": false,
+      "install_methods": {
+        "apt": "nodejs npm",
+        "pacman": "nodejs npm",
+        "yay": "nodejs npm", 
+        "dnf": "nodejs npm",
+        "zypper": "nodejs npm",
+        "snap": "node --classic",
+        "brew": "node",
+        "choco": "nodejs"
+      },
+      "post_install": ["nvm_install"],
+      "config_file": "nodejs-config.sh",
+      "version": "20.x"
+    },
+    "nvm": {
+      "name": "Node Version Manager",
+      "description": "Manage multiple Node.js versions",
+      "category": "development",
+      "enabled": false,
+      "default": false,
+      "install_methods": {
+        "script": "curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.3/install.sh | bash"
+      },
+      "post_install": ["nvm_config"],
+      "config_file": "nvm-config.sh"
+    },
+    "python3": {
+      "name": "Python 3",
+      "description": "High-level programming language",
+      "category": "development",
+      "enabled": true,
+      "default": true,
+      "install_methods": {
+        "apt": "python3 python3-pip python3-venv python3-dev",
+        "pacman": "python python-pip",
+        "yay": "python python-pip",
+        "dnf": "python3 python3-pip python3-devel",
+        "zypper": "python3 python3-pip python3-devel",
+        "snap": "python38 --classic",
+        "brew": "python3",
+        "choco": "python3"
+      },
+      "post_install": ["pip_upgrade", "python_config"],
+      "config_file": "python-config.sh"
+    },
+    "pyenv": {
+      "name": "Python Version Manager",
+      "description": "Simple Python version management",
+      "category": "development",
+      "enabled": false,
+      "default": false,
+      "install_methods": {
+        "script": "curl https://pyenv.run | bash"
+      },
+      "post_install": ["pyenv_config"],
+      "config_file": "pyenv-config.sh"
+    },
+    "anaconda": {
+      "name": "Anaconda",
+      "description": "Python distribution for data science",
+      "category": "development", 
+      "enabled": false,
+      "default": false,
+      "install_methods": {
+        "script": "wget https://repo.anaconda.com/archive/Anaconda3-2023.09-0-Linux-x86_64.sh && bash Anaconda3-2023.09-0-Linux-x86_64.sh"
+      },
+      "post_install": ["anaconda_config"],
+      "config_file": "anaconda-config.sh"
+    },
+    "golang": {
+      "name": "Go Programming Language",
+      "description": "Open source programming language from Google",
+      "category": "development",
+      "enabled": false,
+      "default": false,
+      "install_methods": {
+        "apt": "golang-go",
+        "pacman": "go",
+        "yay": "go",
+        "dnf": "golang",
+        "zypper": "go",
+        "snap": "go --classic",
+        "brew": "go",
+        "choco": "golang"
+      },
+      "post_install": ["go_config"],
+      "config_file": "golang-config.sh",
+      "version": "1.21"
+    },
+    "rvm": {
+      "name": "Ruby Version Manager",
+      "description": "Ruby version management",
+      "category": "development",
+      "enabled": false,
+      "default": false,
+      "install_methods": {
+        "script": "curl -sSL https://get.rvm.io | bash -s stable"
+      },
+      "post_install": ["rvm_config"],
+      "config_file": "rvm-config.sh"
+    },
+    "docker": {
+      "name": "Docker",
+      "description": "Platform for developing, shipping, and running applications",
+      "category": "devops",
+      "enabled": false,
+      "default": false,
+      "install_methods": {
+        "apt": "docker.io docker-compose-plugin",
+        "pacman": "docker docker-compose",
+        "yay": "docker docker-compose",
+        "dnf": "docker-ce docker-ce-cli containerd.io docker-compose-plugin",
+        "zypper": "docker docker-compose",
+        "snap": "docker",
+        "brew": "docker docker-compose",
+        "choco": "docker-desktop"
+      },
+      "post_install": ["docker_config", "docker_user_group"],
+      "config_file": "docker-config.sh"
+    },
+    "vscode": {
+      "name": "Visual Studio Code",
+      "description": "Source-code editor made by Microsoft",
+      "category": "development",
+      "enabled": false,
+      "default": false,
+      "install_methods": {
+        "apt": "code",
+        "pacman": "visual-studio-code-bin",
+        "yay": "visual-studio-code-bin",
+        "dnf": "code",
+        "zypper": "code",
+        "snap": "code --classic",
+        "brew": "visual-studio-code",
+        "choco": "vscode"
+      },
+      "post_install": ["vscode_extensions"],
+      "config_file": "vscode-config.sh"
+    },
+    "apache": {
+      "name": "Apache HTTP Server",
+      "description": "Open-source HTTP Server",
+      "category": "web",
+      "enabled": false,
+      "default": false,
+      "install_methods": {
+        "apt": "apache2",
+        "pacman": "apache",
+        "yay": "apache",
+        "dnf": "httpd",
+        "zypper": "apache2",
+        "snap": "apache2",
+        "brew": "httpd",
+        "choco": "apache-httpd"
+      },
+      "post_install": ["apache_config"],
+      "config_file": "apache-config.sh",
+      "port": 8080
+    },
+    "nginx": {
+      "name": "Nginx",
+      "description": "HTTP and reverse proxy server",
+      "category": "web",
+      "enabled": false,
+      "default": false,
+      "install_methods": {
+        "apt": "nginx",
+        "pacman": "nginx",
+        "yay": "nginx",
+        "dnf": "nginx",
+        "zypper": "nginx",
+        "snap": "nginx",
+        "brew": "nginx",
+        "choco": "nginx"
+      },
+      "post_install": ["nginx_config"],
+      "config_file": "nginx-config.sh"
+    },
+    "mysql": {
+      "name": "MySQL",
+      "description": "Open-source relational database",
+      "category": "web",
+      "enabled": false,
+      "default": false,
+      "install_methods": {
+        "apt": "mysql-server mysql-client",
+        "pacman": "mysql",
+        "yay": "mysql",
+        "dnf": "mysql-server mysql",
+        "zypper": "mysql mysql-client",
+        "snap": "mysql-server",
+        "brew": "mysql",
+        "choco": "mysql"
+      },
+      "post_install": ["mysql_secure"],
+      "config_file": "mysql-config.sh"
+    },
+    "mongodb": {
+      "name": "MongoDB",
+      "description": "Document-based NoSQL database",
+      "category": "web",
+      "enabled": false,
+      "default": false,
+      "install_methods": {
+        "apt": "mongodb",
+        "pacman": "mongodb",
+        "yay": "mongodb-bin",
+        "dnf": "mongodb-org",
+        "zypper": "mongodb",
+        "snap": "mongodb",
+        "brew": "mongodb-community",
+        "choco": "mongodb"
+      },
+      "post_install": ["mongodb_config"],
+      "config_file": "mongodb-config.sh"
+    },
+    "redis": {
+      "name": "Redis",
+      "description": "In-memory data structure store",
+      "category": "web",
+      "enabled": false,
+      "default": false,
+      "install_methods": {
+        "apt": "redis-server",
+        "pacman": "redis",
+        "yay": "redis",
+        "dnf": "redis",
+        "zypper": "redis",
+        "snap": "redis",
+        "brew": "redis",
+        "choco": "redis"
+      },
+      "post_install": ["redis_config"],
+      "config_file": "redis-config.sh"
+    },
+    "php": {
+      "name": "PHP",
+      "description": "Server-side scripting language",
+      "category": "web",
+      "enabled": false,
+      "default": false,
+      "install_methods": {
+        "apt": "php php-cli php-mysql php-curl php-json php-mbstring",
+        "pacman": "php php-apache",
+        "yay": "php",
+        "dnf": "php php-cli php-mysqlnd php-curl php-json",
+        "zypper": "php php-mysql php-curl",
+        "snap": "php",
+        "brew": "php",
+        "choco": "php"
+      },
+      "post_install": ["php_config"],
+      "config_file": "php-config.sh",
+      "version": "8.2"
+    },
+    "php-composer": {
+      "name": "PHP Composer",
+      "description": "Dependency manager for PHP",
+      "category": "web",
+      "enabled": false,
+      "default": false,
+      "install_methods": {
+        "script": "curl -sS https://getcomposer.org/installer | php && sudo mv composer.phar /usr/local/bin/composer"
+      },
+      "post_install": ["composer_config"],
+      "config_file": "composer-config.sh"
+    },
+    "php-laravel": {
+      "name": "Laravel",
+      "description": "PHP web application framework",
+      "category": "web",
+      "enabled": false,
+      "default": false,
+      "install_methods": {
+        "script": "composer global require laravel/installer"
+      },
+      "dependencies": ["php-composer"],
+      "post_install": ["laravel_config"],
+      "config_file": "laravel-config.sh"
+    },
+    "jdk": {
+      "name": "Java Development Kit",
+      "description": "Java programming platform",
+      "category": "development",
+      "enabled": false,
+      "default": false,
+      "install_methods": {
+        "apt": "openjdk-11-jdk",
+        "pacman": "jdk-openjdk",
+        "yay": "jdk-openjdk",
+        "dnf": "java-11-openjdk-devel",
+        "zypper": "java-11-openjdk-devel",
+        "snap": "openjdk",
+        "brew": "openjdk@11",
+        "choco": "openjdk11"
+      },
+      "post_install": ["java_config"],
+      "config_file": "java-config.sh"
+    },
+    "dotnet": {
+      "name": ".NET Core",
+      "description": "Cross-platform .NET implementation",
+      "category": "development",
+      "enabled": false,
+      "default": false,
+      "install_methods": {
+        "apt": "dotnet-sdk-7.0",
+        "pacman": "dotnet-sdk",
+        "yay": "dotnet-sdk",
+        "dnf": "dotnet-sdk-7.0",
+        "zypper": "dotnet-sdk-7.0",
+        "snap": "dotnet-sdk --classic",
+        "brew": "dotnet",
+        "choco": "dotnetcore-sdk"
+      },
+      "post_install": ["dotnet_config"],
+      "config_file": "dotnet-config.sh"
+    },
+    "kubectl": {
+      "name": "Kubernetes CLI",
+      "description": "Command line tool for controlling Kubernetes clusters",
+      "category": "devops",
+      "enabled": false,
+      "default": false,
+      "install_methods": {
+        "apt": "kubectl",
+        "pacman": "kubectl",
+        "yay": "kubectl-bin",
+        "dnf": "kubectl",
+        "zypper": "kubectl",
+        "snap": "kubectl --classic",
+        "brew": "kubectl",
+        "choco": "kubernetes-cli"
+      },
+      "post_install": ["kubectl_config"],
+      "config_file": "kubectl-config.sh"
+    },
+    "kubernetes-helm": {
+      "name": "Helm",
+      "description": "Kubernetes package manager",
+      "category": "devops",
+      "enabled": false,
+      "default": false,
+      "install_methods": {
+        "script": "curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash"
+      },
+      "dependencies": ["kubectl"],
+      "post_install": ["helm_config"],
+      "config_file": "helm-config.sh"
+    },
+    "terraform": {
+      "name": "Terraform",
+      "description": "Infrastructure as Code tool",
+      "category": "devops",
+      "enabled": false,
+      "default": false,
+      "install_methods": {
+        "apt": "terraform",
+        "pacman": "terraform",
+        "yay": "terraform",
+        "dnf": "terraform",
+        "zypper": "terraform",
+        "snap": "terraform",
+        "brew": "terraform",
+        "choco": "terraform"
+      },
+      "post_install": [],
+      "config_file": null
+    },
+    "ansible": {
+      "name": "Ansible",
+      "description": "IT automation platform",
+      "category": "devops",
+      "enabled": false,
+      "default": false,
+      "install_methods": {
+        "apt": "ansible",
+        "pacman": "ansible",
+        "yay": "ansible",
+        "dnf": "ansible",
+        "zypper": "ansible",
+        "snap": "ansible",
+        "brew": "ansible",
+        "choco": "ansible"
+      },
+      "post_install": [],
+      "config_file": null
+    },
+    "vagrant": {
+      "name": "Vagrant",
+      "description": "Tool for building portable development environments",
+      "category": "devops",
+      "enabled": false,
+      "default": false,
+      "install_methods": {
+        "apt": "vagrant",
+        "pacman": "vagrant",
+        "yay": "vagrant",
+        "dnf": "vagrant",
+        "zypper": "vagrant",
+        "snap": "vagrant",
+        "brew": "vagrant",
+        "choco": "vagrant"
+      },
+      "post_install": ["vagrant_config"],
+      "config_file": "vagrant-config.sh"
+    },
+    "azurecli": {
+      "name": "Azure CLI",
+      "description": "Command-line interface for Azure",
+      "category": "devops",
+      "enabled": false,
+      "default": false,
+      "install_methods": {
+        "script": "curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash"
+      },
+      "post_install": ["azure_config"],
+      "config_file": "azure-config.sh"
+    },
+    "gcloudsdk": {
+      "name": "Google Cloud SDK",
+      "description": "Command-line interface for Google Cloud",
+      "category": "devops",
+      "enabled": false,
+      "default": false,
+      "install_methods": {
+        "script": "curl https://sdk.cloud.google.com | bash"
+      },
+      "post_install": ["gcloud_config"],
+      "config_file": "gcloud-config.sh"
+    },
+    "powershell": {
+      "name": "PowerShell",
+      "description": "Cross-platform command-line shell",
+      "category": "devops",
+      "enabled": false,
+      "default": false,
+      "install_methods": {
+        "apt": "powershell",
+        "pacman": "powershell",
+        "yay": "powershell-bin",
+        "dnf": "powershell",
+        "zypper": "powershell",
+        "snap": "powershell --classic",
+        "brew": "powershell",
+        "choco": "powershell-core"
+      },
+      "post_install": ["powershell_config"],
+      "config_file": "powershell-config.sh"
+    },
+    "chrome": {
+      "name": "Google Chrome",
+      "description": "Web browser developed by Google",
+      "category": "desktop",
+      "enabled": false,
+      "default": false,
+      "install_methods": {
+        "apt": "google-chrome-stable",
+        "pacman": "google-chrome",
+        "yay": "google-chrome",
+        "dnf": "google-chrome-stable",
+        "zypper": "google-chrome-stable",
+        "snap": "chromium",
+        "brew": "google-chrome",
+        "choco": "googlechrome"
+      },
+      "post_install": [],
+      "config_file": null
+    },
+    "firefox": {
+      "name": "Mozilla Firefox",
+      "description": "Open-source web browser",
+      "category": "desktop",
+      "enabled": false,
+      "default": false,
+      "install_methods": {
+        "apt": "firefox",
+        "pacman": "firefox",
+        "yay": "firefox",
+        "dnf": "firefox",
+        "zypper": "firefox",
+        "snap": "firefox",
+        "brew": "firefox",
+        "choco": "firefox"
+      },
+      "post_install": [],
+      "config_file": null
+    },
+    "discord": {
+      "name": "Discord",
+      "description": "Voice, video and text communication service",
+      "category": "desktop",
+      "enabled": false,
+      "default": false,
+      "install_methods": {
+        "apt": "discord",
+        "pacman": "discord",
+        "yay": "discord",
+        "dnf": "discord",
+        "zypper": "discord",
+        "snap": "discord",
+        "brew": "discord",
+        "choco": "discord"
+      },
+      "post_install": [],
+      "config_file": null
+    },
+    "spotify": {
+      "name": "Spotify",
+      "description": "Digital music streaming service",
+      "category": "desktop",
+      "enabled": false,
+      "default": false,
+      "install_methods": {
+        "apt": "spotify-client",
+        "pacman": "spotify",
+        "yay": "spotify",
+        "dnf": "spotify-client",
+        "zypper": "spotify-client",
+        "snap": "spotify",
+        "brew": "spotify",
+        "choco": "spotify"
+      },
+      "post_install": [],
+      "config_file": null
+    },
+    "vlc": {
+      "name": "VLC Media Player",
+      "description": "Cross-platform multimedia player",
+      "category": "media",
+      "enabled": false,
+      "default": false,
+      "install_methods": {
+        "apt": "vlc",
+        "pacman": "vlc",
+        "yay": "vlc",
+        "dnf": "vlc",
+        "zypper": "vlc",
+        "snap": "vlc",
+        "brew": "vlc",
+        "choco": "vlc"
+      },
+      "post_install": [],
+      "config_file": null
+    },
+    "steam": {
+      "name": "Steam",
+      "description": "Digital game distribution platform",
+      "category": "media",
+      "enabled": false,
+      "default": false,
+      "install_methods": {
+        "apt": "steam",
+        "pacman": "steam",
+        "yay": "steam",
+        "dnf": "steam",
+        "zypper": "steam",
+        "snap": "steam",
+        "brew": "steam",
+        "choco": "steam"
+      },
+      "post_install": [],
+      "config_file": null
+    },
+    "qbittorrent": {
+      "name": "qBittorrent",
+      "description": "BitTorrent client",
+      "category": "desktop",
+      "enabled": false,
+      "default": false,
+      "install_methods": {
+        "apt": "qbittorrent",
+        "pacman": "qbittorrent",
+        "yay": "qbittorrent",
+        "dnf": "qbittorrent",
+        "zypper": "qbittorrent",
+        "snap": "qbittorrent",
+        "brew": "qbittorrent",
+        "choco": "qbittorrent"
+      },
+      "post_install": [],
+      "config_file": null
+    },
+    "insomnia": {
+      "name": "Insomnia",
+      "description": "REST API client",
+      "category": "development",
+      "enabled": false,
+      "default": false,
+      "install_methods": {
+        "apt": "insomnia",
+        "pacman": "insomnia",
+        "yay": "insomnia",
+        "dnf": "insomnia",
+        "zypper": "insomnia",
+        "snap": "insomnia",
+        "brew": "insomnia",
+        "choco": "insomnia-rest-api-client"
+      },
+      "post_install": [],
+      "config_file": null
+    },
+    "bitwarden": {
+      "name": "Bitwarden",
+      "description": "Password manager",
+      "category": "security",
+      "enabled": false,
+      "default": false,
+      "install_methods": {
+        "apt": "bitwarden",
+        "pacman": "bitwarden",
+        "yay": "bitwarden",
+        "dnf": "bitwarden",
+        "zypper": "bitwarden",
+        "snap": "bitwarden",
+        "brew": "bitwarden",
+        "choco": "bitwarden"
+      },
+      "post_install": [],
+      "config_file": null
+    },
+    "dropbox": {
+      "name": "Dropbox",
+      "description": "Cloud storage service",
+      "category": "cloud",
+      "enabled": false,
+      "default": false,
+      "install_methods": {
+        "apt": "dropbox",
+        "pacman": "dropbox",
+        "yay": "dropbox",
+        "dnf": "dropbox",
+        "zypper": "dropbox",
+        "snap": "dropbox",
+        "brew": "dropbox",
+        "choco": "dropbox"
+      },
+      "post_install": [],
+      "config_file": null
+    },
+    "megasync": {
+      "name": "MEGAsync",
+      "description": "MEGA cloud storage client",
+      "category": "cloud",
+      "enabled": false,
+      "default": false,
+      "install_methods": {
+        "apt": "megasync",
+        "pacman": "megasync",
+        "yay": "megasync",
+        "dnf": "megasync",
+        "zypper": "megasync",
+        "snap": "megasync",
+        "brew": "megasync",
+        "choco": "megasync"
+      },
+      "post_install": [],
+      "config_file": null
+    },
+    "ssh": {
+      "name": "OpenSSH",
+      "description": "Secure Shell protocol suite",
+      "category": "essential",
+      "enabled": true,
+      "default": true,
+      "install_methods": {
+        "apt": "openssh-client openssh-server",
+        "pacman": "openssh",
+        "yay": "openssh",
+        "dnf": "openssh-clients openssh-server",
+        "zypper": "openssh openssh-server",
+        "snap": "openssh",
+        "brew": "openssh",
+        "choco": "openssh"
+      },
+      "post_install": ["ssh_config"],
+      "config_file": "ssh-config.sh"
+    },
+    "shellcheck": {
+      "name": "ShellCheck",
+      "description": "Static analysis tool for shell scripts",
+      "category": "utilities",
+      "enabled": false,
+      "default": false,
+      "install_methods": {
+        "apt": "shellcheck",
+        "pacman": "shellcheck",
+        "yay": "shellcheck",
+        "dnf": "ShellCheck",
+        "zypper": "ShellCheck",
+        "snap": "shellcheck",
+        "brew": "shellcheck",
+        "choco": "shellcheck"
+      },
+      "post_install": [],
+      "config_file": null
+    },
+    "shfmt": {
+      "name": "shfmt",
+      "description": "Shell script formatter",
+      "category": "utilities",
+      "enabled": false,
+      "default": false,
+      "install_methods": {
+        "script": "GO111MODULE=on go install mvdan.cc/sh/v3/cmd/shfmt@latest"
+      },
+      "dependencies": ["golang"],
+      "post_install": [],
+      "config_file": null
+    },
+    "mosh": {
+      "name": "Mosh",
+      "description": "Mobile shell with roaming and intelligent local echo",
+      "category": "utilities",
+      "enabled": false,
+      "default": false,
+      "install_methods": {
+        "apt": "mosh",
+        "pacman": "mosh",
+        "yay": "mosh",
+        "dnf": "mosh",
+        "zypper": "mosh",
+        "snap": "mosh",
+        "brew": "mosh",
+        "choco": "mosh"
+      },
+      "post_install": [],
+      "config_file": null
+    },
+    "x11server": {
+      "name": "X11 Server",
+      "description": "X Window System server",
+      "category": "utilities", 
+      "enabled": false,
+      "default": false,
+      "install_methods": {
+        "apt": "xorg",
+        "pacman": "xorg-server",
+        "yay": "xorg-server",
+        "dnf": "xorg-x11-server-Xorg",
+        "zypper": "xorg-x11-server"
+      },
+      "post_install": ["x11_config"],
+      "config_file": "x11-config.sh"
+    },
+    "protobuf": {
+      "name": "Protocol Buffers",
+      "description": "Language-neutral data serialization",
+      "category": "utilities",
+      "enabled": false,
+      "default": false,
+      "install_methods": {
+        "apt": "protobuf-compiler",
+        "pacman": "protobuf",
+        "yay": "protobuf",
+        "dnf": "protobuf-compiler",
+        "zypper": "protobuf-devel",
+        "brew": "protobuf",
+        "choco": "protoc"
+      },
+      "post_install": [],
+      "config_file": null
+    },
+    "netkit": {
+      "name": "Netkit",
+      "description": "Network emulation toolkit",
+      "category": "utilities",
+      "enabled": false,
+      "default": false,
+      "install_methods": {
+        "apt": "netkit-base netkit-core",
+        "pacman": "netkit",
+        "yay": "netkit"
+      },
+      "post_install": ["netkit_config"],
+      "config_file": "netkit-config.sh"
+    },
+    "htop": {
+      "name": "htop",
+      "description": "Interactive process viewer",
+      "category": "essential",
+      "enabled": true,
+      "default": true,
+      "install_methods": {
+        "apt": "htop",
+        "pacman": "htop",
+        "yay": "htop",
+        "dnf": "htop",
+        "zypper": "htop",
+        "snap": "htop",
+        "brew": "htop",
+        "choco": "htop"
+      },
+      "post_install": [],
+      "config_file": null
+    },
+    "tmux": {
+      "name": "tmux",
+      "description": "Terminal multiplexer",
+      "category": "essential",
+      "enabled": true,
+      "default": true,
+      "install_methods": {
+        "apt": "tmux",
+        "pacman": "tmux",
+        "yay": "tmux",
+        "dnf": "tmux",
+        "zypper": "tmux",
+        "snap": "tmux",
+        "brew": "tmux",
+        "choco": "tmux"
+      },
+      "post_install": ["tmux_config"],
+      "config_file": "tmux-config.sh"
+    },
+    "vim": {
+      "name": "Vim",
+      "description": "Highly configurable text editor",
+      "category": "essential",
+      "enabled": true,
+      "default": true,
+      "install_methods": {
+        "apt": "vim",
+        "pacman": "vim",
+        "yay": "vim",
+        "dnf": "vim",
+        "zypper": "vim",
+        "snap": "vim-editor",
+        "brew": "vim",
+        "choco": "vim"
+      },
+      "post_install": ["vim_config"],
+      "config_file": "vim-config.sh"
+    },
+    "curl": {
+      "name": "cURL",
+      "description": "Command line tool for transferring data",
+      "category": "essential",
+      "enabled": true,
+      "default": true,
+      "install_methods": {
+        "apt": "curl",
+        "pacman": "curl",
+        "yay": "curl",
+        "dnf": "curl",
+        "zypper": "curl",
+        "snap": "curl",
+        "brew": "curl",
+        "choco": "curl"
+      },
+      "post_install": [],
+      "config_file": null
+    },
+    "wget": {
+      "name": "Wget",
+      "description": "Command-line utility for downloading files",
+      "category": "essential",
+      "enabled": true,
+      "default": true,
+      "install_methods": {
+        "apt": "wget",
+        "pacman": "wget",
+        "yay": "wget",
+        "dnf": "wget",
+        "zypper": "wget",
+        "snap": "wget",
+        "brew": "wget",
+        "choco": "wget"
+      },
+      "post_install": [],
+      "config_file": null
+    },
+    "unzip": {
+      "name": "Unzip",
+      "description": "Extraction utility for zip archives",
+      "category": "essential",
+      "enabled": true,
+      "default": true,
+      "install_methods": {
+        "apt": "unzip",
+        "pacman": "unzip",
+        "yay": "unzip",
+        "dnf": "unzip",
+        "zypper": "unzip",
+        "snap": "unzip",
+        "brew": "unzip",
+        "choco": "unzip"
+      },
+      "post_install": [],
+      "config_file": null
+    }
+  },
+  "presets": {
+    "minimal": {
+      "name": "Minimal Setup",
+      "description": "Only essential tools",
+      "programs": ["git", "curl", "wget", "unzip", "htop", "vim", "ssh"]
+    },
+    "webdev": {
+      "name": "Web Development",
+      "description": "Full web development stack",
+      "programs": ["git", "nodejs", "nvm", "python3", "php", "php-composer", "mysql", "redis", "apache", "nginx", "vscode", "chrome", "insomnia"]
+    },
+    "fullstack": {
+      "name": "Full Stack Developer",
+      "description": "Complete development environment",
+      "programs": ["git", "nodejs", "nvm", "python3", "pyenv", "golang", "jdk", "docker", "mysql", "mongodb", "redis", "vscode", "chrome", "insomnia"]
+    },
+    "devops": {
+      "name": "DevOps Engineer",
+      "description": "Infrastructure and deployment tools",
+      "programs": ["git", "docker", "kubectl", "kubernetes-helm", "terraform", "ansible", "vagrant", "azurecli", "gcloudsdk", "python3", "powershell", "vscode"]
+    },
+    "desktop": {
+      "name": "Desktop User",
+      "description": "Desktop applications and productivity tools",
+      "programs": ["git", "chrome", "firefox", "vscode", "discord", "spotify", "vlc", "steam", "qbittorrent", "bitwarden", "dropbox"]
+    },
+    "datascience": {
+      "name": "Data Science",
+      "description": "Data science and machine learning tools",
+      "programs": ["git", "python3", "pyenv", "anaconda", "jupyter", "rstudio", "vscode", "chrome"]
+    },
+    "security": {
+      "name": "Security Professional",
+      "description": "Security and penetration testing tools", 
+      "programs": ["git", "python3", "docker", "ssh", "mosh", "shellcheck", "bitwarden", "vscode"]
+    }
+  }
+} 
