@@ -63,12 +63,15 @@ check_prerequisites() {
     fi
     
     # Check sudo access
-    if ! sudo -n true 2>/dev/null; then
-        log_info "This script requires sudo privileges"
-        sudo -v || {
-            log_error "Failed to obtain sudo privileges"
-            exit 1
-        }
+    OS_TYPE=$(detect_os)
+    if [[ "$OS_TYPE" != "macos" ]]; then
+        if ! sudo -n true 2>/dev/null; then
+            log_info "This script requires sudo privileges"
+            sudo -v || {
+                log_error "Failed to obtain sudo privileges"
+                exit 1
+            }
+        fi
     fi
     
     # Install essential dependencies
@@ -79,9 +82,40 @@ check_prerequisites() {
 
 install_dependencies() {
     log_step "Installing essential dependencies"
+
+    # Bootstrap essential tools (git, curl) if missing
+    if ! command -v git >/dev/null 2>&1 || ! command -v curl >/dev/null 2>&1; then
+        log_step "Bootstrapping git/curl..."
+        if command -v apt >/dev/null 2>&1; then
+            sudo apt update && sudo apt install -y git curl
+        elif command -v pacman >/dev/null 2>&1; then
+            sudo pacman -Sy --noconfirm git curl
+        elif command -v dnf >/dev/null 2>&1; then
+            sudo dnf install -y git curl
+        elif command -v zypper >/dev/null 2>&1; then
+            sudo zypper install -y git curl
+        fi
+        # macOS handles git via xcode-select or brew usually, but curl comes with OS
+    fi
     
     # Detect system first
     OS_TYPE=$(detect_os)
+
+    # Check for Homebrew on macOS
+    if [[ "$OS_TYPE" == "macos" ]]; then
+        if ! command -v brew >/dev/null 2>&1; then
+            log_step "Installing Homebrew..."
+            /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+
+            # Add Homebrew to PATH for the current session
+            if [[ -f "/opt/homebrew/bin/brew" ]]; then
+                eval "$(/opt/homebrew/bin/brew shellenv)"
+            elif [[ -f "/usr/local/bin/brew" ]]; then
+                eval "$(/usr/local/bin/brew shellenv)"
+            fi
+        fi
+    fi
+
     DISTRO=$(detect_distro)
     PACKAGE_MANAGER=$(detect_package_manager)
     
@@ -102,6 +136,9 @@ install_dependencies() {
                 ;;
             "dnf")
                 sudo dnf install -y jq
+                ;;
+            "brew")
+                brew install jq
                 ;;
             *)
                 log_error "Please install jq manually for your system"
