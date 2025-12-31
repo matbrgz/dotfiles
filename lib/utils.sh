@@ -163,6 +163,7 @@ update_package_manager() {
             sudo zypper update -y
             ;;
         "brew")
+            # Homebrew should not be run with sudo
             brew update && brew upgrade
             ;;
         "snap")
@@ -201,6 +202,7 @@ install_package() {
             sudo zypper install -y $package
             ;;
         "brew")
+            # Homebrew should not be run with sudo
             brew install $package
             ;;
         "snap")
@@ -239,6 +241,7 @@ remove_package() {
             sudo zypper remove -y $package
             ;;
         "brew")
+            # Homebrew should not be run with sudo
             brew uninstall $package
             ;;
         "snap")
