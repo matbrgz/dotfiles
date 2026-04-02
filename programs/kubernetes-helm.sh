@@ -1,6 +1,6 @@
 #!/bin/bash
 PREVIOUS_PWD="$1"
-if [ "$(jq -r '.configurations.debug' "${PREVIOUS_PWD}"/bootstrap/settings.json)" == true ]; then
+if [ "$(jq -r '.configurations.debug' "${PREVIOUS_PWD}"/bootstrap/unix-settings.json)" == true ]; then
 	set +e
 else
 	set -e
@@ -8,7 +8,7 @@ fi
 HEADER_TYPE="$(uname -s)"
 ARCHITECTURE_TYPE="$(uname -m)"
 KUBERNETES_HELM_VERSION="$(jq -r '.KUBERNETES_HELM_VERSION' "${PREVIOUS_PWD}"/bootstrap/version.json)"
-if [ "$(jq -r '.configurations.purge' "${PREVIOUS_PWD}"/bootstrap/settings.json)" == true ]; then
+if [ "$(jq -r '.configurations.purge' "${PREVIOUS_PWD}"/bootstrap/unix-settings.json)" == true ]; then
 	echo "Kubernetes Helm purge not implemented yet! Skipping."
 fi
 if ! curl -L https://storage.googleapis.com/kubernetes-helm/helm-v"${KUBERNETES_HELM_VERSION}"-"${HEADER_TYPE}"-"${ARCHITECTURE_TYPE}".tar.gz; then

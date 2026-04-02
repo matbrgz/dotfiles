@@ -1,0 +1,326 @@
+{
+  "personal": {
+    "name": "Matheus Rocha Vieira",
+    "email": "matheusrv@email.com",
+    "githubuser": "MatheusRV",
+    "defaultfolder": "/mnt/d/Cloud"
+  },
+  "programs": [
+    {
+      "program": "ssh",
+      "name": "Secure Shell (SSH)",
+      "installation": "false",
+      "default": "true"
+    },
+    {
+      "program": "protobuf",
+      "name": "Google Protobuf",
+      "installation": "false",
+      "default": "false"
+    },
+    {
+      "program": "azurecli",
+      "name": "Azure Comand-line Interface",
+      "installation": "false",
+      "default": "false"
+    },
+    {
+      "program": "herokucli",
+      "name": "Heroku Comand-line Interface",
+      "installation": "false",
+      "default": "false"
+    },
+    {
+      "program": "gcloudcli",
+      "name": "Google Cloud Comand-line Interface",
+      "installation": "false",
+      "default": "false"
+    },
+    {
+      "program": "gcloudsdk",
+      "name": "Google Cloud Software Development Kit",
+      "installation": "false",
+      "default": "false"
+    },
+    {
+      "program": "rlang",
+      "name": "R Lang",
+      "installation": "false",
+      "default": "false"
+    },
+    {
+      "program": "rstudio",
+      "name": "RStudio",
+      "installation": "false",
+      "default": "false",
+      "dependencies": "rlang"
+    },
+    {
+      "program": "powershell",
+      "name": "PowerShell",
+      "installation": "true",
+      "default": "true"
+    },
+    {
+      "program": "dotnet",
+      "name": "dotNet",
+      "installation": "false",
+      "default": "false"
+    },
+    {
+      "program": "dotnetnuget",
+      "name": "dotNet nuGet",
+      "installation": "false",
+      "default": "false",
+      "dependencies": "dotnet"
+    },
+    {
+      "program": "dotnetmono",
+      "name": "dotNet Mono",
+      "installation": "false",
+      "default": "false",
+      "dependencies": "dotnet"
+    },
+    {
+      "program": "apache",
+      "name": "Apache",
+      "installation": "false",
+      "default": "false",
+      "config": "true",
+      "port": "8080"
+    },
+    {
+      "program": "nginx",
+      "name": "Nginx",
+      "installation": "false",
+      "default": "false"
+    },
+    {
+      "program": "php",
+      "name": "PHP Hypertext Preprocessor",
+      "installation": "false",
+      "default": "false"
+    },
+    {
+      "program": "php-composer",
+      "name": "PHP Composer",
+      "installation": "true",
+      "default": "false",
+      "dependencies": "php"
+    },
+    {
+      "program": "php-laravel",
+      "name": "Laravel",
+      "installation": "true",
+      "default": "false",
+      "dependencies": "php"
+    },
+    {
+      "program": "mysql",
+      "name": "MySQL",
+      "installation": "false",
+      "default": "false"
+    },
+    {
+      "program": "mysql-phpmyadmin",
+      "name": "phpMyAdmin",
+      "installation": "false",
+      "default": "false",
+      "dependencies": "mysql"
+    },
+    {
+      "program": "postgre",
+      "name": "Postgre",
+      "installation": "false",
+      "default": "false"
+    },
+    {
+      "program": "postgre-postgis",
+      "name": "PostGIS",
+      "installation": "false",
+      "default": "false",
+      "dependencies": "postgre"
+    },
+    {
+      "program": "postgre-pgadmin",
+      "name": "pgAdmin",
+      "installation": "false",
+      "default": "false",
+      "dependencies": "postgre"
+    },
+    {
+      "program": "mongo",
+      "name": "MongoDB",
+      "installation": "false",
+      "default": "false"
+    },
+    {
+      "program": "redis",
+      "name": "Redis",
+      "installation": "false",
+      "default": "false"
+    },
+    {
+      "program": "nvm",
+      "name": "Node Version Manager",
+      "installation": "false",
+      "default": "true",
+      "config": "true"
+    },
+    {
+      "program": "yarn-strapi",
+      "name": "Strapi",
+      "installation": "false",
+      "default": "false",
+      "dependencies": "nvm"
+    },
+    {
+      "program": "yarn-localtunnel",
+      "name": "LocalTunnel",
+      "installation": "false",
+      "default": "true",
+      "dependencies": "nvm",
+      "hostname": "matheusrv1",
+      "port": "60000"
+    },
+    {
+      "program": "yarn-prettier",
+      "name": "Prettier",
+      "installation": "false",
+      "default": "true",
+      "dependencies": "nvm"
+    },
+    {
+      "program": "yarn-leasot",
+      "name": "Leasot",
+      "installation": "false",
+      "default": "true",
+      "dependencies": "nvm"
+    },
+    {
+      "program": "anaconda",
+      "name": "Anaconda",
+      "installation": "false",
+      "default": "false"
+    },
+    {
+      "program": "python3",
+      "name": "Python3",
+      "installation": "false",
+      "default": "true"
+    },
+    {
+      "program": "python-pip",
+      "name": "Python PIP",
+      "installation": "true",
+      "default": "true",
+      "dependencies": "python3"
+    },
+    {
+      "program": "pip-beautysh",
+      "name": "Beautysh",
+      "installation": "true",
+      "default": "true",
+      "dependencies": "python-pip"
+    },
+    {
+      "program": "pyenv",
+      "name": "Python Virtual Env",
+      "installation": "false",
+      "default": "false"
+    },
+    {
+      "program": "pyenv-virtualenv",
+      "name": "Python Env Virtual Env",
+      "installation": "false",
+      "default": "false",
+      "dependencies": "pyenv"
+    },
+    {
+      "program": "golang",
+      "name": "GoLang",
+      "installation": "true",
+      "default": "false"
+    },
+    {
+      "program": "rvm",
+      "name": "Ruby Version Manager",
+      "installation": "false",
+      "default": "false",
+      "config": "true"
+    },
+    {
+      "program": "ruby-jekyll",
+      "name": "Jekyll",
+      "installation": "true",
+      "default": "false",
+      "dependencies": "rvm"
+    },
+    {
+      "program": "vagrant",
+      "name": "Vagrant",
+      "installation": "true",
+      "default": "false"
+    },
+    {
+      "program": "docker",
+      "name": "Docker",
+      "installation": "true",
+      "default": "true"
+    },
+    {
+      "program": "docker-compose",
+      "name": "Docker Compose",
+      "installation": "true",
+      "default": "true",
+      "dependencies": "docker"
+    },
+    {
+      "program": "kubectl",
+      "name": "Kubernetes",
+      "installation": "false",
+      "default": "false"
+    },
+    {
+      "program": "kubernetes-helm",
+      "name": "Kubernetes Helm",
+      "installation": "false",
+      "default": "false",
+      "dependencies": "kubectl"
+    },
+    {
+      "program": "mosh",
+      "name": "Mosh",
+      "installation": "true",
+      "default": "true"
+    },
+    {
+      "program": "shfmt",
+      "name": "shfmt",
+      "installation": "true",
+      "default": "true"
+    },
+    {
+      "program": "shellcheck",
+      "name": "ShellCheck",
+      "installation": "true",
+      "default": "true"
+    },
+    {
+      "program": "x11server",
+      "name": "X11 Server",
+      "installation": "true",
+      "default": "false"
+    },
+    {
+      "program": "netkit",
+      "name": "NetKit",
+      "installation": "false",
+      "default": "false"
+    }
+  ],
+  "configurations": {
+    "debug": "true",
+    "purge": "false"
+  }
+}
