@@ -1,0 +1,22 @@
+{
+  "git": {
+    "name": "Git Global Config",
+    "description": "Configure user name, email and global aliases",
+    "type": "template",
+    "source": "packages/configurations/git/gitconfig.txt",
+    "target": "~/.gitconfig"
+  },
+  "git-ignore": {
+    "name": "Git Global Ignore",
+    "description": "Global gitignore patterns",
+    "type": "link",
+    "source": "packages/configurations/git/gitignore.txt",
+    "target": "~/.gitignore_global"
+  },
+  "shell-aliases": {
+    "name": "Shell Aliases",
+    "description": "Custom shell aliases for bash/zsh",
+    "type": "script",
+    "source": "packages/configurations/alias.sh"
+  }
+}

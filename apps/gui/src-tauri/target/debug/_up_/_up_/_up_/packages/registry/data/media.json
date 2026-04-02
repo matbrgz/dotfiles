@@ -1,0 +1,46 @@
+{
+  "vlc": {
+    "name": "VLC Media Player",
+    "description": "Cross-platform multimedia player",
+    "category": "media",
+    "enabled": false,
+    "default": false,
+    "platforms": {
+      "linux": {
+        "script": "packages/os-linux/scripts/vlc.sh",
+        "method": "apt"
+      },
+      "windows": {
+        "script": "packages/os-windows/scripts/vlc.ps1",
+        "method": "choco"
+      },
+      "macos": {
+        "script": "packages/os-macos/scripts/vlc.sh",
+        "method": "brew"
+      }
+    },
+    "post_install": []
+  },
+  "steam": {
+    "name": "Steam",
+    "description": "Digital game distribution platform",
+    "category": "media",
+    "enabled": false,
+    "default": false,
+    "platforms": {
+      "linux": {
+        "script": "packages/os-linux/scripts/steam.sh",
+        "method": "apt"
+      },
+      "windows": {
+        "script": "packages/os-windows/scripts/steam.ps1",
+        "method": "choco"
+      },
+      "macos": {
+        "script": "packages/os-macos/scripts/steam.sh",
+        "method": "brew"
+      }
+    },
+    "post_install": []
+  }
+}

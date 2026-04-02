@@ -1,0 +1,198 @@
+{
+  "docker": {
+    "name": "Docker",
+    "description": "Platform for developing, shipping, and running applications",
+    "category": "devops",
+    "enabled": false,
+    "default": false,
+    "platforms": {
+      "linux": {
+        "script": "packages/os-linux/scripts/docker.sh",
+        "method": "apt"
+      },
+      "windows": {
+        "script": "packages/os-windows/scripts/docker.ps1",
+        "method": "choco"
+      },
+      "macos": {
+        "script": "packages/os-macos/scripts/docker.sh",
+        "method": "brew"
+      }
+    },
+    "post_install": [
+      "docker_config",
+      "docker_user_group"
+    ],
+    "config_file": "packages/os-linux/scripts/docker-config.sh"
+  },
+  "kubectl": {
+    "name": "Kubernetes CLI",
+    "description": "Command line tool for controlling Kubernetes clusters",
+    "category": "devops",
+    "enabled": false,
+    "default": false,
+    "platforms": {
+      "linux": {
+        "script": "packages/os-linux/scripts/kubectl.sh",
+        "method": "apt"
+      },
+      "windows": {
+        "script": "packages/os-windows/scripts/kubectl.ps1",
+        "method": "choco"
+      },
+      "macos": {
+        "script": "packages/os-macos/scripts/kubectl.sh",
+        "method": "brew"
+      }
+    },
+    "post_install": [
+      "kubectl_config"
+    ],
+    "config_file": "packages/os-linux/scripts/kubectl-config.sh"
+  },
+  "kubernetes-helm": {
+    "name": "Helm",
+    "description": "Kubernetes package manager",
+    "category": "devops",
+    "enabled": false,
+    "default": false,
+    "platforms": {
+      "linux": {
+        "script": "packages/os-linux/scripts/kubernetes-helm.sh",
+        "method": "script"
+      }
+    },
+    "post_install": [
+      "helm_config"
+    ],
+    "config_file": "packages/os-linux/scripts/helm-config.sh"
+  },
+  "terraform": {
+    "name": "Terraform",
+    "description": "Infrastructure as Code tool",
+    "category": "devops",
+    "enabled": false,
+    "default": false,
+    "platforms": {
+      "linux": {
+        "script": "packages/os-linux/scripts/terraform.sh",
+        "method": "apt"
+      },
+      "windows": {
+        "script": "packages/os-windows/scripts/terraform.ps1",
+        "method": "choco"
+      },
+      "macos": {
+        "script": "packages/os-macos/scripts/terraform.sh",
+        "method": "brew"
+      }
+    },
+    "post_install": []
+  },
+  "ansible": {
+    "name": "Ansible",
+    "description": "IT automation platform",
+    "category": "devops",
+    "enabled": false,
+    "default": false,
+    "platforms": {
+      "linux": {
+        "script": "packages/os-linux/scripts/ansible.sh",
+        "method": "apt"
+      },
+      "windows": {
+        "script": "packages/os-windows/scripts/ansible.ps1",
+        "method": "choco"
+      },
+      "macos": {
+        "script": "packages/os-macos/scripts/ansible.sh",
+        "method": "brew"
+      }
+    },
+    "post_install": []
+  },
+  "vagrant": {
+    "name": "Vagrant",
+    "description": "Tool for building portable development environments",
+    "category": "devops",
+    "enabled": false,
+    "default": false,
+    "platforms": {
+      "linux": {
+        "script": "packages/os-linux/scripts/vagrant.sh",
+        "method": "apt"
+      },
+      "windows": {
+        "script": "packages/os-windows/scripts/vagrant.ps1",
+        "method": "choco"
+      },
+      "macos": {
+        "script": "packages/os-macos/scripts/vagrant.sh",
+        "method": "brew"
+      }
+    },
+    "post_install": [
+      "vagrant_config"
+    ],
+    "config_file": "packages/os-linux/scripts/vagrant-config.sh"
+  },
+  "azurecli": {
+    "name": "Azure CLI",
+    "description": "Command-line interface for Azure",
+    "category": "devops",
+    "enabled": false,
+    "default": false,
+    "platforms": {
+      "linux": {
+        "script": "packages/os-linux/scripts/azurecli.sh",
+        "method": "script"
+      }
+    },
+    "post_install": [
+      "azure_config"
+    ],
+    "config_file": "packages/os-linux/scripts/azure-config.sh"
+  },
+  "gcloudsdk": {
+    "name": "Google Cloud SDK",
+    "description": "Command-line interface for Google Cloud",
+    "category": "devops",
+    "enabled": false,
+    "default": false,
+    "platforms": {
+      "linux": {
+        "script": "packages/os-linux/scripts/gcloudsdk.sh",
+        "method": "script"
+      }
+    },
+    "post_install": [
+      "gcloud_config"
+    ],
+    "config_file": "packages/os-linux/scripts/gcloud-config.sh"
+  },
+  "powershell": {
+    "name": "PowerShell",
+    "description": "Cross-platform command-line shell",
+    "category": "devops",
+    "enabled": false,
+    "default": false,
+    "platforms": {
+      "linux": {
+        "script": "packages/os-linux/scripts/powershell.sh",
+        "method": "apt"
+      },
+      "windows": {
+        "script": "packages/os-windows/scripts/powershell.ps1",
+        "method": "choco"
+      },
+      "macos": {
+        "script": "packages/os-macos/scripts/powershell.sh",
+        "method": "brew"
+      }
+    },
+    "post_install": [
+      "powershell_config"
+    ],
+    "config_file": "packages/os-linux/scripts/powershell-config.sh"
+  }
+}
