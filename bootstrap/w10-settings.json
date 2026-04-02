@@ -1,100 +1,154 @@
 {
-  "programs": [
-    {
-      "program": "docker-desktop",
-      "name": "Docker Desktop",
-      "installation": "True",
-      "default": "True"
-    },
-    {
-      "program": "dotnet",
-      "name": "dotNet Framework 3.5 (include dotNet 2.5 and 3.0)",
-      "installation": "True",
-      "default": "False"
-    },
-    {
-      "program": "github-desktop",
-      "name": "GitHub Desktop",
-      "installation": "True",
-      "default": "False"
-    },
-    {
-      "program": "hyperv",
-      "name": "Hyper-V",
-      "installation": "False",
-      "default": "False"
-    },
-    {
-      "program": "insomnia-rest-api-client",
-      "name": "Insomnia REST API Client",
-      "installation": "False",
-      "default": "False"
-    },
-    {
-      "program": "jdk8",
-      "name": "Java Development Kit 8",
-      "installation": "False",
-      "default": "False"
-    },
-    {
-      "program": "wsl-ubuntu-1804",
-      "name": "Windows Linux Subsystem (Ubuntu 18.04)",
-      "installation": "False",
-      "default": "False"
-    },
-    {
-      "program": "bitwarden",
-      "name": "BitWarden",
-      "installation": "False",
-      "default": "False"
-    },
-    {
-      "program": "ccleaner",
-      "name": "CCleaner",
-      "installation": "False",
-      "default": "False"
-    },
-    {
-      "program": "polar",
-      "name": "Polar Bookshelf",
-      "installation": "False",
-      "default": "False"
-    },
-    {
-      "program": "qbittorrent",
-      "name": "qBitorrent",
-      "installation": "False",
-      "default": "False"
-    },
-    {
-      "program": "sharex",
-      "name": "ShareX",
-      "installation": "False",
-      "default": "False"
-    },
-    {
-      "program": "station",
-      "name": "Station",
-      "installation": "False",
-      "default": "False"
-    },
-    {
-      "program": "steam",
-      "name": "Steam",
-      "installation": "False",
-      "default": "False"
-    },
-    {
-      "program": "google-backup-and-sync",
-      "name": "Google Backup and Sync",
-      "installation": "False",
-      "default": "True"
-    },
-    {
-      "program": "dropbox",
-      "name": "Dropbox",
-      "installation": "False",
-      "default": "False"
-    }
-  ]
+    "programs":  [
+                     {
+                         "program":  "geforce-experience",
+                         "name":  "GeForce Experience",
+                         "installation":  false,
+                         "default":  true
+                     },
+                     {
+                         "program":  "geforce-driver",
+                         "name":  "GeForce Game Ready Driver",
+                         "installation":  false,
+                         "default":  true
+                     },
+                     {
+                         "program":  "docker-desktop",
+                         "name":  "Docker Desktop",
+                         "installation":  false,
+                         "default":  true
+                     },
+                     {
+                         "program":  "dotnet",
+                         "name":  "dotNet Framework 3.5 (include dotNet 2.5 and 3.0)",
+                         "installation":  false,
+                         "default":  true
+                     },
+                     {
+                         "program":  "github-desktop",
+                         "name":  "GitHub Desktop",
+                         "installation":  false,
+                         "default":  true
+                     },
+                     {
+                         "program":  "hyperv",
+                         "name":  "Hyper-V",
+                         "installation":  false,
+                         "default":  true
+                     },
+                     {
+                         "program":  "insomnia",
+                         "name":  "Insomnia REST API Client",
+                         "installation":  true,
+                         "default":  true
+                     },
+                     {
+                         "program":  "jdk8",
+                         "name":  "Java Development Kit 8",
+                         "installation":  false,
+                         "default":  false
+                     },
+                     {
+                         "program":  "wsl",
+                         "name":  "Windows Linux Subsystem (Ubuntu 18.04)",
+                         "installation":  true,
+                         "default":  true
+                     },
+                     {
+                         "program":  "pgadmin",
+                         "name":  "pgAdmin",
+                         "installation":  false,
+                         "default":  false
+                     },
+                     {
+                         "program":  "httrack",
+                         "name":  "HTTrack",
+                         "installation":  false,
+                         "default":  false
+                     },
+                     {
+                         "program":  "bitwarden",
+                         "name":  "BitWarden",
+                         "installation":  false,
+                         "default":  false
+                     },
+                     {
+                         "program":  "ccleaner",
+                         "name":  "CCleaner",
+                         "installation":  false,
+                         "default":  false
+                     },
+                     {
+                         "program":  "polar",
+                         "name":  "Polar Bookshelf",
+                         "installation":  false,
+                         "default":  false
+                     },
+                     {
+                         "program":  "qbittorrent",
+                         "name":  "qBitorrent",
+                         "installation":  false,
+                         "default":  false
+                     },
+                     {
+                         "program":  "sharex",
+                         "name":  "ShareX",
+                         "installation":  false,
+                         "default":  false
+                     },
+                     {
+                         "program":  "station",
+                         "name":  "Station",
+                         "installation":  false,
+                         "default":  false
+                     },
+                     {
+                         "program":  "vlc",
+                         "name":  "VLC Media Player",
+                         "installation":  false,
+                         "default":  false
+                     },
+                     {
+                         "program":  "spotify",
+                         "name":  "Spotify",
+                         "installation":  false,
+                         "default":  false
+                     },
+                     {
+                         "program":  "discord",
+                         "name":  "Discord",
+                         "installation":  false,
+                         "default":  false
+                     },
+                     {
+                         "program":  "steam",
+                         "name":  "Steam",
+                         "installation":  false,
+                         "default":  false
+                     },
+                     {
+                         "program":  "google-backup-and-sync",
+                         "name":  "Google Backup and Sync",
+                         "installation":  false,
+                         "default":  true
+                     },
+                     {
+                         "program":  "dropbox",
+                         "name":  "Dropbox",
+                         "installation":  false,
+                         "default":  true
+                     },
+                     {
+                         "program":  "megasync",
+                         "name":  "Mega",
+                         "installation":  false,
+                         "default":  true
+                     },
+                     {
+                         "program":  "dell-update",
+                         "name":  "Dell Update",
+                         "installation":  false,
+                         "default":  true
+                     }
+                 ]
 }
