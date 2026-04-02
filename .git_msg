@@ -1,3 +1,3 @@
-chore: update gitignore rules
+feat: implement X11 server support
 
-Added more exhaustive exclusion rules for system and build files.
+Added modules for X11 graphical forwarding support.
