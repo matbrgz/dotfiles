@@ -1,0 +1,100 @@
+{
+  "programs": [
+    {
+      "program": "docker-desktop",
+      "name": "Docker Desktop",
+      "installation": "True",
+      "default": "True"
+    },
+    {
+      "program": "dotnet",
+      "name": "dotNet Framework 3.5 (include dotNet 2.5 and 3.0)",
+      "installation": "True",
+      "default": "False"
+    },
+    {
+      "program": "github-desktop",
+      "name": "GitHub Desktop",
+      "installation": "True",
+      "default": "False"
+    },
+    {
+      "program": "hyperv",
+      "name": "Hyper-V",
+      "installation": "False",
+      "default": "False"
+    },
+    {
+      "program": "insomnia-rest-api-client",
+      "name": "Insomnia REST API Client",
+      "installation": "False",
+      "default": "False"
+    },
+    {
+      "program": "jdk8",
+      "name": "Java Development Kit 8",
+      "installation": "False",
+      "default": "False"
+    },
+    {
+      "program": "wsl-ubuntu-1804",
+      "name": "Windows Linux Subsystem (Ubuntu 18.04)",
+      "installation": "False",
+      "default": "False"
+    },
+    {
+      "program": "bitwarden",
+      "name": "BitWarden",
+      "installation": "False",
+      "default": "False"
+    },
+    {
+      "program": "ccleaner",
+      "name": "CCleaner",
+      "installation": "False",
+      "default": "False"
+    },
+    {
+      "program": "polar",
+      "name": "Polar Bookshelf",
+      "installation": "False",
+      "default": "False"
+    },
+    {
+      "program": "qbittorrent",
+      "name": "qBitorrent",
+      "installation": "False",
+      "default": "False"
+    },
+    {
+      "program": "sharex",
+      "name": "ShareX",
+      "installation": "False",
+      "default": "False"
+    },
+    {
+      "program": "station",
+      "name": "Station",
+      "installation": "False",
+      "default": "False"
+    },
+    {
+      "program": "steam",
+      "name": "Steam",
+      "installation": "False",
+      "default": "False"
+    },
+    {
+      "program": "google-backup-and-sync",
+      "name": "Google Backup and Sync",
+      "installation": "False",
+      "default": "True"
+    },
+    {
+      "program": "dropbox",
+      "name": "Dropbox",
+      "installation": "False",
+      "default": "False"
+    }
+  ]
+}

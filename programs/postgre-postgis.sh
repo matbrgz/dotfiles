@@ -1,13 +1,13 @@
 #!/bin/bash
 PREVIOUS_PWD="$1"
-if [ "$(jq -r '.configurations.debug' "${PREVIOUS_PWD}"/bootstrap/settings.json)" == true ]; then
+if [ "$(jq -r '.configurations.debug' "${PREVIOUS_PWD}"/bootstrap/unix-settings.json)" == true ]; then
 	set +e
 else
 	set -e
 fi
 POSTGIS_VERSION="$(jq -r '.POSTGIS_VERSION' "${PREVIOUS_PWD}"/bootstrap/version.json)"
 LIBGEOS_VERSION="$(jq -r '.LIBGEOS_VERSION' "${PREVIOUS_PWD}"/bootstrap/version.json)"
-if [ "$(jq -r '.configurations.purge' "${PREVIOUS_PWD}"/bootstrap/settings.json)" == y ]; then
+if [ "$(jq -r '.configurations.purge' "${PREVIOUS_PWD}"/bootstrap/unix-settings.json)" == y ]; then
 	sudo apt -y purge libgeos-* proj-bin
 fi
 sudo apt -y remove postgresql postgresql-common
