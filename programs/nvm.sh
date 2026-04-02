@@ -11,15 +11,6 @@ if [ "$(jq -r '.configurations.purge' "${PREVIOUS_PWD}"/bootstrap/settings.json)
 fi
 if ! curl https://raw.githubusercontent.com/creationix/nvm/v"${NVM_VERSION}"/install.sh | bash; then
 	echo "NVM Download failed! Exiting."
-	kill "$0"
+	kill $$
 fi
 wait
-exec bash
-if [ -n "$(command -v nvm)" ]; then
-	nvm install --lts
-	nvm use --lts
-	npm install -g yarn
-	yarn install leasot
-fi
-
-echo "alias ss=\"script/server\"" >>"${HOME}"/.bash_aliases

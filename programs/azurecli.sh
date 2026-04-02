@@ -14,7 +14,7 @@ echo "deb [arch=amd64] https://packages.microsoft.com/repos/azure-cli/ ${RELEASE
 sudo apt-key adv --keyserver packages.microsoft.com --recv-keys 52E16F86FEE04B979B07E28DB02C46DF417A0893
 if ! curl -L https://packages.microsoft.com/keys/microsoft.asc | sudo apt-key add -; then
 	echo "Azure CLI Download failed! Skipping."
-	kill "$0"
+	kill $$
 fi
 sudo apt -qq update
 sudo apt -y install azure-cli

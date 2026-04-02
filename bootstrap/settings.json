@@ -5,7 +5,8 @@
     "githubuser": "MatheusRV",
     "defaultfolder": "/mnt/c/Dev"
   },
-  "programs": [{
+  "programs": [
+    {
       "program": "ssh",
       "name": "Secure Shell (SSH)",
       "installation": "true",
@@ -56,7 +57,7 @@
     {
       "program": "dotnetnuget",
       "name": "dotNet nuGet",
-      "installation": "false",
+      "installation": "true",
       "default": "false",
       "dependencies": "dotnet"
     },
@@ -70,8 +71,9 @@
     {
       "program": "apache",
       "name": "Apache",
-      "installation": "true",
+      "installation": "false",
       "default": "true",
+      "config": "true",
       "port": "8080"
     },
     {
@@ -83,7 +85,7 @@
     {
       "program": "php",
       "name": "PHP Hypertext Preprocessor",
-      "installation": "true",
+      "installation": "false",
       "default": "true"
     },
     {
@@ -109,7 +111,7 @@
     {
       "program": "mysql-phpmyadmin",
       "name": "phpMyAdmin",
-      "installation": "true",
+      "installation": "false",
       "default": "true",
       "dependencies": "mysql"
     },
@@ -148,8 +150,9 @@
     {
       "program": "nvm",
       "name": "Node Version Manager",
-      "installation": "true",
-      "default": "true"
+      "installation": "false",
+      "default": "true",
+      "config": "true"
     },
     {
       "program": "node-strapi",
@@ -160,10 +163,12 @@
     },
     {
       "program": "node-localtunnel",
-      "name": "Local Tunnel",
-      "installation": "true",
+      "name": "LocalTunnel",
+      "installation": "false",
       "default": "true",
-      "dependencies": "nvm"
+      "dependencies": "nvm",
+      "hostname": "matheusrv1",
+      "port": "60000"
     },
     {
       "program": "anaconda",
@@ -174,13 +179,13 @@
     {
       "program": "python3",
       "name": "Python3",
-      "installation": "true",
+      "installation": "false",
       "default": "true"
     },
     {
       "program": "python-pip",
       "name": "Python PIP",
-      "installation": "true",
+      "installation": "false",
       "default": "true",
       "dependencies": "python3"
     },
@@ -205,9 +210,10 @@
     },
     {
       "program": "rvm",
-      "name": "Ruvy Version Manager",
-      "installation": "false",
-      "default": "true"
+      "name": "Ruby Version Manager",
+      "installation": "true",
+      "default": "true",
+      "config": "true"
     },
     {
       "program": "ruby-jekyll",
@@ -219,13 +225,13 @@
     {
       "program": "vagrant",
       "name": "Vagrant",
-      "installation": "true",
+      "installation": "false",
       "default": "true"
     },
     {
       "program": "docker",
       "name": "Docker",
-      "installation": "true",
+      "installation": "false",
       "default": "true"
     },
     {
@@ -251,7 +257,7 @@
     {
       "program": "mosh",
       "name": "Mosh",
-      "installation": "true",
+      "installation": "false",
       "default": "true"
     },
     {
@@ -262,7 +268,7 @@
     }
   ],
   "configurations": {
-    "debug": "true",
+    "debug": "false",
     "purge": "false"
   }
 }
