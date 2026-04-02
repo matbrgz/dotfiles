@@ -12,5 +12,5 @@ sudo /etc/init.d/mysql stop
 sudo apt -y install phpmyadmin
 sudo /etc/init.d/mysql start
 dpkg --get-selections | grep phpmyadmin
-defaultfolder="$(jq -r ".defaultfolder" "${PREVIOUS_PWD}"/bootstrap/settings.json)"
+defaultfolder="$(jq -r ".personal.defaultfolder" "${PREVIOUS_PWD}"/bootstrap/settings.json)"
 echo '' >>"${defaultfolder}"/phpmyadmin
