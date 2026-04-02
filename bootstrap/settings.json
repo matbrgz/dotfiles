@@ -71,7 +71,7 @@
     {
       "program": "apache",
       "name": "Apache",
-      "installation": "true",
+      "installation": "false",
       "default": "false",
       "config": "true",
       "port": "8080"
@@ -85,34 +85,34 @@
     {
       "program": "php",
       "name": "PHP Hypertext Preprocessor",
-      "installation": "true",
+      "installation": "false",
       "default": "false"
     },
     {
       "program": "php-composer",
       "name": "PHP Composer",
-      "installation": "true",
+      "installation": "false",
       "default": "false",
       "dependencies": "php"
     },
     {
       "program": "php-laravel",
       "name": "Laravel",
-      "installation": "true",
+      "installation": "false",
       "default": "false",
       "dependencies": "php"
     },
     {
       "program": "mysql",
       "name": "MySQL",
-      "installation": "true",
+      "installation": "false",
       "default": "false"
     },
     {
       "program": "mysql-phpmyadmin",
       "name": "phpMyAdmin",
       "installation": "true",
-      "default": "true",
+      "default": "false",
       "dependencies": "mysql"
     },
     {
@@ -157,7 +157,7 @@
     {
       "program": "node-strapi",
       "name": "Strapi",
-      "installation": "true",
+      "installation": "false",
       "default": "false",
       "dependencies": "nvm"
     },
@@ -205,27 +205,27 @@
     {
       "program": "golang",
       "name": "GoLang",
-      "installation": "false",
-      "default": "true"
+      "installation": "true",
+      "default": "false"
     },
     {
       "program": "rvm",
       "name": "Ruby Version Manager",
-      "installation": "true",
+      "installation": "false",
       "default": "false",
       "config": "true"
     },
     {
       "program": "ruby-jekyll",
       "name": "Jekyll",
-      "installation": "true",
+      "installation": "false",
       "default": "false",
       "dependencies": "rvm"
     },
     {
       "program": "vagrant",
       "name": "Vagrant",
-      "installation": "true",
+      "installation": "false",
       "default": "false"
     },
     {
@@ -244,7 +244,7 @@
     {
       "program": "kubectl",
       "name": "Kubernetes",
-      "installation": "true",
+      "installation": "false",
       "default": "false"
     },
     {
