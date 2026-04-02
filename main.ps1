@@ -233,21 +233,16 @@ if (([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::
             #"*Microsoft.WindowsStore*"
         )
         foreach ($App in $AppXApps) {
-            Write-Verbose -Message ('Removing Package {0}' -f $App)
+            Write-Output " [ DOING ] Removing $App from registry"
             Get-AppxPackage -Name $App | Remove-AppxPackage -ErrorAction SilentlyContinue
             Get-AppxPackage -Name $App -AllUsers | Remove-AppxPackage -AllUsers -ErrorAction SilentlyContinue
             Get-AppxProvisionedPackage -Online | Where-Object DisplayName -like $App | Remove-AppxProvisionedPackage -Online -ErrorAction SilentlyContinue
-            Remove-Variable App
         }
-        Remove-Variable AppXApps
-
         [regex]$WhitelistedApps = 'Microsoft.Paint3D|Microsoft.WindowsCalculator|Microsoft.WindowsStore|Microsoft.Windows.Photos|CanonicalGroupLimited.UbuntuonWindows|Microsoft.XboxGameCallableUI|Microsoft.XboxGamingOverlay|Microsoft.Xbox.TCUI|Microsoft.XboxGamingOverlay|Microsoft.XboxIdentityProvider|Microsoft.MicrosoftStickyNotes|Microsoft.MSPaint*'
         Get-AppxPackage -AllUsers | Where-Object { $_.Name -NotMatch $WhitelistedApps } | Remove-AppxPackage
         Get-AppxPackage | Where-Object { $_.Name -NotMatch $WhitelistedApps } | Remove-AppxPackage
         Get-AppxProvisionedPackage -Online | Where-Object { $_.PackageName -NotMatch $WhitelistedApps } | Remove-AppxProvisionedPackage -Online
-
-        #Unpins all tiles from the Start Menu
-        Write-Output "Unpinning all tiles from the start menu"
+        Write-Output " [ DOING ] Unpinning all tiles from the start menu"
         (New-Object -Com Shell.Application).
         NameSpace('shell:::{4234d49b-0245-4df3-b780-3893943456e1}').
         Items() |
@@ -288,25 +283,20 @@ if (([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::
             #Windows Share Target
             "HKCR:\Extensions\ContractId\Windows.ShareTarget\PackageId\ActiproSoftwareLLC.562882FEEB491_2.6.18.18_neutral__24pqs290vpjk0"
         )
-        
-        #This writes the output of each key it is removing and also removes the keys listed above.
         ForEach ($Key in $Keys) {
-            Write-Output "Removing $Key from registry"
+            Write-Output " [ DOING ] Removing $Key from registry"
             Remove-Item $Key -Recurse
         }
         $StopWatch.Stop()
         Write-Output " [ DONE ] Remove Unnecessary Windows Registries ... "$StopWatch.Elapsed.TotalSeconds" seconds\n"
-        ipconfig /flushdns
-        netsh winsock reset
+
         if ($env:computername -ne $ComputerName) {
             Rename-Computer -NewName $ComputerName
         }
     }
-
     $Programs = @(
         #Fonts
         "hackfont firacode inconsolata dejavufonts robotofonts droidfonts"
-
         #Default Install
         "boxstarter"
         "k-litecodecpackfull"
@@ -316,9 +306,7 @@ if (([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::
         "googlechrome"
         "autohotkey"
         "sysinternals"
-    
         "geforce-game-ready-driver"
-
         # Dev Tools Must Have
         "git"
         "powershell"
@@ -326,7 +314,6 @@ if (([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::
         "vagrant"
         "putty"
     )
-        
     ForEach ($Program in $Programs) {
         Write-Output "\n [ START ] $Program \n"
         $StopWatch = [System.Diagnostics.Stopwatch]::StartNew()
@@ -334,7 +321,6 @@ if (([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::
         $StopWatch.Stop()
         Write-Output " [ DONE ] $Program ... "$StopWatch.Elapsed.TotalSeconds" seconds\n"
     }
-
     $Programs = @(
         # Dev Tools
         "hyperv"
@@ -344,7 +330,6 @@ if (([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::
         "jdk8"
         "docker-desktop"
         "wsl-ubuntu-1804"
-
         # Common Softwares
         "ccleaner"
         "qbittorrent"
@@ -353,12 +338,10 @@ if (([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::
         "sharex"
         "station"
         "steam"
-
         #Cloud
         "google-backup-and-sync"
         "dropbox"
-    )
-        
+    )  
     ForEach ($Program in $Programs) {
         Write-Output "\n [ START ] $Program \n"
         $StopWatch = [System.Diagnostics.Stopwatch]::StartNew()
@@ -366,15 +349,11 @@ if (([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::
         $StopWatch.Stop()
         Write-Output " [ DONE ] $Program ... "$StopWatch.Elapsed.TotalSeconds" seconds\n"
     }
-
     Enable-UAC
     Enable-MicrosoftUpdate
-
     refreshenv
-
     $GlobalStopWatch.Stop()
     Write-Output "\n Total Execution Time ... "$StopWatch.Elapsed.TotalSeconds" seconds\n" 
-}
-else {
+} else {
     Write-Output "\n [ ERROR ] You must execute this script with administrator privileges\n"
 }
