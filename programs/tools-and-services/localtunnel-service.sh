@@ -11,15 +11,12 @@
 ### END INIT INFO
 # chkconfig: 2345 95 20
 
-port="$2"
-hostname="$3"
-
 loopFunction() {
   while true; do
     if [ "$1" == false ]; then
       break
     fi
-    lt --port ${port} -s ${hostname};
+    lt --port 2200 -s matheusrv;
     sleep 10;
   done
 }
