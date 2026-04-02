@@ -91,6 +91,7 @@
 					mkdir ${defaultfolder}
 				fi
 			fi
+			i=0
 			for row in $(jq -r '.programs[] | @base64' "${PREVIOUS_PWD}"/bootstrap/settings.json); do
 				_jq() {
 					echo "${row}" | base64 --decode | jq -r "${1}"
@@ -104,16 +105,20 @@
 				fi
 				printf "\n Install %s %s: " "$(_jq '.name')" "$defaultoption"
 				read -r "$programvariable"
+				echo "$programvariable"
+				echo "${!programvariable}"
 				if [ "$programvariable" == Y ] || [ "$programvariable" == y ]; then
 					export "$programvariable"=true
 				elif [ -z "$programvariable" ]; then
+					echo "$programdefault"
 					export "$programvariable"="$programdefault"
 				else
 					export "$programvariable"=false
 				fi
 				echo "$programvariable"
 				echo "${!programvariable}"
-				jq '."$programvariable".installation = ""${!programvariable}""' "${PREVIOUS_PWD}"/bootstrap/settings.json | sponge "${PREVIOUS_PWD}"/bootstrap/settings.json
+				jq '.programs[0].installation = "false"' "${PREVIOUS_PWD}"/bootstrap/settings.json | sponge "${PREVIOUS_PWD}"/bootstrap/settings.json
+				((i++))
 			done
 		elif [ "${instalationtype}" == 3 ]; then
 			printf "\n Type software name: "
