@@ -10,7 +10,7 @@ if [ "$(jq -r '.configurations.purge' "${PREVIOUS_PWD}"/bootstrap/settings.json)
 fi
 if ! curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -; then
 	echo "Docker Download failed! Skipping."
-	kill "$0"
+	kill $$
 fi
 RELEASE_VERSION="$(lsb_release -cs)"
 sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu ${RELEASE_VERSION} stable"

@@ -31,3 +31,19 @@ else
 	laravel=false
 	phpcomposer=false
 fi
+
+trap '' 2  # Signal 2 is Control-C, now disabled.
+	command
+	command
+	command
+	trap 2     # Reenables Control-C
+
+git clone https://github.com/molovo/lumberjack
+ lumberjack/lj /usr/local/bin
+
+lj --file /usr/local/var/log/myawesomescript.log --level critical
+emergency, alert, critical, error, warning, notice, info or debug
+lj critical ‘Something went wrong’
+lj 'This is a notice'
+
+command && command-to-execute-on-success || command-to-execute-on-failure
