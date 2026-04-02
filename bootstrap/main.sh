@@ -1,46 +1,15 @@
 #!/bin/bash -e
 PREVIOUS_PWD="$(jq -r '.pwd' "${HOME}"/tmp/pwd.json)"
-printf "\n [ START ] Version \n"
+printf "\n [ START ] Version Control \n"
 starttime=$(date +%s)
 #"${PREVIOUS_PWD}"/bootstrap/version.sh
 endtime=$(date +%s)
-printf " [ DONE ] Version ... %s seconds \n" "$((endtime-starttime))"
+printf " [ DONE ] Version Control ... %s seconds \n" "$((endtime-starttime))"
 defaultfolder="$(jq -r ".defaultfolder" "${PREVIOUS_PWD}"/bootstrap/settings.json)"
 printf "\n [ START ] Alias \n"
 starttime=$(date +%s)
-echo "
-# ls aliases
-alias la=\"ls -al\"
-alias ls=\"ls -h --color --group-directories-first\" # flat view w/ directories first
-alias l=\"ls -h --color --group-directories-first\" # same as above
-alias ll=\"ls -lv --group-directories-first\" # non-flat view
-alias lm=\"ll | more\"
-
-# Folder alias
-alias hdir=\"cd ${HOME}\"
-# shellcheck disable=SC2139
-alias wdir=\"cd ${defaultfolder}\"
-
-# Quick parent-directory aliases
-alias ..=\"cd ..\"
-alias ...=\"cd ../..\"
-alias ....=\"cd ../../..\"
-alias .....=\"cd ../../../..\"
-alias ......=\"cd ../../../../..\"
-alias .......=\"cd ../../../../../..\"
-alias ........=\"cd ../../../../../../..\"
-alias .........=\"cd ../../../../../../../..\"
-
-# Others
-alias editbash=\"nano ${HOME}/.bashrc\"
-alias editba=\"nano ${HOME}/.bash_aliases\"
-alias resource=\"source ${HOME}/.bashrc\"
-" >> "${HOME}"/.bash_aliases
-echo '
-# Alias to run Windows cmd.exe from WSL
-alias cmd="/mnt/c/Windows/System32/cmd.exe"
-alias cmdc="/mnt/c/Windows/System32/cmd.exe /c"
-' >> "${HOME}"/.bash_aliases
+#"${PREVIOUS_PWD}"/configurations/alias.sh
+#"${PREVIOUS_PWD}"/configurations/alias-wsl.sh
 endtime=$(date +%s)
 printf " [ DONE ] Alias ... %s seconds \n" "$((endtime-starttime))"
 if [ "$(jq -r '.ssh' "${PREVIOUS_PWD}"/bootstrap/settings.json)" == y ] ; then
