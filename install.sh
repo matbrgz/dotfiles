@@ -12,7 +12,7 @@ EOF
 		sudo rm -f -R "${HOME}"/tmp
 	fi
 	mkdir -p "${HOME}"/tmp
-	cd "${HOME}"/tmp && printf "\n [ SUCESS ] cd ${HOME}/tmp\n" || return && printf "\n [ ERROR ] cd ${HOME}/tmp\n"
+	cd "${HOME}"/tmp || return
 	: '
 	printf "\n [ START ] Version Management Control\n"
 	starttime=$(date +%s)
