@@ -5,4 +5,4 @@ if [ "$(jq -r '.configurations.debug' "${PREVIOUS_PWD}"/bootstrap/unix-settings.
 else
 	set -e
 fi
-export PATH="/usr/local/heroku/bin:$PATH"
+export PATH="${PATH}:/usr/local/heroku/bin"

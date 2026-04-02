@@ -2,6 +2,8 @@
 ## Global
 - [ ] Merge Windows and Linux config JSON
 - [ ] Improve JSON schema
+- [ ] Electron Program Instalation
+- [ ] 
 
 ## Microsoft Windows 10
 - [ ] Restart system after install WSL
@@ -15,10 +17,12 @@
 - [ ] Remote Instalation
 
 ## Ubuntu 18.04
-- [ ] 
-- [ ] 
-- [ ] 
-- [ ] 
+- [ ] Normalize PATH
+- [ ] Implement Purge for all Programs
+- [ ] After Purge a Program remove from bashrc file
+- [ ] Finish Heroku Toolbet instalation
+- [ ] Docker-Composer Exits with 0 needs investigation
+- [ ] Docker-Composer Exits with 0 needs investigation
 - [ ] Remote Instalation
 
 
