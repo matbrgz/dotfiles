@@ -57,7 +57,7 @@
     {
       "program": "dotnetnuget",
       "name": "dotNet nuGet",
-      "installation": "true",
+      "installation": "false",
       "default": "false",
       "dependencies": "dotnet"
     },
@@ -71,8 +71,8 @@
     {
       "program": "apache",
       "name": "Apache",
-      "installation": "false",
-      "default": "true",
+      "installation": "true",
+      "default": "false",
       "config": "true",
       "port": "8080"
     },
@@ -85,33 +85,33 @@
     {
       "program": "php",
       "name": "PHP Hypertext Preprocessor",
-      "installation": "false",
-      "default": "true"
+      "installation": "true",
+      "default": "false"
     },
     {
       "program": "php-composer",
       "name": "PHP Composer",
-      "installation": "false",
-      "default": "true",
+      "installation": "true",
+      "default": "false",
       "dependencies": "php"
     },
     {
       "program": "php-laravel",
       "name": "Laravel",
-      "installation": "false",
-      "default": "true",
+      "installation": "true",
+      "default": "false",
       "dependencies": "php"
     },
     {
       "program": "mysql",
       "name": "MySQL",
-      "installation": "false",
-      "default": "true"
+      "installation": "true",
+      "default": "false"
     },
     {
       "program": "mysql-phpmyadmin",
       "name": "phpMyAdmin",
-      "installation": "false",
+      "installation": "true",
       "default": "true",
       "dependencies": "mysql"
     },
@@ -150,21 +150,21 @@
     {
       "program": "nvm",
       "name": "Node Version Manager",
-      "installation": "false",
+      "installation": "true",
       "default": "true",
       "config": "true"
     },
     {
       "program": "node-strapi",
       "name": "Strapi",
-      "installation": "false",
-      "default": "true",
+      "installation": "true",
+      "default": "false",
       "dependencies": "nvm"
     },
     {
       "program": "node-localtunnel",
       "name": "LocalTunnel",
-      "installation": "false",
+      "installation": "true",
       "default": "true",
       "dependencies": "nvm",
       "hostname": "matheusrv1",
@@ -179,13 +179,13 @@
     {
       "program": "python3",
       "name": "Python3",
-      "installation": "false",
+      "installation": "true",
       "default": "true"
     },
     {
       "program": "python-pip",
       "name": "Python PIP",
-      "installation": "false",
+      "installation": "true",
       "default": "true",
       "dependencies": "python3"
     },
@@ -212,40 +212,40 @@
       "program": "rvm",
       "name": "Ruby Version Manager",
       "installation": "true",
-      "default": "true",
+      "default": "false",
       "config": "true"
     },
     {
       "program": "ruby-jekyll",
       "name": "Jekyll",
-      "installation": "false",
-      "default": "true",
+      "installation": "true",
+      "default": "false",
       "dependencies": "rvm"
     },
     {
       "program": "vagrant",
       "name": "Vagrant",
-      "installation": "false",
-      "default": "true"
+      "installation": "true",
+      "default": "false"
     },
     {
       "program": "docker",
       "name": "Docker",
-      "installation": "false",
+      "installation": "true",
       "default": "true"
     },
     {
       "program": "docker-compose",
       "name": "Docker Compose",
-      "installation": "false",
+      "installation": "true",
       "default": "true",
       "dependencies": "docker"
     },
     {
       "program": "kubectl",
       "name": "Kubernetes",
-      "installation": "false",
-      "default": "true"
+      "installation": "true",
+      "default": "false"
     },
     {
       "program": "kubernetes-helm",
@@ -257,7 +257,7 @@
     {
       "program": "mosh",
       "name": "Mosh",
-      "installation": "false",
+      "installation": "true",
       "default": "true"
     },
     {
@@ -268,7 +268,7 @@
     }
   ],
   "configurations": {
-    "debug": "false",
+    "debug": "true",
     "purge": "false"
   }
 }
