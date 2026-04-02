@@ -6,7 +6,7 @@
  Initializating script, please waiting until program configure itself.
  This may take a few minutes and you will be prompted for the password
  to elevate the user's permission.\n\n"
- 	sudo apt -qq update
+	sudo apt -qq update
 	sudo apt -y install jq
 	PREVIOUS_PWD="${PWD}"
 	if [ -d "${HOME}"/tmp ]; then
@@ -177,27 +177,35 @@
 			echo "${row}" | base64 --decode | jq -r "${1}"
 		}
 		if [ "$(_jq '.installation')" == true ]; then
-			#TODO: To install a program depencies must be true
-			programname=$(echo _jq '.name')
-			printf "\n [ START ] %s\n" "$($programname)"
-			starttime=$(date +%s)
-			#TODO: Ensure if file exist if not download it
-			#if [ -f  ] ; then
-			#download file
-			#fi
-			"${PREVIOUS_PWD}"/programs/"$(_jq '.program')".sh || error=true
-			wait
-			if [ "${error}" == true ]; then
-				printf "\n ****************************\n"
-				printf " [ ERROR ] %s returns a non-zero exit status\n" "$($programname)"
-				printf " ****************************\n\n"
+			programslug="$(_jq '.program')"
+			programname="$(echo _jq '.name')"
+			programdependencies="$(jq -r '.programs[] | select(.program=='"${programname}"').dependencies' "${PREVIOUS_PWD}"/bootstrap/settings.json)"
+			dependencieinstallation="$(jq -r '.programs[] | select(.program=='"${programdependencies}"').installation' "${PREVIOUS_PWD}"/bootstrap/settings.json)"
+			if [ programdependencies == null || dependencieinstallation == true ]; then
+				installflag=true
 			fi
-			endtime=$(date +%s)
-			printf " [ DONE ] %s ... %s seconds\n" "$($programname)" "$((endtime - starttime))"
-			unset error
-			unset programname
+			if [ "${installflag}" == true ]; then
+				printf "\n [ START ] %s\n" "$($programname)"
+				starttime=$(date +%s)
+				#TODO: Ensure if file exist if not download it
+				#if [ -f  ] ; then
+				#download file
+				#fi
+				"${PREVIOUS_PWD}"/programs/"${programslug}".sh || installationerror=true
+				wait
+				if [ "${installationerror}" == true ]; then
+					printf " [ ERROR ] %s returns a non-zero exit status\n" "$($programname)"
+				fi
+				endtime=$(date +%s)
+				printf " [ DONE ] %s ... %s seconds\n" "$($programname)" "$((endtime - starttime))"
+			fi
 		fi
 	done
+	unset installflag
+	unset installationerror
+	unset programname
+	unset programdependencies
+	unset dependencieinstallation
 	printf "\n [ START ] Common Requirements\n"
 	starttime=$(date +%s)
 	apps=(
