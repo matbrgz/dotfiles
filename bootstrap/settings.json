@@ -98,7 +98,7 @@
     {
       "program": "php-laravel",
       "name": "Laravel",
-      "installation": "true",
+      "installation": "false",
       "default": "false",
       "dependencies": "php"
     },
@@ -157,14 +157,14 @@
     {
       "program": "node-strapi",
       "name": "Strapi",
-      "installation": "true",
+      "installation": "false",
       "default": "false",
       "dependencies": "nvm"
     },
     {
       "program": "node-localtunnel",
       "name": "LocalTunnel",
-      "installation": "true",
+      "installation": "false",
       "default": "true",
       "dependencies": "nvm",
       "hostname": "matheusrv1",
@@ -211,7 +211,7 @@
     {
       "program": "rvm",
       "name": "Ruby Version Manager",
-      "installation": "false",
+      "installation": "true",
       "default": "false",
       "config": "true"
     },
