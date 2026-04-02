@@ -1,3 +1,3 @@
-feat: initial repository setup
+feat: add vagrant box update alias
 
-Established the baseline project structure for system automation.
+Introduced 'vupdate' alias to streamline Vagrant environment maintenance.
