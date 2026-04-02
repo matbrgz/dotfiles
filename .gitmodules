@@ -1,3 +1,0 @@
-[submodule "tools/virtualhost"]
-	path = tools/virtualhost
-	url = https://github.com/RoverWire/virtualhost
