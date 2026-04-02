@@ -5,5 +5,5 @@ Set-ExecutionPolicy RemoteSigned
 #TODO: Welcome Message
 #TODO: Manage PowerShell install files dynamic
 
-refreshenv
+RefreshEnv
 & .\main.ps1
