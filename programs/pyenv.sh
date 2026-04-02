@@ -1,13 +1,12 @@
 #!/bin/bash
-debug="$(jq -r '.debug' "${PREVIOUS_PWD}"/bootstrap/settings.json)"
-if [ "${debug}" == true ]; then
+PREVIOUS_PWD="$(jq -r '.pwd' "${HOME}"/tmp/pwd.json)"
+if [ "$(jq -r '.configurations.debug' "${PREVIOUS_PWD}"/bootstrap/settings.json)" == true ] ; then
 	# Disable exit on non 0
 	set +e
 else
 	# Enable exit on non 0
 	set -e
 fi
-PREVIOUS_PWD="$(jq -r '.pwd' "${HOME}"/tmp/pwd.json)"
 git clone https://github.com/pyenv/pyenv.git "${HOME}"/.pyenv
 {
 	export PYENV_ROOT="${HOME}/.pyenv"
@@ -20,9 +19,3 @@ source "${HOME}"/.bashrc
 #pyenv install "${PYTHON_VERSION}"
 source "${HOME}"/.bashrc
 dpkg --get-selections | grep python
-endtime=$(date +%s)
-printf " [ DONE ] PyEnv ... %s seconds \n" "$((endtime-starttime))"
-if [ "$(jq -r '.pyenvvirtualenv' "${PREVIOUS_PWD}"/bootstrap/settings.json)" == y ] ; then
-	"${PREVIOUS_PWD}"/programs/pyenv-virtualenv.sh
-	wait
-fi

@@ -1,3 +1,3 @@
-chore: improve debugging output
+chore: general code cleanup and refresh
 
-Enhanced log verbosity for troubleshooting installation failures.
+Refactored code for better readability and maintainability.
