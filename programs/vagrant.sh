@@ -1,7 +1,12 @@
-#!/bin/bash -e
-printf " [ START ] Vagrant \n"
-starttime=$(date +%s)
-# Architeture x86_64 amd64
+#!/bin/bash
+debug="$(jq -r '.debug' "${PREVIOUS_PWD}"/bootstrap/settings.json)"
+if [ "${debug}" == true ]; then
+	# Disable exit on non 0
+	set +e
+else
+	# Enable exit on non 0
+	set -e
+fi
 ARCHITECTURE_TYPE="$(uname -m)"
 PREVIOUS_PWD="$(jq -r '.pwd' "${HOME}"/tmp/pwd.json)"
 VAGRANT_VERSION="$(jq -r '.VAGRANT_VERSION' "${PREVIOUS_PWD}"/bootstrap/version.json)"
@@ -14,6 +19,7 @@ then
 	exit 1
 fi
 sudo dpkg -i vagrant_"${VAGRANT_VERSION}"_"${ARCHITECTURE_TYPE}".deb
+# shellcheck disable=SC2034
 defaultfolder="$(jq -r '.defaultfolder' "${PREVIOUS_PWD}"/bootstrap/settings.json)"
 echo '
   export VAGRANT_WSL_ENABLE_WINDOWS_ACCESS="1"
@@ -27,5 +33,3 @@ alias vupdate="vagrant box update"
 alias vhalt="vagrant halt"
 alias vdestroy="vagrant halt && vagrant destroy"
 ' >> "${HOME}"/.bash_aliases
-endtime=$(date +%s)
-printf " [ DONE ] Vagrant ... %s seconds \n" "$((endtime-starttime))"
