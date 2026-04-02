@@ -195,11 +195,13 @@
                 read -r programname
                 if [ "$programname" == Y ] || [ "$programname" == y ]; then
                     programinstallation=true
+                    echo "${programinstallation}"
                 elif [ -z "$programname" ]; then
                     programinstallation="${programdefault}"
                     echo "${programdefault}"
                 else
                     programinstallation=false
+                    echo "${programinstallation}"
                 fi
                 jq '.programs['"${i}"'].installation = "'"${programinstallation}"'"' "${PREVIOUS_PWD}"/bootstrap/settings.json | sponge "${PREVIOUS_PWD}"/bootstrap/settings.json
             else
