@@ -1,3 +1,3 @@
-feat: add php-curl module support
+feat: add strapi and mongodb support
 
-Enabled PHP cURL extension installation in the web module.
+Integrated Strapi CMS and MongoDB database installers.

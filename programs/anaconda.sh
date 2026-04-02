@@ -7,10 +7,10 @@ HEADER_TYPE="$(uname -s)"
 ARCHITECTURE_TYPE="$(uname -m)"
 if ! curl https://repo.anaconda.com/archive/Anaconda"${ANACONDA_VERSION}"-"${HEADER_TYPE}"-"${ARCHITECTURE_TYPE}".sh | bash
 then
-    echo "Download failed! Exiting."
-    exit 1
+	echo "Download failed! Exiting."
+	exit 1
 fi
 wait
-. "${HOME}"/.bashrc
+exec bash
 endtime=$(date +%s)
 printf " [ DONE ] Anaconda ... %s seconds \n" "$((endtime-starttime))"
