@@ -1,0 +1,116 @@
+{
+  "shellcheck": {
+    "name": "ShellCheck",
+    "description": "Static analysis tool for shell scripts",
+    "category": "utilities",
+    "enabled": false,
+    "default": false,
+    "platforms": {
+      "linux": {
+        "script": "packages/os-linux/scripts/shellcheck.sh",
+        "method": "apt"
+      },
+      "windows": {
+        "script": "packages/os-windows/scripts/shellcheck.ps1",
+        "method": "choco"
+      },
+      "macos": {
+        "script": "packages/os-macos/scripts/shellcheck.sh",
+        "method": "brew"
+      }
+    },
+    "post_install": []
+  },
+  "shfmt": {
+    "name": "shfmt",
+    "description": "Shell script formatter",
+    "category": "utilities",
+    "enabled": false,
+    "default": false,
+    "platforms": {
+      "linux": {
+        "script": "packages/os-linux/scripts/shfmt.sh",
+        "method": "script"
+      }
+    },
+    "post_install": []
+  },
+  "mosh": {
+    "name": "Mosh",
+    "description": "Mobile shell with roaming and intelligent local echo",
+    "category": "utilities",
+    "enabled": false,
+    "default": false,
+    "platforms": {
+      "linux": {
+        "script": "packages/os-linux/scripts/mosh.sh",
+        "method": "apt"
+      },
+      "windows": {
+        "script": "packages/os-windows/scripts/mosh.ps1",
+        "method": "choco"
+      },
+      "macos": {
+        "script": "packages/os-macos/scripts/mosh.sh",
+        "method": "brew"
+      }
+    },
+    "post_install": []
+  },
+  "x11server": {
+    "name": "X11 Server",
+    "description": "X Window System server",
+    "category": "utilities",
+    "enabled": false,
+    "default": false,
+    "platforms": {
+      "linux": {
+        "script": "packages/os-linux/scripts/x11server.sh",
+        "method": "apt"
+      }
+    },
+    "post_install": [
+      "x11_config"
+    ],
+    "config_file": "packages/os-linux/scripts/x11-config.sh"
+  },
+  "protobuf": {
+    "name": "Protocol Buffers",
+    "description": "Language-neutral data serialization",
+    "category": "utilities",
+    "enabled": false,
+    "default": false,
+    "platforms": {
+      "linux": {
+        "script": "packages/os-linux/scripts/protobuf.sh",
+        "method": "apt"
+      },
+      "windows": {
+        "script": "packages/os-windows/scripts/protobuf.ps1",
+        "method": "choco"
+      },
+      "macos": {
+        "script": "packages/os-macos/scripts/protobuf.sh",
+        "method": "brew"
+      }
+    },
+    "post_install": []
+  },
+  "netkit": {
+    "name": "Netkit",
+    "description": "Network emulation toolkit",
+    "category": "utilities",
+    "enabled": false,
+    "default": false,
+    "platforms": {
+      "linux": {
+        "script": "packages/os-linux/scripts/netkit.sh",
+        "method": "apt"
+      }
+    },
+    "post_install": [
+      "netkit_config"
+    ],
+    "config_file": "packages/os-linux/scripts/netkit-config.sh"
+  }
+}
