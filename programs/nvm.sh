@@ -14,13 +14,12 @@ if ! curl https://raw.githubusercontent.com/creationix/nvm/v"${NVM_VERSION}"/ins
 	kill "$0"
 fi
 wait
-traphup() {
-	$0 "$@" &
-	exit 0
-}
-trap traphup HUP
-nvm install --lts
-nvm use --lts
-npm install -g yarn
-yarn install leasot
+exec bash
+if [ -n "$(command -v nvm)" ]; then
+	nvm install --lts
+	nvm use --lts
+	npm install -g yarn
+	yarn install leasot
+fi
+
 echo "alias ss=\"script/server\"" >>"${HOME}"/.bash_aliases
