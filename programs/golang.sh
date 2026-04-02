@@ -21,7 +21,7 @@ if [ "$(jq -r '.configurations.purge' "${PREVIOUS_PWD}"/bootstrap/settings.json)
 fi
 if [ -d /usr/local/go ] || [ -d "${HOME}"/go ]; then
 	echo "The 'go' or '.go' directories already exist. Exiting."
-	kill "$0"
+	kill $$
 else
 	sudo mkdir -p /usr/local/go
 	sudo chmod 777 /usr/local/go
@@ -30,7 +30,7 @@ else
 fi
 if ! sudo wget https://dl.google.com/go/go"${GOLANG_VERSION,,}"."${HEADER_TYPE,,}"-"${ARCHITECTURE_TYPE,,}".tar.gz; then
 	echo "GoLang Download failed! Exiting."
-	kill "$0"
+	kill $$
 fi
 sudo tar -C "/usr/local" -xzf go"${GOLANG_VERSION,,}"."${HEADER_TYPE,,}"-"${ARCHITECTURE_TYPE,,}".tar.gz
 {

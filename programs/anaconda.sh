@@ -13,7 +13,5 @@ if [ "$(jq -r '.configurations.purge' "${PREVIOUS_PWD}"/bootstrap/settings.json)
 fi
 if ! curl https://repo.anaconda.com/archive/Anaconda"${ANACONDA_VERSION}"-"${HEADER_TYPE}"-"${ARCHITECTURE_TYPE}".sh | bash; then
 	echo "Anaconda Download failed! Skipping."
-	kill "$0"
+	kill $$
 fi
-wait
-bash

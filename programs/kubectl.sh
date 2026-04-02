@@ -14,7 +14,7 @@ fi
 # $(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)
 if ! curl -L https://storage.googleapis.com/kubernetes-release/release/v"${KUBECTL_VERSION}"/bin/"${HEADER_TYPE}"/"${ARCHITECTURE_TYPE}"/kubectl; then
 	echo "KubeCTL Download failed! Exiting."
-	kill "$0"
+	kill $$
 fi
 if [ -d /usr/local/bin/kubectl ]; then
 	sudo rm -f -R /usr/local/bin/kubectl
