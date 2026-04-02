@@ -1,0 +1,24 @@
+{
+  "bitwarden": {
+    "name": "Bitwarden",
+    "description": "Password manager",
+    "category": "security",
+    "enabled": false,
+    "default": false,
+    "platforms": {
+      "linux": {
+        "script": "packages/os-linux/scripts/bitwarden.sh",
+        "method": "apt"
+      },
+      "windows": {
+        "script": "packages/os-windows/scripts/bitwarden.ps1",
+        "method": "choco"
+      },
+      "macos": {
+        "script": "packages/os-macos/scripts/bitwarden.sh",
+        "method": "brew"
+      }
+    },
+    "post_install": []
+  }
+}

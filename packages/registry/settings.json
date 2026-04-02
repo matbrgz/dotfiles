@@ -1,0 +1,21 @@
+{
+  "personal": {
+    "name": "matbrgz",
+    "email": "matbrgz@gmail.com",
+    "githubuser": "matbrgz",
+    "defaultfolder": {
+      "linux": "~/dev",
+      "wsl": "~/dev",
+      "windows": "~/dev"
+    }
+  },
+  "system": {
+    "behavior": {
+      "debug_mode": false,
+      "purge_mode": false,
+      "parallel_installs": true,
+      "continue_on_error": false,
+      "backup_configs": true
+    }
+  }
+}

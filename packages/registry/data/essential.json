@@ -1,0 +1,190 @@
+{
+  "git": {
+    "name": "Git",
+    "description": "Distributed version control system",
+    "category": "essential",
+    "enabled": true,
+    "default": true,
+    "platforms": {
+      "linux": {
+        "script": "packages/os-linux/scripts/git.sh",
+        "method": "apt"
+      },
+      "windows": {
+        "script": "packages/os-windows/scripts/git.ps1",
+        "method": "choco"
+      },
+      "macos": {
+        "script": "packages/os-macos/scripts/git.sh",
+        "method": "brew"
+      }
+    },
+    "post_install": [
+      "git_config"
+    ],
+    "config_file": "packages/os-linux/scripts/git-config.sh"
+  },
+  "ssh": {
+    "name": "OpenSSH",
+    "description": "Secure Shell protocol suite",
+    "category": "essential",
+    "enabled": true,
+    "default": true,
+    "platforms": {
+      "linux": {
+        "script": "packages/os-linux/scripts/ssh.sh",
+        "method": "apt"
+      },
+      "windows": {
+        "script": "packages/os-windows/scripts/ssh.ps1",
+        "method": "choco"
+      },
+      "macos": {
+        "script": "packages/os-macos/scripts/ssh.sh",
+        "method": "brew"
+      }
+    },
+    "post_install": [
+      "ssh_config"
+    ],
+    "config_file": "packages/os-linux/scripts/ssh-config.sh"
+  },
+  "htop": {
+    "name": "htop",
+    "description": "Interactive process viewer",
+    "category": "essential",
+    "enabled": true,
+    "default": true,
+    "platforms": {
+      "linux": {
+        "script": "packages/os-linux/scripts/htop.sh",
+        "method": "apt"
+      },
+      "windows": {
+        "script": "packages/os-windows/scripts/htop.ps1",
+        "method": "choco"
+      },
+      "macos": {
+        "script": "packages/os-macos/scripts/htop.sh",
+        "method": "brew"
+      }
+    },
+    "post_install": []
+  },
+  "tmux": {
+    "name": "tmux",
+    "description": "Terminal multiplexer",
+    "category": "essential",
+    "enabled": true,
+    "default": true,
+    "platforms": {
+      "linux": {
+        "script": "packages/os-linux/scripts/tmux.sh",
+        "method": "apt"
+      },
+      "windows": {
+        "script": "packages/os-windows/scripts/tmux.ps1",
+        "method": "choco"
+      },
+      "macos": {
+        "script": "packages/os-macos/scripts/tmux.sh",
+        "method": "brew"
+      }
+    },
+    "post_install": [
+      "tmux_config"
+    ],
+    "config_file": "packages/os-linux/scripts/tmux-config.sh"
+  },
+  "vim": {
+    "name": "Vim",
+    "description": "Highly configurable text editor",
+    "category": "essential",
+    "enabled": true,
+    "default": true,
+    "platforms": {
+      "linux": {
+        "script": "packages/os-linux/scripts/vim.sh",
+        "method": "apt"
+      },
+      "windows": {
+        "script": "packages/os-windows/scripts/vim.ps1",
+        "method": "choco"
+      },
+      "macos": {
+        "script": "packages/os-macos/scripts/vim.sh",
+        "method": "brew"
+      }
+    },
+    "post_install": [
+      "vim_config"
+    ],
+    "config_file": "packages/os-linux/scripts/vim-config.sh"
+  },
+  "curl": {
+    "name": "cURL",
+    "description": "Command line tool for transferring data",
+    "category": "essential",
+    "enabled": true,
+    "default": true,
+    "platforms": {
+      "linux": {
+        "script": "packages/os-linux/scripts/curl.sh",
+        "method": "apt"
+      },
+      "windows": {
+        "script": "packages/os-windows/scripts/curl.ps1",
+        "method": "choco"
+      },
+      "macos": {
+        "script": "packages/os-macos/scripts/curl.sh",
+        "method": "brew"
+      }
+    },
+    "post_install": []
+  },
+  "wget": {
+    "name": "Wget",
+    "description": "Command-line utility for downloading files",
+    "category": "essential",
+    "enabled": true,
+    "default": true,
+    "platforms": {
+      "linux": {
+        "script": "packages/os-linux/scripts/wget.sh",
+        "method": "apt"
+      },
+      "windows": {
+        "script": "packages/os-windows/scripts/wget.ps1",
+        "method": "choco"
+      },
+      "macos": {
+        "script": "packages/os-macos/scripts/wget.sh",
+        "method": "brew"
+      }
+    },
+    "post_install": []
+  },
+  "unzip": {
+    "name": "Unzip",
+    "description": "Extraction utility for zip archives",
+    "category": "essential",
+    "enabled": true,
+    "default": true,
+    "platforms": {
+      "linux": {
+        "script": "packages/os-linux/scripts/unzip.sh",
+        "method": "apt"
+      },
+      "windows": {
+        "script": "packages/os-windows/scripts/unzip.ps1",
+        "method": "choco"
+      },
+      "macos": {
+        "script": "packages/os-macos/scripts/unzip.sh",
+        "method": "brew"
+      }
+    },
+    "post_install": []
+  }
+}

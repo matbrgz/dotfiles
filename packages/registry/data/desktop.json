@@ -1,0 +1,112 @@
+{
+  "chrome": {
+    "name": "Google Chrome",
+    "description": "Web browser developed by Google",
+    "category": "desktop",
+    "enabled": false,
+    "default": false,
+    "platforms": {
+      "linux": {
+        "script": "packages/os-linux/scripts/chrome.sh",
+        "method": "apt"
+      },
+      "windows": {
+        "script": "packages/os-windows/scripts/chrome.ps1",
+        "method": "choco"
+      },
+      "macos": {
+        "script": "packages/os-macos/scripts/chrome.sh",
+        "method": "brew"
+      }
+    },
+    "post_install": []
+  },
+  "firefox": {
+    "name": "Mozilla Firefox",
+    "description": "Open-source web browser",
+    "category": "desktop",
+    "enabled": false,
+    "default": false,
+    "platforms": {
+      "linux": {
+        "script": "packages/os-linux/scripts/firefox.sh",
+        "method": "apt"
+      },
+      "windows": {
+        "script": "packages/os-windows/scripts/firefox.ps1",
+        "method": "choco"
+      },
+      "macos": {
+        "script": "packages/os-macos/scripts/firefox.sh",
+        "method": "brew"
+      }
+    },
+    "post_install": []
+  },
+  "discord": {
+    "name": "Discord",
+    "description": "Voice, video and text communication service",
+    "category": "desktop",
+    "enabled": false,
+    "default": false,
+    "platforms": {
+      "linux": {
+        "script": "packages/os-linux/scripts/discord.sh",
+        "method": "apt"
+      },
+      "windows": {
+        "script": "packages/os-windows/scripts/discord.ps1",
+        "method": "choco"
+      },
+      "macos": {
+        "script": "packages/os-macos/scripts/discord.sh",
+        "method": "brew"
+      }
+    },
+    "post_install": []
+  },
+  "spotify": {
+    "name": "Spotify",
+    "description": "Digital music streaming service",
+    "category": "desktop",
+    "enabled": false,
+    "default": false,
+    "platforms": {
+      "linux": {
+        "script": "packages/os-linux/scripts/spotify.sh",
+        "method": "apt"
+      },
+      "windows": {
+        "script": "packages/os-windows/scripts/spotify.ps1",
+        "method": "choco"
+      },
+      "macos": {
+        "script": "packages/os-macos/scripts/spotify.sh",
+        "method": "brew"
+      }
+    },
+    "post_install": []
+  },
+  "qbittorrent": {
+    "name": "qBittorrent",
+    "description": "BitTorrent client",
+    "category": "desktop",
+    "enabled": false,
+    "default": false,
+    "platforms": {
+      "linux": {
+        "script": "packages/os-linux/scripts/qbittorrent.sh",
+        "method": "apt"
+      },
+      "windows": {
+        "script": "packages/os-windows/scripts/qbittorrent.ps1",
+        "method": "choco"
+      },
+      "macos": {
+        "script": "packages/os-macos/scripts/qbittorrent.sh",
+        "method": "brew"
+      }
+    },
+    "post_install": []
+  }
+}

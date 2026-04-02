@@ -1,0 +1,243 @@
+{
+  "nodejs": {
+    "name": "Node.js",
+    "description": "JavaScript runtime built on Chrome's V8 engine",
+    "category": "development",
+    "enabled": false,
+    "default": false,
+    "platforms": {
+      "linux": {
+        "script": "packages/os-linux/scripts/nodejs.sh",
+        "method": "apt"
+      },
+      "windows": {
+        "script": "packages/os-windows/scripts/nodejs.ps1",
+        "method": "choco"
+      },
+      "macos": {
+        "script": "packages/os-macos/scripts/nodejs.sh",
+        "method": "brew"
+      }
+    },
+    "post_install": [
+      "nvm_install"
+    ],
+    "config_file": "packages/os-linux/scripts/nodejs-config.sh"
+  },
+  "nvm": {
+    "name": "Node Version Manager",
+    "description": "Manage multiple Node.js versions",
+    "category": "development",
+    "enabled": false,
+    "default": false,
+    "platforms": {
+      "linux": {
+        "script": "packages/os-linux/scripts/nvm.sh",
+        "method": "script"
+      }
+    },
+    "post_install": [
+      "nvm_config"
+    ],
+    "config_file": "packages/os-linux/scripts/nvm-config.sh"
+  },
+  "python3": {
+    "name": "Python 3",
+    "description": "High-level programming language",
+    "category": "development",
+    "enabled": true,
+    "default": true,
+    "platforms": {
+      "linux": {
+        "script": "packages/os-linux/scripts/python3.sh",
+        "method": "apt"
+      },
+      "windows": {
+        "script": "packages/os-windows/scripts/python3.ps1",
+        "method": "choco"
+      },
+      "macos": {
+        "script": "packages/os-macos/scripts/python3.sh",
+        "method": "brew"
+      }
+    },
+    "post_install": [
+      "pip_upgrade",
+      "python_config"
+    ],
+    "config_file": "packages/os-linux/scripts/python-config.sh"
+  },
+  "pyenv": {
+    "name": "Python Version Manager",
+    "description": "Simple Python version management",
+    "category": "development",
+    "enabled": false,
+    "default": false,
+    "platforms": {
+      "linux": {
+        "script": "packages/os-linux/scripts/pyenv.sh",
+        "method": "script"
+      }
+    },
+    "post_install": [
+      "pyenv_config"
+    ],
+    "config_file": "packages/os-linux/scripts/pyenv-config.sh"
+  },
+  "anaconda": {
+    "name": "Anaconda",
+    "description": "Python distribution for data science",
+    "category": "development",
+    "enabled": false,
+    "default": false,
+    "platforms": {
+      "linux": {
+        "script": "packages/os-linux/scripts/anaconda.sh",
+        "method": "script"
+      }
+    },
+    "post_install": [
+      "anaconda_config"
+    ],
+    "config_file": "packages/os-linux/scripts/anaconda-config.sh"
+  },
+  "golang": {
+    "name": "Go Programming Language",
+    "description": "Open source programming language from Google",
+    "category": "development",
+    "enabled": false,
+    "default": false,
+    "platforms": {
+      "linux": {
+        "script": "packages/os-linux/scripts/golang.sh",
+        "method": "apt"
+      },
+      "windows": {
+        "script": "packages/os-windows/scripts/golang.ps1",
+        "method": "choco"
+      },
+      "macos": {
+        "script": "packages/os-macos/scripts/golang.sh",
+        "method": "brew"
+      }
+    },
+    "post_install": [
+      "go_config"
+    ],
+    "config_file": "packages/os-linux/scripts/golang-config.sh"
+  },
+  "rvm": {
+    "name": "Ruby Version Manager",
+    "description": "Ruby version management",
+    "category": "development",
+    "enabled": false,
+    "default": false,
+    "platforms": {
+      "linux": {
+        "script": "packages/os-linux/scripts/rvm.sh",
+        "method": "script"
+      }
+    },
+    "post_install": [
+      "rvm_config"
+    ],
+    "config_file": "packages/os-linux/scripts/rvm-config.sh"
+  },
+  "vscode": {
+    "name": "Visual Studio Code",
+    "description": "Source-code editor made by Microsoft",
+    "category": "development",
+    "enabled": false,
+    "default": false,
+    "platforms": {
+      "linux": {
+        "script": "packages/os-linux/scripts/vscode.sh",
+        "method": "apt"
+      },
+      "windows": {
+        "script": "packages/os-windows/scripts/vscode.ps1",
+        "method": "choco"
+      },
+      "macos": {
+        "script": "packages/os-macos/scripts/vscode.sh",
+        "method": "brew"
+      }
+    },
+    "post_install": [
+      "vscode_extensions"
+    ],
+    "config_file": "packages/os-linux/scripts/vscode-config.sh"
+  },
+  "jdk": {
+    "name": "Java Development Kit",
+    "description": "Java programming platform",
+    "category": "development",
+    "enabled": false,
+    "default": false,
+    "platforms": {
+      "linux": {
+        "script": "packages/os-linux/scripts/jdk.sh",
+        "method": "apt"
+      },
+      "windows": {
+        "script": "packages/os-windows/scripts/jdk.ps1",
+        "method": "choco"
+      },
+      "macos": {
+        "script": "packages/os-macos/scripts/jdk.sh",
+        "method": "brew"
+      }
+    },
+    "post_install": [
+      "java_config"
+    ],
+    "config_file": "packages/os-linux/scripts/java-config.sh"
+  },
+  "dotnet": {
+    "name": ".NET Core",
+    "description": "Cross-platform .NET implementation",
+    "category": "development",
+    "enabled": false,
+    "default": false,
+    "platforms": {
+      "linux": {
+        "script": "packages/os-linux/scripts/dotnet.sh",
+        "method": "apt"
+      },
+      "windows": {
+        "script": "packages/os-windows/scripts/dotnet.ps1",
+        "method": "choco"
+      },
+      "macos": {
+        "script": "packages/os-macos/scripts/dotnet.sh",
+        "method": "brew"
+      }
+    },
+    "post_install": [
+      "dotnet_config"
+    ],
+    "config_file": "packages/os-linux/scripts/dotnet-config.sh"
+  },
+  "insomnia": {
+    "name": "Insomnia",
+    "description": "REST API client",
+    "category": "development",
+    "enabled": false,
+    "default": false,
+    "platforms": {
+      "linux": {
+        "script": "packages/os-linux/scripts/insomnia.sh",
+        "method": "apt"
+      },
+      "windows": {
+        "script": "packages/os-windows/scripts/insomnia.ps1",
+        "method": "choco"
+      },
+      "macos": {
+        "script": "packages/os-macos/scripts/insomnia.sh",
+        "method": "brew"
+      }
+    },
+    "post_install": []
+  }
+}

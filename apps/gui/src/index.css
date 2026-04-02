@@ -1,0 +1,46 @@
+@import "tailwindcss";
+
+@theme {
+  --color-blueprint-bg: #020617;
+  --color-blueprint-line: rgba(34, 211, 238, 0.05);
+  --color-blueprint-accent: #22d3ee;
+  --color-blueprint-muted: #0f172a;
+
+  --background-image-grid-pattern: linear-gradient(to right, rgba(34, 211, 238, 0.05) 1px, transparent 1px), 
+                                   linear-gradient(to bottom, rgba(34, 211, 238, 0.05) 1px, transparent 1px);
+}
+
+@layer base {
+  body {
+    @apply bg-blueprint-bg text-white font-mono antialiased overflow-hidden;
+    background-image: var(--background-image-grid-pattern);
+    background-size: 40px 40px;
+  }
+}
+
+/* Custom Industrial scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  @apply bg-blueprint-bg border-l border-zinc-800;
+}
+::-webkit-scrollbar-thumb {
+  @apply bg-zinc-800 hover:bg-zinc-700 transition-colors;
+}
+
+.blueprint-border {
+  @apply border border-cyan-500/20 shadow-[0_0_15px_rgba(34,211,238,0.05)];
+}
+
+.blueprint-header {
+  background: linear-gradient(180deg, rgba(34, 211, 238, 0.05) 0%, transparent 100%);
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}

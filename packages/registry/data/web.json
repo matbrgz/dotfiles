@@ -1,0 +1,186 @@
+{
+  "apache": {
+    "name": "Apache HTTP Server",
+    "description": "Open-source HTTP Server",
+    "category": "web",
+    "enabled": false,
+    "default": false,
+    "platforms": {
+      "linux": {
+        "script": "packages/os-linux/scripts/apache.sh",
+        "method": "apt"
+      },
+      "windows": {
+        "script": "packages/os-windows/scripts/apache.ps1",
+        "method": "choco"
+      },
+      "macos": {
+        "script": "packages/os-macos/scripts/apache.sh",
+        "method": "brew"
+      }
+    },
+    "post_install": [
+      "apache_config"
+    ],
+    "config_file": "packages/os-linux/scripts/apache-config.sh"
+  },
+  "nginx": {
+    "name": "Nginx",
+    "description": "HTTP and reverse proxy server",
+    "category": "web",
+    "enabled": false,
+    "default": false,
+    "platforms": {
+      "linux": {
+        "script": "packages/os-linux/scripts/nginx.sh",
+        "method": "apt"
+      },
+      "windows": {
+        "script": "packages/os-windows/scripts/nginx.ps1",
+        "method": "choco"
+      },
+      "macos": {
+        "script": "packages/os-macos/scripts/nginx.sh",
+        "method": "brew"
+      }
+    },
+    "post_install": [
+      "nginx_config"
+    ],
+    "config_file": "packages/os-linux/scripts/nginx-config.sh"
+  },
+  "mysql": {
+    "name": "MySQL",
+    "description": "Open-source relational database",
+    "category": "web",
+    "enabled": false,
+    "default": false,
+    "platforms": {
+      "linux": {
+        "script": "packages/os-linux/scripts/mysql.sh",
+        "method": "apt"
+      },
+      "windows": {
+        "script": "packages/os-windows/scripts/mysql.ps1",
+        "method": "choco"
+      },
+      "macos": {
+        "script": "packages/os-macos/scripts/mysql.sh",
+        "method": "brew"
+      }
+    },
+    "post_install": [
+      "mysql_secure"
+    ],
+    "config_file": "packages/os-linux/scripts/mysql-config.sh"
+  },
+  "mongodb": {
+    "name": "MongoDB",
+    "description": "Document-based NoSQL database",
+    "category": "web",
+    "enabled": false,
+    "default": false,
+    "platforms": {
+      "linux": {
+        "script": "packages/os-linux/scripts/mongodb.sh",
+        "method": "apt"
+      },
+      "windows": {
+        "script": "packages/os-windows/scripts/mongodb.ps1",
+        "method": "choco"
+      },
+      "macos": {
+        "script": "packages/os-macos/scripts/mongodb.sh",
+        "method": "brew"
+      }
+    },
+    "post_install": [
+      "mongodb_config"
+    ],
+    "config_file": "packages/os-linux/scripts/mongodb-config.sh"
+  },
+  "redis": {
+    "name": "Redis",
+    "description": "In-memory data structure store",
+    "category": "web",
+    "enabled": false,
+    "default": false,
+    "platforms": {
+      "linux": {
+        "script": "packages/os-linux/scripts/redis.sh",
+        "method": "apt"
+      },
+      "windows": {
+        "script": "packages/os-windows/scripts/redis.ps1",
+        "method": "choco"
+      },
+      "macos": {
+        "script": "packages/os-macos/scripts/redis.sh",
+        "method": "brew"
+      }
+    },
+    "post_install": [
+      "redis_config"
+    ],
+    "config_file": "packages/os-linux/scripts/redis-config.sh"
+  },
+  "php": {
+    "name": "PHP",
+    "description": "Server-side scripting language",
+    "category": "web",
+    "enabled": false,
+    "default": false,
+    "platforms": {
+      "linux": {
+        "script": "packages/os-linux/scripts/php.sh",
+        "method": "apt"
+      },
+      "windows": {
+        "script": "packages/os-windows/scripts/php.ps1",
+        "method": "choco"
+      },
+      "macos": {
+        "script": "packages/os-macos/scripts/php.sh",
+        "method": "brew"
+      }
+    },
+    "post_install": [
+      "php_config"
+    ],
+    "config_file": "packages/os-linux/scripts/php-config.sh"
+  },
+  "php-composer": {
+    "name": "PHP Composer",
+    "description": "Dependency manager for PHP",
+    "category": "web",
+    "enabled": false,
+    "default": false,
+    "platforms": {
+      "linux": {
+        "script": "packages/os-linux/scripts/php-composer.sh",
+        "method": "script"
+      }
+    },
+    "post_install": [
+      "composer_config"
+    ],
+    "config_file": "packages/os-linux/scripts/composer-config.sh"
+  },
+  "php-laravel": {
+    "name": "Laravel",
+    "description": "PHP web application framework",
+    "category": "web",
+    "enabled": false,
+    "default": false,
+    "platforms": {
+      "linux": {
+        "script": "packages/os-linux/scripts/php-laravel.sh",
+        "method": "script"
+      }
+    },
+    "post_install": [
+      "laravel_config"
+    ],
+    "config_file": "packages/os-linux/scripts/laravel-config.sh"
+  }
+}

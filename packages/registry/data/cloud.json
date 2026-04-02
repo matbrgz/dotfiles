@@ -1,0 +1,46 @@
+{
+  "dropbox": {
+    "name": "Dropbox",
+    "description": "Cloud storage service",
+    "category": "cloud",
+    "enabled": false,
+    "default": false,
+    "platforms": {
+      "linux": {
+        "script": "packages/os-linux/scripts/dropbox.sh",
+        "method": "apt"
+      },
+      "windows": {
+        "script": "packages/os-windows/scripts/dropbox.ps1",
+        "method": "choco"
+      },
+      "macos": {
+        "script": "packages/os-macos/scripts/dropbox.sh",
+        "method": "brew"
+      }
+    },
+    "post_install": []
+  },
+  "megasync": {
+    "name": "MEGAsync",
+    "description": "MEGA cloud storage client",
+    "category": "cloud",
+    "enabled": false,
+    "default": false,
+    "platforms": {
+      "linux": {
+        "script": "packages/os-linux/scripts/megasync.sh",
+        "method": "apt"
+      },
+      "windows": {
+        "script": "packages/os-windows/scripts/megasync.ps1",
+        "method": "choco"
+      },
+      "macos": {
+        "script": "packages/os-macos/scripts/megasync.sh",
+        "method": "brew"
+      }
+    },
+    "post_install": []
+  }
+}

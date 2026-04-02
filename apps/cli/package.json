@@ -1,0 +1,22 @@
+{
+  "name": "@dotfiles/cli",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "bin": {
+    "dotfiles": "./dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsx src/index.ts",
+    "lint": "eslint ."
+  },
+  "dependencies": {
+    "@dotfiles/cli-engine": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^25.5.0",
+    "tsx": "^3.12.0",
+    "typescript": "^6.0.2"
+  }
+}
