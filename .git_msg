@@ -1,3 +1,3 @@
-chore: bump version numbers in bootstrap configuration
+feat: implement initial bootstrap and program installers
 
-Updated the versioning data in bootstrap/version.json to maintain accurate release tracking.
+Added the primary installation logic, including: Settings and bootstrap JSON files, utility library for cross-platform installers, and core program installation scripts.
