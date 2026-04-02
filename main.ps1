@@ -8,7 +8,7 @@ if (([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::
     Disable-UAC
     $ComputerName = Get-Random -InputObject "Turing", "Knuth", "Berners-Lee", "Torvalds", "Hopper", "Ritchie", "Stallman", "Gosling", "Church", "Dijkstra", "Cooper", "Gates", "Jobs", "Wozniak", "Zuckerberg", "Musk", "Nakamoto", "Dotcom", "Snowden", "Kruskal", "Neumann"
     $StopWatch.Stop()
-    Write-Output "\n [ DONE ] Configuring System Run ... "$StopWatch.Elapsed.TotalSeconds" seconds\n"
+    Write-Output " [ DONE ] Configuring System Run ... "$StopWatch.Elapsed.TotalSeconds" seconds\n"
     $firstrun = Read-Host -Prompt '\n First time runing script? (Y/n): '
     if ([string]::IsNullOrWhiteSpace($firstrun) -Or $firstrun -eq 'Y' -Or $firstrun -eq 'y') {
         Write-Output "\n [ START ] Windows Update\n"
@@ -20,13 +20,13 @@ if (([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::
         Disable-WindowsUpdate
         Disable-UAC
         $StopWatch.Stop()
-        Write-Output "\n [ DONE ] Windows Update ... "$StopWatch.Elapsed.TotalSeconds" seconds\n"
+        Write-Output " [ DONE ] Windows Update ... "$StopWatch.Elapsed.TotalSeconds" seconds\n"
         Write-Output "\n [ START ] Instaling Common Requirements\n"
         $StopWatch = [System.Diagnostics.Stopwatch]::StartNew()
         Set-ExecutionPolicy Bypass -Scope Process -Force; Invoke-Expression ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
         refreshenv
         $StopWatch.Stop()
-        Write-Output "\n [ DONE ] Instaling Common Requirements ... "$StopWatch.Elapsed.TotalSeconds" seconds\n"
+        Write-Output " [ DONE ] Instaling Common Requirements ... "$StopWatch.Elapsed.TotalSeconds" seconds\n"
         $privacy = Read-Host -Prompt '\n Do you care about privacy? (Y/n): '
         if ([string]::IsNullOrWhiteSpace($privacy) -Or $privacy -eq 'Y' -Or $privacy -eq 'y') {
             Write-Output "\n [ START ] Protecting Privacy\n"
@@ -168,7 +168,7 @@ if (([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::
             Set-Service "DiagTrack" -StartupType Disabled
 
             $StopWatch.Stop()
-            Write-Output "\n [ DONE ] Protecting Privacy ... "$StopWatch.Elapsed.TotalSeconds" seconds\n"
+            Write-Output " [ DONE ] Protecting Privacy ... "$StopWatch.Elapsed.TotalSeconds" seconds\n"
         }
         Write-Output "\n [ START ] Unistall Windows10 Unnecessary and Blotware Apps \n"
         $StopWatch = [System.Diagnostics.Stopwatch]::StartNew()
@@ -255,7 +255,7 @@ if (([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::
         Where-Object { $_.Name -match 'Un.*pin from Start' } |
         ForEach-Object { $_.DoIt() }
         $StopWatch.Stop()
-        Write-Output "\n [ DONE ] Unistall Windows10 Unnecessary and Blotware Apps ... "$StopWatch.Elapsed.TotalSeconds" seconds\n"
+        Write-Output " [ DONE ] Unistall Windows10 Unnecessary and Blotware Apps ... "$StopWatch.Elapsed.TotalSeconds" seconds\n"
         Write-Output "\n [ START ] Remove Unnecessary Windows Registries\n"
         $StopWatch = [System.Diagnostics.Stopwatch]::StartNew()
         $Keys = @(
@@ -295,16 +295,12 @@ if (([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::
             Remove-Item $Key -Recurse
         }
         $StopWatch.Stop()
-        Write-Output "\n [ DONE ] Remove Unnecessary Windows Registries ... "$StopWatch.Elapsed.TotalSeconds" seconds\n"
+        Write-Output " [ DONE ] Remove Unnecessary Windows Registries ... "$StopWatch.Elapsed.TotalSeconds" seconds\n"
         ipconfig /flushdns
         netsh winsock reset
-
-        #--- Rename the Computer ---
-        # Requires restart, or add the -Restart flag
         if ($env:computername -ne $ComputerName) {
             Rename-Computer -NewName $ComputerName
         }
-
     }
 
     $Programs = @(
@@ -336,7 +332,7 @@ if (([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::
         $StopWatch = [System.Diagnostics.Stopwatch]::StartNew()
         cinst -y $Program
         $StopWatch.Stop()
-        Write-Output "\n [ DONE ] $Program ... "$StopWatch.Elapsed.TotalSeconds" seconds\n"
+        Write-Output " [ DONE ] $Program ... "$StopWatch.Elapsed.TotalSeconds" seconds\n"
     }
 
     $Programs = @(
@@ -368,7 +364,7 @@ if (([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::
         $StopWatch = [System.Diagnostics.Stopwatch]::StartNew()
         Start-Process "./programs/'$Program'.ps1" -Wait
         $StopWatch.Stop()
-        Write-Output "\n [ DONE ] $Program ... "$StopWatch.Elapsed.TotalSeconds" seconds\n"
+        Write-Output " [ DONE ] $Program ... "$StopWatch.Elapsed.TotalSeconds" seconds\n"
     }
 
     Enable-UAC
