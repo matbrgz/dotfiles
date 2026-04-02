@@ -21,9 +21,10 @@
 	else
 		set -e
 	fi
+	printf "\n"
 	echo " ( PRESS KEY '1' FOR EXPRESS INSTALL )"
 	echo " ( PRESS KEY '2' FOR CUSTOM INSTALL )"
-	printf "\n Option: "
+	printf " Option: "
 	read -r instalationtype
 	printf "\n First time runing script? (Y/n): "
 	read -r firstrun
@@ -75,9 +76,9 @@
 				echo " $(_jq '.name'): $(_jq '.installation')"
 			fi
 		done
+		sleep 3
 		endtime=$(date +%s)
 		printf " [ DONE ] Software Instalation List ... %s seconds\n" "$((endtime - starttime))"
-		sleep 3
 	elif [ "${instalationtype}" == 2 ]; then
 		printf "\n Your Name (Default: Matheus Rocha Vieira): "
 		read -r username
@@ -150,7 +151,6 @@
 				programinstallation=false
 			fi
 			jq '.programs['"${i}"'].installation = "'"${programinstallation}"'"' "${PREVIOUS_PWD}"/bootstrap/settings.json | sponge "${PREVIOUS_PWD}"/bootstrap/settings.json
-
 			((i++))
 		done
 		unset programinstallation
@@ -179,18 +179,19 @@
 		if [ "$(_jq '.installation')" == true ]; then
 			programslug="$(_jq '.program')"
 			programname="$(echo _jq '.name')"
-			programdependencies="$(jq -r '.programs[] | select(.program=='"${programname}"').dependencies' "${PREVIOUS_PWD}"/bootstrap/settings.json)"
-			dependencieinstallation="$(jq -r '.programs[] | select(.program=='"${programdependencies}"').installation' "${PREVIOUS_PWD}"/bootstrap/settings.json)"
-			if [ programdependencies == null || dependencieinstallation == true ]; then
+			programdependencies="$(jq -r '.programs[] | select(.program=="'"${programslug}"'").dependencies' "${PREVIOUS_PWD}"/bootstrap/settings.json)"
+			dependencieinstallation="$(jq -r '.programs[] | select(.program=="'"${programdependencies}"'").installation' "${PREVIOUS_PWD}"/bootstrap/settings.json)"
+			if [ "${programdependencies}" == "null" ] || [ "${dependencieinstallation}" == true ]; then
 				installflag=true
 			fi
 			if [ "${installflag}" == true ]; then
 				printf "\n [ START ] %s\n" "$($programname)"
 				starttime=$(date +%s)
-				#TODO: Ensure if file exist if not download it
-				#if [ -f  ] ; then
-				#download file
-				#fi
+				#if [ ! -f "${PREVIOUS_PWD}"/programs/"${programslug}".sh ]; then
+				#	if ! curl programs/"${programslug}".sh -L https://raw.githubusercontent.com/MatheusRV/dotfiles/master/programs/"${programslug}".sh; then
+				#		echo "${programslug} download failed! Exiting."
+				#	fi
+				#i
 				"${PREVIOUS_PWD}"/programs/"${programslug}".sh || installationerror=true
 				wait
 				if [ "${installationerror}" == true ]; then
