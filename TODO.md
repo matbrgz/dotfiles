@@ -29,21 +29,25 @@
 - [x] Package manager auto-detection and fallback
 - [x] Architecture detection (x86_64, arm64)
 
-## 🚧 In Progress
-
-### Program Scripts Modernization
+### Program Scripts Modernization (NEW)
 - [x] Git installation and configuration
 - [x] Docker installation with multi-distro support
-- [ ] Node.js/NVM installation script
-- [ ] Python3 and pip configuration
-- [ ] VS Code installation and extension setup
-- [ ] Apache/Nginx web server setup
+- [x] **Node.js/NVM installation script** - Complete with NVM support, global packages, aliases, and project templates
+- [x] **Python3 and pyenv configuration** - Complete with pyenv support, virtual environments, and development tools
+
+## 🚧 In Progress
 
 ### Configuration System
 - [ ] Dotfiles synchronization (vim, tmux, bash configs)
 - [ ] SSH key management and GitHub integration
 - [ ] Development environment variables setup
 - [ ] Shell aliases and functions installation
+
+### Program Scripts Modernization (Continued)
+- [ ] VS Code installation and extension setup
+- [ ] Apache/Nginx web server setup
+- [ ] PHP with Composer installation
+- [ ] MySQL/PostgreSQL setup
 
 ## 📋 TODO - High Priority
 
@@ -56,14 +60,6 @@
 - [ ] **Installation resume** - Resume interrupted installations
 
 ### Program Installation Scripts
-- [ ] **Node.js ecosystem**
-  - [ ] NVM (Node Version Manager)
-  - [ ] Global npm packages (yarn, prettier, eslint, etc.)
-  - [ ] Node.js version management
-- [ ] **Python ecosystem**
-  - [ ] pyenv (Python version management)
-  - [ ] virtualenv/venv setup
-  - [ ] pip packages (black, flake8, pytest, etc.)
 - [ ] **Development tools**
   - [ ] VS Code with extensions
   - [ ] JetBrains IDEs
@@ -191,15 +187,20 @@
 
 ## 📊 Progress Summary
 
-- **✅ Completed**: 15 major items
-- **🚧 In Progress**: 6 items
-- **📋 High Priority**: 25 items
+- **✅ Completed**: 19 major items
+- **🚧 In Progress**: 5 items
+- **📋 High Priority**: 19 items
 - **📋 Medium Priority**: 20 items
 - **📋 Low Priority**: 15 items
 
-**Total Progress**: ~20% complete towards full vision
+**Total Progress**: ~24% complete towards full vision
 
----
+### Recent Accomplishments (v2.1)
+- ✅ Created comprehensive Node.js/NVM installation script with templates
+- ✅ Created comprehensive Python/pyenv installation script with templates
+- ✅ Created comprehensive VS Code installation script with extensions and configuration
+- ✅ Enhanced project structure with modern script templates
+- ✅ Implemented development environment setup automation
 
 *Last updated: $(date +%Y-%m-%d)*
 *Maintainer: matbrgz* 
