@@ -13,6 +13,7 @@ EOF
 	fi
 	mkdir -p "${HOME}"/tmp
 	cd "${HOME}"/tmp || return
+	#TODO: Manage PowerShell install files dynamic
 	: '
 	printf "\n [ START ] Version Management Control\n"
 	starttime=$(date +%s)

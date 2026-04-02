@@ -11,9 +11,9 @@
 ### END INIT INFO
 # chkconfig: 2345 95 20
 
-loopFunction() {
+loopFunction(bool) {
   while true; do
-    if [ "$1" == false ]; then
+    if [ \"${bool}\" == false ]; then
       break
     fi
     lt --port 2200 -s matheusrv;
