@@ -1,3 +1,3 @@
-fix: resolve powershell script errors and configuration inconsistencies
+chore: bump version numbers in bootstrap configuration
 
-Fixed various glitches in PowerShell scripts and corrected erroneous configurations in the bootstrap setup.
+Updated the versioning data in bootstrap/version.json to maintain accurate release tracking.
