@@ -26,9 +26,11 @@ if ! curl http://wiki.netkit.org/download/netkit-kernel/netkit-kernel-i386-K"${N
 fi
 tar -xjSf netkit-kernel-i386-K"${NETKIT_VERSION}".tar.bz2
 {
+	#NetKit Config
 	export NETKIT_HOME="${HOME}"/netkit
 	export MANPATH=:${NETKIT_HOME}/man
 	export PATH=${NETKIT_HOME}/bin:$PATH
+
 } >>"${HOME}"/.bashrc
 chmod a+x /netkit/check_configuration.sh
 ./netkit/check_configuration.sh
