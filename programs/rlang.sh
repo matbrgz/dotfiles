@@ -10,7 +10,7 @@ if [ "$(jq -r '.configurations.purge' "${PREVIOUS_PWD}"/bootstrap/unix-settings.
 	sudo apt -y purge rbase*
 fi
 sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys E298A3A825C0D65DFD57CBB651716619E084DAB9
-sudo add-apt-repository "deb https://cran.rstudio.com/bin/${HEADER_TYPE}/ubuntu ${RELEASE_VERSION}/"
+sudo add-apt-repository "deb https://cloud.r-project.org/bin/${HEADER_TYPE}/ubuntu ${RELEASE_VERSION}-cran35/"
 sudo apt update
 sudo apt -y install r-base
 sudo -i R

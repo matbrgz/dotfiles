@@ -5,14 +5,15 @@ if [ "$(jq -r '.configurations.debug' "${PREVIOUS_PWD}"/bootstrap/unix-settings.
 else
 	set -e
 fi
+if [ "$(jq -r '.configurations.purge' "${PREVIOUS_PWD}"/bootstrap/unix-settings.json)" == true ]; then
+	echo "PyEnv purge not implemented yet! Skipping."
+fi
 git clone https://github.com/pyenv/pyenv.git "${HOME}"/.pyenv
 {
-	export PYENV_ROOT="${HOME}/.pyenv"
-	export PATH="${PYENV_ROOT}/bin:${PATH}"
+	export PATH="${PATH}:${HOME}/.pyenv/bin"
 	if command -v pyenv 1>/dev/null 2>&1; then
 		eval "$(pyenv init -)"
 	fi
-} >>~/.bashrc
-export PYENV_ROOT="$HOME/.pyenv"
-export PATH="$PYENV_ROOT/bin:$PATH"
+} >>"${HOME}"/.bashrc
+export PATH="${PATH}:${HOME}/.pyenv/bin"
 pyenv install "${PYTHON_VERSION}"

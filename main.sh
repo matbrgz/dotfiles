@@ -48,7 +48,7 @@ EOF
     else
         set -e
     fi
-    printf "\n First time runing script? (Y/n): "
+    printf "\n First time runing script? (Y/n/s): "
     read -r firstrun
     if [ -z "${firstrun}" ] || [ "${firstrun}" == Y ] || [ "${firstrun}" == y ]; then
         printf "\n [ START ] Update & Upgrade"
@@ -93,6 +93,43 @@ EOF
         trap 2
         endtime=$(date +%s)
         printf " [ DONE ] Fix Possible Erros ... %s seconds\n" "$((endtime - starttime))"
+
+        printf "\n Install Config (y/N): "
+        read -r configinstall
+        if [ "$configinstall" == Y ] || [ "$configinstall" == y ]; then
+            for row in $(jq -r '.programs[] | @base64' "${PREVIOUS_PWD}"/bootstrap/unix-settings.json); do
+                _jq() {
+                    echo "${row}" | base64 --decode | jq -r "${1}"
+                }
+                programslug="$(_jq '.program')"             
+                if [ "$(_jq '.installation')" == true ]; then
+                    programdependencies="$(jq -r '.programs[] | select(.program=="'"${programslug}"'").dependencies' "${PREVIOUS_PWD}"/bootstrap/unix-settings.json)"
+                    dependencieinstallation="$(jq -r '.programs[] | select(.program=="'"${programdependencies}"'").installation' "${PREVIOUS_PWD}"/bootstrap/unix-settings.json)"
+                    if [ "${programdependencies}" == "null" ] || [ "${dependencieinstallation}" == true ]; then
+                        installflag=true
+                    else
+                        installflag=false
+                        printf "\n [ ERROR ] You are trying to configure %s without install it dependecies\n" "$(${programname})"
+                    fi                    
+                fi
+                programconfiguration="$(jq -r '.programs[] | select(.program=="'"${programslug}"'").config' "${PREVIOUS_PWD}"/bootstrap/unix-settings.json)"
+                if [ "${installflag}" == true ] && [ "${programconfiguration}" == true ]; then
+                    #shellcheck disable=SC2116
+                    programname="$(echo _jq '.name')"
+                    printf "\n [ START ] %s configuration" "$(${programname})"
+                    trap 2
+                    "${PREVIOUS_PWD}"/programs/"${programslug}"-config.sh "${PREVIOUS_PWD}" || installationerror=true
+                    wait
+                    trap 2
+                    if [ "${installationerror}" == true ]; then
+                        installationerror=false
+                        printf "\n [ ERROR ] %s configuration returns a non-zero exit status\n" "$(${programname})"
+                    else
+                        printf " [ DONE ] %s configuration\n" "$(${programname})"
+                    fi
+                fi
+            done
+        fi
         printf "\n Enable Purge Mode (y/N): "
         read -r purgemode
         if [ "$purgemode" == Y ] || [ "$purgemode" == y ]; then
@@ -102,8 +139,6 @@ EOF
         fi
         jq '.configurations.purge = "'"${purgemode}"'"' "${PREVIOUS_PWD}"/bootstrap/unix-settings.json | sponge "${PREVIOUS_PWD}"/bootstrap/unix-settings.json
         unset purgemode
-    else
-        kill $$
     fi
     unset firstrun
     if [ "${instalationtype}" == 1 ]; then
@@ -135,61 +170,66 @@ EOF
         endtime=$(date +%s)
         printf " [ DONE ] Software Instalation List ... %s seconds\n" "$((endtime - starttime))"
     elif [ "${instalationtype}" == 2 ]; then
-        printf "\n Your Name (Default: Matheus Rocha Vieira): "
-        read -r username
-        if [ -z "${username}" ]; then
-            username="Matheus Rocha Vieira"
-            echo "$username"
-        fi
-        git config --global user.name "${username}"
-        jq '.personal.name = "'"${username}"'"' "${PREVIOUS_PWD}"/bootstrap/unix-settings.json | sponge "${PREVIOUS_PWD}"/bootstrap/unix-settings.json
-        unset username
-        printf "\n Your E-Mail (Default: matheusrv@email.com): "
-        read -r email
-        if [ -z "${email}" ]; then
-            email="matheusrv@email.com"
-            echo "$email"
-        fi
-        git config --global user.email "${email}"
-        if [ ! -d ~/.ssh ]; then
-            ssh-keygen -t rsa -b 4096 -C "${email}"
-        fi
-        jq '.personal.email = "'"${email}"'"' "${PREVIOUS_PWD}"/bootstrap/unix-settings.json | sponge "${PREVIOUS_PWD}"/bootstrap/unix-settings.json
-        unset email
-        printf "\n Your GitHub Username (Default: MatheusRV): "
-        read -r githubuser
-        if [ -z "${githubuser}" ]; then
-            githubuser="MatheusRV"
-            echo "$githubuser"
-        fi
-        jq '.personal.githubuser = "'"${githubuser}"'"' "${PREVIOUS_PWD}"/bootstrap/unix-settings.json | sponge "${PREVIOUS_PWD}"/bootstrap/unix-settings.json
-        unset githubuser
-        if [[ "$(uname -r)" =~ "Microsoft$" ]]; then
-            defaultoption="(Default for WSL: '/mnt/c/Dev')"
-        else
-            defaultoption="(Default for Unix-like: '~/Dev')"
-        fi
-        printf "\n Default Dev Folder %s: " "$defaultoption"
-        read -r defaultfolder
-        if [ -z "${defaultfolder}" ]; then
+        printf "\n Config personal things (Y/n): "
+        read -r personalconfig
+        if [ -z "${personalconfig}" ] || [ "${personalconfig}" == Y ] || [ "${personalconfig}" == y ]; then
+        
+            printf "\n Your Name (Default: Matheus Rocha Vieira): "
+            read -r username
+            if [ -z "${username}" ]; then
+                username="Matheus Rocha Vieira"
+                echo "$username"
+            fi
+            git config --global user.name "${username}"
+            jq '.personal.name = "'"${username}"'"' "${PREVIOUS_PWD}"/bootstrap/unix-settings.json | sponge "${PREVIOUS_PWD}"/bootstrap/unix-settings.json
+            unset username
+            printf "\n Your E-Mail (Default: matheusrv@email.com): "
+            read -r email
+            if [ -z "${email}" ]; then
+                email="matheusrv@email.com"
+                echo "$email"
+            fi
+            git config --global user.email "${email}"
+            if [ ! -d ~/.ssh ]; then
+                ssh-keygen -t rsa -b 4096 -C "${email}"
+            fi
+            jq '.personal.email = "'"${email}"'"' "${PREVIOUS_PWD}"/bootstrap/unix-settings.json | sponge "${PREVIOUS_PWD}"/bootstrap/unix-settings.json
+            unset email
+            printf "\n Your GitHub Username (Default: MatheusRV): "
+            read -r githubuser
+            if [ -z "${githubuser}" ]; then
+                githubuser="MatheusRV"
+                echo "$githubuser"
+            fi
+            jq '.personal.githubuser = "'"${githubuser}"'"' "${PREVIOUS_PWD}"/bootstrap/unix-settings.json | sponge "${PREVIOUS_PWD}"/bootstrap/unix-settings.json
+            unset githubuser
             if [[ "$(uname -r)" =~ "Microsoft$" ]]; then
-                defaultfolder=/mnt/c/Dev
+                defaultoption="(Default for WSL: '/mnt/c/Dev')"
             else
-                defaultfolder=~/Dev
+                defaultoption="(Default for Unix-like: '~/Dev')"
             fi
-            if [ ! -d "${defaultfolder}" ]; then
-                mkdir "${defaultfolder}"
-                echo " [ DOING ] mkdir ${defaultfolder}"
+            printf "\n Default Dev Folder %s: " "$defaultoption"
+            read -r defaultfolder
+            if [ -z "${defaultfolder}" ]; then
+                if [[ "$(uname -r)" =~ "Microsoft$" ]]; then
+                    defaultfolder=/mnt/c/Dev
+                else
+                    defaultfolder=~/Dev
+                fi
+                if [ ! -d "${defaultfolder}" ]; then
+                    mkdir "${defaultfolder}"
+                    echo " [ DOING ] mkdir ${defaultfolder}"
+                fi
+                echo "${defaultfolder}"
+            else
+                if [ ! -d "${defaultfolder}" ]; then
+                    mkdir ${defaultfolder}
+                    echo " [ DOING ] mkdir ${defaultfolder}"
+                fi
             fi
-            echo "${defaultfolder}"
-        else
-            if [ ! -d "${defaultfolder}" ]; then
-                mkdir ${defaultfolder}
-                echo " [ DOING ] mkdir ${defaultfolder}"
-            fi
+            jq '.personal.defaultfolder = "'"${defaultfolder}"'"' "${PREVIOUS_PWD}"/bootstrap/unix-settings.json | sponge "${PREVIOUS_PWD}"/bootstrap/unix-settings.json
+            unset defaultfolder
         fi
-        jq '.personal.defaultfolder = "'"${defaultfolder}"'"' "${PREVIOUS_PWD}"/bootstrap/unix-settings.json | sponge "${PREVIOUS_PWD}"/bootstrap/unix-settings.json
-        unset defaultfolder
         i=0
         for row in $(jq -r '.programs[] | @base64' "${PREVIOUS_PWD}"/bootstrap/unix-settings.json); do
             _jq() {
@@ -207,10 +247,10 @@ EOF
                 fi
                 printf "\n Install %s %s: " "$(_jq '.name')" "$defaultoption"
                 read -r programname
-                if [ "$programname" == Y ] || [ "$programname" == y ]; then
+                if [ "${programname}" == Y ] || [ "${programname}" == y ]; then
                     programinstallation=true
                     echo "${programinstallation}"
-                elif [ -z "$programname" ]; then
+                elif [ -z "${programname}" ]; then
                     programinstallation="${programdefault}"
                     echo "${programdefault}"
                 else
@@ -240,49 +280,35 @@ EOF
         _jq() {
             echo "${row}" | base64 --decode | jq -r "${1}"
         }
+        programslug="$(_jq '.program')"
         if [ "$(_jq '.installation')" == true ]; then
-            programslug="$(_jq '.program')"
-            #shellcheck disable=SC2116
-            programname="$(echo _jq '.name')"
             programdependencies="$(jq -r '.programs[] | select(.program=="'"${programslug}"'").dependencies' "${PREVIOUS_PWD}"/bootstrap/unix-settings.json)"
             dependencieinstallation="$(jq -r '.programs[] | select(.program=="'"${programdependencies}"'").installation' "${PREVIOUS_PWD}"/bootstrap/unix-settings.json)"
             if [ "${programdependencies}" == "null" ] || [ "${dependencieinstallation}" == true ]; then
                 installflag=true
             else
                 installflag=false
-                printf "\n [ ERROR ] You are instaling %s without install it dependecies\n" "$($programname)"
-            fi
-            if [ "${installflag}" == true ]; then
-                printf "\n [ START ] %s" "$($programname)"
-                starttime=$(date +%s)
-                trap '' 2
-                "${PREVIOUS_PWD}"/programs/"${programslug}".sh "${PREVIOUS_PWD}" || installationerror=true
-                wait
-                trap 2
-                if [ "${installationerror}" == true ]; then
-                    installationerror=false
-                    endtime=$(date +%s)
-                    printf "\n  [ ERROR ] %s returns a non-zero exit status ... %s seconds\n" "$($programname)" "$((endtime - starttime))"
-                else
-                    programconfiguration="$(jq -r '.programs[] | select(.program=="'"${programslug}"'").config' "${PREVIOUS_PWD}"/bootstrap/unix-settings.json)"
-                    if [ "${programconfiguration}" == true ]; then
-                        printf "\n [ START ] %s configuration" "$($programname)"
-                        trap 2
-                        "${PREVIOUS_PWD}"/programs/"${programslug}"-config.sh "${PREVIOUS_PWD}" || installationerror=true
-                        wait
-                        trap 2
-                        if [ "${installationerror}" == true ]; then
-                            installationerror=false
-                            printf "\n [ ERROR ] %s configuration returns a non-zero exit status\n" "$($programname)"
-                        else
-                            printf " [ DONE ] %s configuration\n" "$($programname)"
-                        fi
-                    fi
-                    endtime=$(date +%s)
-                    printf " [ DONE ] %s ... %s seconds\n" "$($programname)" "$((endtime - starttime))"
-                fi
+                printf "\n [ ERROR ] You are instaling %s without install it dependecies\n" "$(${programname})"
             fi
         fi
+        if [ "${installflag}" == true ]; then
+            #shellcheck disable=SC2116
+            programname="$(echo _jq '.name')"
+            printf "\n [ START ] %s" "$(${programname})"
+            starttime=$(date +%s)
+            trap '' 2
+            "${PREVIOUS_PWD}"/programs/"${programslug}".sh "${PREVIOUS_PWD}" || installationerror=true
+            wait
+            trap 2
+            if [ "${installationerror}" == true ]; then
+                installationerror=false
+                endtime=$(date +%s)
+                printf "\n  [ ERROR ] %s returns a non-zero exit status ... %s seconds\n" "$(${programname})" "$((endtime - starttime))"
+            fi
+            endtime=$(date +%s)
+            printf " [ DONE ] %s ... %s seconds\n" "$(${programname})" "$((endtime - starttime))"
+        fi
+        unset installflag
     done
     variables=(
         installflag
