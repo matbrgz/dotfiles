@@ -1,42 +1,242 @@
 {
-  "defaultfolder": "/mnt/c/Dev",
-  "ssh": "y",
-  "protobuf": "n",
-  "azurecli": "n",
-  "herokucli": "nn",
-  "gcloudcli": "n",
-  "gcloudsdk": "n",
-  "rlang": "n",
-  "dotnet": "n",
-  "dotnetnuget": "n",
-  "dotnetmono": "n",
-  "apache": "n",
-  "nginx": "n",
-  "phpv": "n",
-  "laravel": "n",
-  "mysql": "n",
-  "mysqlpassword": "",
-  "phpmyadmin": "n",
-  "postgre": "n",
-  "postgis": "n",
-  "pgadmin": "n",
-  "mongo": "y",
-  "redis": "n",
-  "nvm": "y",
-  "strapi": "y",
-  "anaconda": "n",
-  "python3": "y",
-  "pythonpip": "y",
-  "pyenv": "n",
-  "pyenvvirtualenv": "n",
-  "golang": "y",
-  "rvm": "y",
-  "jekyll": "y",
-  "vagrant": "y",
-  "docker": "y",
-  "dockercompose": "y",
-  "kubectl": "n",
-  "kuberneteshelm": "n",
-  "mosh": "y",
-  "netkit": "n"
+  "personal": {
+    "name": "Matheus Rocha Vieira",
+    "email": "matheusrv@email.com",
+    "githubuser": "MatheusRV",
+    "defaultfolder": "/mnt/d/Cloud/GitHub"
+  },
+  "programs": [
+    {
+      "program": "ssh",
+      "name": "Secure Shell (SSH)",
+      "installation": "true",
+      "default": "true"
+    },
+    {
+      "program": "protobuf",
+      "name": "Google Protobuf",
+      "installation": "false",
+      "default": "true"
+    },
+    {
+      "program": "azurecli",
+      "name": "Azure Comand-line Interface",
+      "installation": "false",
+      "default": "true"
+    },
+    {
+      "program": "herokucli",
+      "name": "Heroku Comand-line Interface",
+      "installation": "false",
+      "default": "true"
+    },
+    {
+      "program": "gcloudcli",
+      "name": "Google Cloud Comand-line Interface",
+      "installation": "false",
+      "default": "true"
+    },
+    {
+      "program": "gcloudsdk",
+      "name": "Google Cloud Software Development Kit",
+      "installation": "false",
+      "default": "true"
+    },
+    {
+      "program": "rlang",
+      "name": "R Lang",
+      "installation": "false",
+      "default": "true"
+    },
+    {
+      "program": "dotnet",
+      "name": "dotNet",
+      "installation": "false",
+      "default": "true"
+    },
+    {
+      "program": "dotnetnuget",
+      "name": "dotNet nuGet",
+      "installation": "false",
+      "default": "true"
+    },
+    {
+      "program": "dotnetmono",
+      "name": "dotNet Mono",
+      "installation": "false",
+      "default": "true"
+    },
+    {
+      "program": "apache",
+      "name": "Apache",
+      "installation": "true",
+      "default": "true"
+    },
+    {
+      "program": "nginx",
+      "name": "Nginx",
+      "installation": "false",
+      "default": "true"
+    },
+    {
+      "program": "php",
+      "name": "PHP Hypertext Preprocessor",
+      "installation": "true",
+      "default": "true"
+    },
+    {
+      "program": "laravel",
+      "name": "Laravel",
+      "installation": "true",
+      "default": "true"
+    },
+    {
+      "program": "mysql",
+      "name": "MySQL",
+      "installation": "true",
+      "default": "true"
+    },
+    {
+      "program": "phpmyadmin",
+      "name": "phpMyAdmin",
+      "installation": "true",
+      "default": "true"
+    },
+    {
+      "program": "postgre",
+      "name": "Postgre",
+      "installation": "false",
+      "default": "true"
+    },
+    {
+      "program": "postgis",
+      "name": "PostGIS",
+      "installation": "false",
+      "default": "true"
+    },
+    {
+      "program": "pgadmin",
+      "name": "pgAdmin",
+      "installation": "false",
+      "default": "true"
+    },
+    {
+      "program": "mongo",
+      "name": "MongoDB",
+      "installation": "false",
+      "default": "true"
+    },
+    {
+      "program": "redis",
+      "name": "Redis",
+      "installation": "false",
+      "default": "true"
+    },
+    {
+      "program": "nvm",
+      "name": "Node Version Manager",
+      "installation": "true",
+      "default": "true"
+    },
+    {
+      "program": "strapi",
+      "name": "Strapi",
+      "installation": "true",
+      "default": "true"
+    },
+    {
+      "program": "anaconda",
+      "name": "Anaconda",
+      "installation": "false",
+      "default": "true"
+    },
+    {
+      "program": "python3",
+      "name": "Python3",
+      "installation": "true",
+      "default": "true"
+    },
+    {
+      "program": "pythonpip",
+      "name": "Python PIP",
+      "installation": "true",
+      "default": "true"
+    },
+    {
+      "program": "pyenv",
+      "name": "Python Virtual Env",
+      "installation": "false",
+      "default": "true"
+    },
+    {
+      "program": "pyenvvirtualenv",
+      "name": "Python Env Virtual Env",
+      "installation": "false",
+      "default": "true"
+    },
+    {
+      "program": "golang",
+      "name": "GO Land",
+      "installation": "false",
+      "default": "true"
+    },
+    {
+      "program": "rvm",
+      "name": "Ruvy Version Manager",
+      "installation": "true",
+      "default": "true"
+    },
+    {
+      "program": "jekyll",
+      "name": "Jekyll",
+      "installation": "true",
+      "default": "true"
+    },
+    {
+      "program": "vagrant",
+      "name": "Vagrant",
+      "installation": "true",
+      "default": "true"
+    },
+    {
+      "program": "docker",
+      "name": "Docker",
+      "installation": "true",
+      "default": "true"
+    },
+    {
+      "program": "dockercompose",
+      "name": "Docker Compose",
+      "installation": "true",
+      "default": "true"
+    },
+    {
+      "program": "kubectl",
+      "name": "Kubernetes",
+      "installation": "true",
+      "default": "true"
+    },
+    {
+      "program": "kuberneteshelm",
+      "name": "Kubernetes Helm",
+      "installation": "false",
+      "default": "true"
+    },
+    {
+      "program": "mosh",
+      "name": "Mosh",
+      "installation": "true",
+      "default": "true"
+    },
+    {
+      "program": "netkit",
+      "name": "NetKit",
+      "installation": "false",
+      "default": "true"
+    }
+  ],
+  "configurations": {
+    "debug": "true",
+    "purge": "false"
+  }
 }

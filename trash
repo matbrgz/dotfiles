@@ -1,0 +1,35 @@
+printf "\n php Version: (Type 72 for php7.2, type 7.1 for php7.1 or 56 for php5.6 or 'n' to escape): "
+			read -r phpv
+			if [ -z "${phpv}" ]; then
+				phpv=72
+				printf "php7.2"
+			elif [ "${phpv}" == 7.1 ] || [ "${phpv}" == 71 ]; then
+				phpv=71
+				printf "php7.1"
+			elif [ "${phpv}" == 5.6 ] || [ "${phpv}" == 56 ]; then
+				phpv=56
+				printf "php7.1"
+			else
+				phpv=false
+			fi
+			if [ ! "${phpv}" == false ]; then
+				printf "\n Install Laravel (Y/n): "
+				read -r laravel
+				if [ -z "${laravel}" ] || [ "${laravel}" == Y ] || [ "${laravel}" == y ]; then
+					laravel=true
+				else
+					laravel=false
+				fi
+				printf "\n Install php Composer (Y/n): "
+				read -r phpcomposer
+				if [ -z "${phpcomposer}" ] || [ "${phpcomposer}" == Y ] || [ "${phpcomposer}" == y ]; then
+					phpcomposer=true
+				else
+					phpcomposer=false
+				fi
+			else
+				laravel=false
+				phpcomposer=false
+			fi
+			
+		## just change value on json for write

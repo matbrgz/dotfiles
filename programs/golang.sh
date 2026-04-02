@@ -1,6 +1,6 @@
 #!/bin/bash
-debug="$(jq -r '.debug' "${PREVIOUS_PWD}"/bootstrap/settings.json)"
-if [ "${debug}" == true ]; then
+PREVIOUS_PWD="$(jq -r '.pwd' "${HOME}"/tmp/pwd.json)"
+if [ "$(jq -r '.configurations.debug' "${PREVIOUS_PWD}"/bootstrap/settings.json)" == true ] ; then
 	# Disable exit on non 0
 	set +e
 else
@@ -9,9 +9,8 @@ else
 fi
 HEADER_TYPE="$(uname -s)"
 ARCHITECTURE_TYPE="$(dpkg --print-architecture)"
-PREVIOUS_PWD="$(jq -r '.pwd' "${HOME}"/tmp/pwd.json)"
 GOLANG_VERSION="$(jq -r '.GOLANG_VERSION' "${PREVIOUS_PWD}"/bootstrap/version.json)"
-if [ "$(jq -r '.purge' "${PREVIOUS_PWD}"/bootstrap/settings.json)" == true ] ; then
+if [ "$(jq -r '.configurations.purge' "${PREVIOUS_PWD}"/bootstrap/settings.json)" == true ] ; then
 	sudo rm -f -R /usr/local/go
 	sudo rm -f -R /usr/local/.go
 	sudo rm -rf "${HOME}"/.go/
@@ -24,7 +23,7 @@ if [ "$(jq -r '.purge' "${PREVIOUS_PWD}"/bootstrap/settings.json)" == true ] ; t
 fi
 if [ -d /usr/local/go ] || [ -d "${HOME}"/go ] ; then
 	echo "The 'go' or '.go' directories already exist. Exiting."
-	exit 1
+	kill "$0"
 else
 	sudo mkdir -p /usr/local/go
 	sudo chmod 777 /usr/local/go
@@ -34,7 +33,7 @@ fi
 if ! sudo wget https://dl.google.com/go/go"${GOLANG_VERSION,,}"."${HEADER_TYPE,,}"-"${ARCHITECTURE_TYPE,,}".tar.gz
 then
 	echo "GoLang Download failed! Exiting."
-	exit 1
+	kill "$0"
 fi
 sudo tar -C "/usr/local" -xzf go"${GOLANG_VERSION,,}"."${HEADER_TYPE,,}"-"${ARCHITECTURE_TYPE,,}".tar.gz
 {
