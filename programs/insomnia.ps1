@@ -1,0 +1,1 @@
+cinst -y insomnia-rest-api-client
