@@ -21,18 +21,17 @@ if (([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::
         Set-ExecutionPolicy Bypass -Scope Process -Force; Invoke-Expression ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
         RefreshEnv
         cinst -y boxstarter
+        Import-Module Boxstarter.Chocolatey
         
         $StopWatch.Stop()
         $StopWatchElapsed = $StopWatch.Elapsed.TotalSeconds
         Write-Output " [ DONE ] Instaling Common Requirements ... $StopWatchElapsed seconds`n"
         Write-Output "`n [ START ] Windows Update"
         $StopWatch = [System.Diagnostics.Stopwatch]::StartNew()
-        Enable-UAC
         Enable-MicrosoftUpdate
         Update-Help
         Install-WindowsUpdate -acceptEula
         Disable-WindowsUpdate
-        Disable-UAC
         $StopWatch.Stop()
         $StopWatchElapsed = $StopWatch.Elapsed.TotalSeconds
         Write-Output " [ DONE ] Windows Update ... $StopWatchElapsed seconds`n"
@@ -180,12 +179,12 @@ if (([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::
             Set-ItemProperty -Path HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced -Name NavPaneShowAllFolders -Value 1
             Write-Output "`n [ DOING ] Opens PC to This PC, not quick access"
             Set-ItemProperty -Path HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced -Name LaunchTo -Value 1
-            Write-Output "`n [ DOING ] Taskbar where window is open for multi-monitor"
-            Set-ItemProperty -Path HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced -Name MMTaskbarMode -Value 2
+            Write-Output "`n [ DOING ] Fix taskbar where window is open for multi-monitor"
+            Set-ItemProperty -Path HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced -Name MMTaskbarMode -Value 0
             Write-Output "`n [ DOING ] Disable Quick Access: Recent Files"
-            Set-ItemProperty -Path HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer -Name ShowRecent -Type DWord -Value 0
+            Set-ItemProperty -Path HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer -Name ShowRecent -Type DWord -Value 1
             Write-Output "`n [ DOING ] Disable Quick Access: Frequent Folders"
-            Set-ItemProperty -Path HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer -Name ShowFrequent -Type DWord -Value 0
+            Set-ItemProperty -Path HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer -Name ShowFrequent -Type DWord -Value 1
             Stop-Process -processName: Explorer -force # This will restart the Explorer service to make this work.
         }
         Write-Output "`n [ START ] Unistall Windows10 Unnecessary and Blotware Apps"
@@ -354,7 +353,6 @@ if (([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::
     }
     Write-Output "`n [ DOING ] Enable developer mode on the system"
     Set-ItemProperty -Path HKLM:\Software\Microsoft\Windows\CurrentVersion\AppModelUnlock -Name AllowDevelopmentWithoutDevLicense -Value 1
-    Disable-UAC
     $Programs = @(
         #Fonts
         "hackfont"
@@ -400,7 +398,6 @@ if (([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::
             Write-Output " [ DONE ] $ProgramName ... $StopWatchElapsed  seconds`n"
         }
     }
-    Enable-UAC
     RefreshEnv
     Start-Process -FilePath 'autoruns' -Wait
     $OzoneInstall = Read-Host -Prompt "`n Do you wish to install Ozone Exon V30 Mice Driver? (Y/n)"

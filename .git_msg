@@ -1,3 +1,3 @@
-chore: update kubectl version to 1.48.8
+fix: resolve powershell script errors and configuration inconsistencies
 
-Bumped the Kubernetes CLI (kubectl) version to ensure compatibility with modern clusters.
+Fixed various glitches in PowerShell scripts and corrected erroneous configurations in the bootstrap setup.
