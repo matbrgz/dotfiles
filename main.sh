@@ -14,7 +14,7 @@
         echo "Download failed downloading molovo/lumberjack! Exiting."
         kill $$
     fi
-    if [ -d /usr/local/bin/lj ]; then
+    if [ -a /usr/local/bin/lj ]; then
         sudo rm -f -R /usr/local/bin/lj
         sudo mv lumberjack/lj /usr/local/bin
     fi
@@ -133,6 +133,7 @@
             username="Matheus Rocha Vieira"
             echo "$username"
         fi
+        git config --global user.name "${username}"
         jq '.personal.name = "'"${username}"'"' "${PREVIOUS_PWD}"/bootstrap/settings.json | sponge "${PREVIOUS_PWD}"/bootstrap/settings.json
         unset username
         printf "\n Your E-Mail (Default: matheusrv@email.com): "
@@ -141,6 +142,8 @@
             email="matheusrv@email.com"
             echo "$email"
         fi
+        git config --global user.email "${email}"
+        ssh-keygen -t rsa -b 4096 -C "${email}"
         jq '.personal.email = "'"${email}"'"' "${PREVIOUS_PWD}"/bootstrap/settings.json | sponge "${PREVIOUS_PWD}"/bootstrap/settings.json
         unset email
         printf "\n Your GitHub Username (Default: MatheusRV): "
