@@ -282,7 +282,6 @@
     apps=(
         htop
         tmux
-        shellcheck
     )
     sudo apt -y install "${apps[@]}"
     endtime=$(date +%s)
