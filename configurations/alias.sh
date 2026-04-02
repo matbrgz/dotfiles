@@ -1,5 +1,11 @@
-#!/bin/bash -e
-defaultfolder="$(jq -r '.defaultfolder' "${PREVIOUS_PWD}"/bootstrap/settings.json)"
+#!/bin/bash
+PREVIOUS_PWD="$(jq -r '.pwd' "${HOME}"/tmp/pwd.json)"
+if [ "$(jq -r '.configurations.debug' "${PREVIOUS_PWD}"/bootstrap/settings.json)" == true ] ; then
+    set +e
+else
+    set -e
+fi
+defaultfolder="$(jq -r '.personal.defaultfolder' "${PREVIOUS_PWD}"/bootstrap/settings.json)"
 echo "
 # ls aliases
 alias la=\"ls -al\"
@@ -29,3 +35,9 @@ alias editbash=\"nano ${HOME}/.bashrc\"
 alias editba=\"nano ${HOME}/.bash_aliases\"
 alias resource=\"source ${HOME}/.bashrc\"
 " >> "${HOME}"/.bash_aliases
+
+if [[ ! "$(uname -r)" =~ "Microsoft$" ]] ; then
+    echo '# Alias to run Windows cmd.exe from WSL
+alias cmd="/mnt/c/Windows/System32/cmd.exe"
+alias cmdc="/mnt/c/Windows/System32/cmd.exe /c"' >> "${HOME}"/.bash_aliases
+fi
