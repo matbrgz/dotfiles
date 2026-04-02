@@ -1,3 +1,3 @@
-feat: implement initial bootstrap and program installers
+feat: expand installer library and technical documentation
 
-Added the primary installation logic, including: Settings and bootstrap JSON files, utility library for cross-platform installers, and core program installation scripts.
+Massive expansion of the programs library with over 30 new installation scripts.
