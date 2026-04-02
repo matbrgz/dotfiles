@@ -1,0 +1,1 @@
+cinst -y discord.install
