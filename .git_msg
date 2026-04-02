@@ -1,3 +1,3 @@
-fix: update docker installation script
+fix: update rvm installation script
 
-Corrected Docker installation procedures for improved stability.
+Updated Ruby Version Manager setup logic.
