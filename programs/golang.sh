@@ -34,6 +34,8 @@ if ! sudo wget https://dl.google.com/go/go"${GOLANG_VERSION,,}"."${HEADER_TYPE,,
 fi
 sudo tar -C "/usr/local" -xzf go"${GOLANG_VERSION,,}"."${HEADER_TYPE,,}"-"${ARCHITECTURE_TYPE,,}".tar.gz
 {
+	#Go Lang Config
 	export GOBIN=${HOME}/go/bin
 	export PATH=$PATH:/usr/local/go/bin:${HOME}/go
+
 } >>"${HOME}"/.bashrc

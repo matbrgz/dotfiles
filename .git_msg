@@ -1,3 +1,3 @@
-feat: implement X11 server support
+feat: add RStudio and improve bashrc documentation
 
-Added modules for X11 graphical forwarding support.
+Integrated RStudio installer and documented .bashrc modifications.

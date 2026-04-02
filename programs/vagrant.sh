@@ -18,6 +18,7 @@ sudo dpkg -i vagrant_"${VAGRANT_VERSION}"_"${ARCHITECTURE_TYPE}".deb
 defaultfolder="$(jq -r '.personal.defaultfolder' "${PREVIOUS_PWD}"/bootstrap/settings.json)"
 if [[ ! "$(uname -r)" =~ "Microsoft$" ]]; then
   echo '
+# Vagrant Config
 export VAGRANT_WSL_ENABLE_WINDOWS_ACCESS="1"
 export PATH="${PATH}:/mnt/c/Program Files/Oracle/VirtualBox"
 export VAGRANT_WSL_WINDOWS_ACCESS_USER_HOME_PATH="'"${defaultfolder}"'"
@@ -25,6 +26,7 @@ export VAGRANT_HOME="'"${HOME}"'/.vagrant.d"
 ' >>"${HOME}"/.bashrc
 fi
 echo '
+# Vagrant Alias
 alias vup="vagrant up && vagrant ssh"
 alias vupdate="vagrant box update"
 alias vhalt="vagrant halt"
