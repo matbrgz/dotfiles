@@ -1,3 +1,3 @@
-chore: ensure dependency resolution works
+feat: improve localtunnel and install scripts
 
-Validated the automated dependency management system.
+Polished the localtunnel module and main installer.
