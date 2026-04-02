@@ -1,35 +1,69 @@
 #!/bin/bash
 {
     starttotaltime=$(date +%s)
-    PREVIOUS_PWD="$1"
+    clear && clear
+	PREVIOUS_PWD="${PWD}"
+	cat <<EOF
+ Welcome to Windows Subsystem Linux or Ubuntu Bootstrap Script v0.9.0
+ Initializating script, please waiting until program configure itself.
+ This may take a few minutes and you will be prompted for the password
+ to elevate the user's permission several times.
+EOF
     printf "\n [ START ] Configuring System Run\n"
     starttime=$(date +%s)
+	if [ -d "${HOME}"/tmp ]; then
+		sudo rm -f -R "${HOME}"/tmp
+	fi
+	mkdir -p "${HOME}"/tmp
+	cd "${HOME}"/tmp || return
     sudo apt -qq update
     endtime=$(date +%s)
     printf " [ DONE ] Configuring System Run ... %s seconds\n" "$((endtime - starttime))"
     printf "\n [ START ] Instaling Major Requirements\n"
     starttime=$(date +%s)
     trap '' 2
-    if ! git clone https://github.com/molovo/lumberjack; then
-        echo "Download failed downloading molovo/lumberjack! Exiting."
-        kill $$
-    fi
-    if [ -a /usr/local/bin/lj ]; then
-        sudo rm -f -R /usr/local/bin/lj
-        sudo mv lumberjack/lj /usr/local/bin
-    fi
     sudo apt -y install jq moreutils
+    trap 2
     if [ ! -n "$(command -v jq)" ] || [ ! -n "$(command -v sponge)" ]; then
-        lj critical "Command jq or sponge (moreutils) was not instaled sucessful."
+        printf "\n [ ERROR ] Command jq or sponge (moreutils) was not instaled sucessful. Restart script."
         kill $$
     fi
-    trap 2
     endtime=$(date +%s)
     printf " [ DONE ] Instaling Major Requirements ... %s seconds\n" "$((endtime - starttime))"
-    lj " [ DONE ] Instaling Major Requirements ... %s seconds\n" "$((endtime - starttime))"
-    printf "\n ( PRESS KEY '1' FOR EXPRESS INSTALL )
+    cat <<EOF
+  Welcome to Windows Subsystem Linux Ubuntu Bootstrap Script v0.9.0
+\n
+                   .88888888:.
+                  88888888.88888.
+                .8888888888888888.
+                888888888888888888
+                88' _`88'_  `88888
+                88 88 88 88  88888
+                88_88_::_88_:88888
+                88:::,::,:::::8888
+                88`:::::::::'`8888
+               .88  `::::'    8:88.
+              8888            `8:888.
+            .8888'             `888888.
+           .8888:..  .::.  ...:'8888888:.
+          .8888.'     :'     `'::`88:88888
+         .8888        '         `.888:8888.
+        888:8         .           888:88888
+      .888:88        .:           888:88888:
+      8888888.       ::           88:888888
+      `.::.888.      ::          .88888888
+     .::::::.888.    ::         :::`8888'.:.
+    ::::::::::.888   '         .::::::::::::
+    ::::::::::::.8    '      .:8::::::::::::.
+   .::::::::::::::.        .:888:::::::::::::
+  :::::::::::::::88:.__..:88888:::::::::::'
+    `'.:::::::::::88888888888.88:::::::::'
+          `':::_:' -- '' -'-' `':_::::'`
+\n
+ ( PRESS KEY '1' FOR EXPRESS INSTALL )
  ( PRESS KEY '2' FOR CUSTOM INSTALL )\n
- Option: "
+ Option: 
+EOF
     read -r instalationtype
     printf "\n Enable Debug Mode (y/N): "
     read -r debugmode
@@ -50,7 +84,9 @@
     if [ -z "${firstrun}" ] || [ "${firstrun}" == Y ] || [ "${firstrun}" == y ]; then
         printf "\n [ START ] Update & Upgrade\n"
         starttime=$(date +%s)
+        trap '' 2
         sudo apt -y upgrade && sudo apt -y dist-upgrade
+        trap 2
         endtime=$(date +%s)
         printf " [ DONE ] Update & Upgrade ... %s seconds\n" "$((endtime - starttime))"
         printf "\n [ START ] Instaling Common Requirements\n"
@@ -59,31 +95,35 @@
             software-properties-common
             build-essential
             apt-transport-https
+            git
             curl
             unzip
             libssl-dev
             ca-certificates
         )
+        trap '' 2
         sudo apt -y install "${apps[@]}"
+        trap 2
         unset apps
         endtime=$(date +%s)
         printf " [ DONE ] Common Requirements ... %s seconds\n" "$((endtime - starttime))"
-        lj " [ DONE ] Instaling Common Requirements ... %s seconds\n" "$((endtime - starttime))"
         printf "\n [ START ] Configurating Command Alias\n"
         starttime=$(date +%s)
+        trap '' 2
         "${PREVIOUS_PWD}"/configurations/alias.sh "${PREVIOUS_PWD}"
         wait
+        trap 2
         endtime=$(date +%s)
         printf " [ DONE ] Configurating Command Alias ... %s seconds\n" "$((endtime - starttime))"
-        lj " [ DONE ] Configurating Command Alias ... %s seconds\n" "$((endtime - starttime))"
     elif [ "${firstrun}" == N ] || [ "${firstrun}" == n ]; then
         printf "\n [ START ] Fix Possible Erros\n"
         starttime=$(date +%s)
+        trap '' 2
         sudo apt --fix-broken install
         sudo dpkg --configure -a
+        trap 2
         endtime=$(date +%s)
         printf " [ DONE ] Fix Possible Erros ... %s seconds\n" "$((endtime - starttime))"
-        lj " [ DONE ] Fix Possible Erros ... %s seconds\n" "$((endtime - starttime))"
         printf "\n Enable Purge Mode (y/N): "
         read -r purgemode
         if [ "$purgemode" == Y ] || [ "$purgemode" == y ]; then
@@ -125,7 +165,6 @@
         sleep 3
         endtime=$(date +%s)
         printf " [ DONE ] Software Instalation List ... %s seconds\n" "$((endtime - starttime))"
-        lj " [ DONE ] Software Instalation List ... %s seconds\n" "$((endtime - starttime))"
     elif [ "${instalationtype}" == 2 ]; then
         printf "\n Your Name (Default: Matheus Rocha Vieira): "
         read -r username
@@ -208,8 +247,7 @@
                 fi
                 jq '.programs['"${i}"'].installation = "'"${programinstallation}"'"' "${PREVIOUS_PWD}"/bootstrap/settings.json | sponge "${PREVIOUS_PWD}"/bootstrap/settings.json
             else
-                programname="$(_jq '.name')"
-                printf "\n You can't install %s without %s\n" "$programname" "$programdependencies"
+                printf "\n %s depends on %s\n" "$(_jq '.name')" "$programdependencies"
             fi
             ((i++))
             unset programname
@@ -245,27 +283,31 @@
             if [ "${installflag}" == true ]; then
                 printf "\n [ START ] %s\n" "$($programname)"
                 starttime=$(date +%s)
+                trap '' 2
                 "${PREVIOUS_PWD}"/programs/"${programslug}".sh "${PREVIOUS_PWD}" || installationerror=true
                 wait
+                trap 2
                 if [ "${installationerror}" == true ]; then
                     installationerror=false
                     endtime=$(date +%s)
-                    printf " [ ERROR ] %s returns a non-zero exit status ... %s seconds\n" "$($programname)" "$((endtime - starttime))"
+                    printf "\n  [ ERROR ] %s returns a non-zero exit status ... %s seconds\n" "$($programname)" "$((endtime - starttime))"
                 else
                     programconfiguration="$(jq -r '.programs[] | select(.program=="'"${programslug}"'").config' "${PREVIOUS_PWD}"/bootstrap/settings.json)"
                     if [ "${programconfiguration}" == true ]; then
                         printf "\n [ START ] %s configuration\n" "$($programname)"
+                        trap 2
                         "${PREVIOUS_PWD}"/programs/"${programslug}"-config.sh "${PREVIOUS_PWD}" || installationerror=true
                         wait
+                        trap 2
                         if [ "${installationerror}" == true ]; then
                             installationerror=false
-                            printf " [ ERROR ] %s configuration returns a non-zero exit status\n" "$($programname)"
+                            printf "\n [ ERROR ] %s configuration returns a non-zero exit status\n" "$($programname)"
                         else
-                            printf " [ DONE ] %s configuration\n" "$($programname)"
+                            printf "\n [ DONE ] %s configuration\n" "$($programname)"
                         fi
                     fi
                     endtime=$(date +%s)
-                    printf " [ DONE ] %s ... %s seconds\n" "$($programname)" "$((endtime - starttime))"
+                    printf "\n [ DONE ] %s ... %s seconds\n" "$($programname)" "$((endtime - starttime))"
                 fi
             fi
         fi
@@ -283,18 +325,18 @@
         htop
         tmux
     )
+    trap '' 2
     sudo apt -y install "${apps[@]}"
+    trap 2
     endtime=$(date +%s)
-    printf " [ DONE ] Common Requirements ... %s seconds\n" "$((endtime - starttime))"
+    printf "\n [ DONE ] Common Requirements ... %s seconds\n" "$((endtime - starttime))"
     printf "\n [ START ] Cleaning\n"
     starttime=$(date +%s)
+    trap '' 2
     sudo apt -y autoremove && sudo apt -y autoclean && sudo apt -y clean
+    trap 2
     cd "${PREVIOUS_PWD}" && echo "cd ${PREVIOUS_PWD}" || return
     sudo rm -R -f "${HOME}"/tmp
-    endtime=$(date +%s)
-    printf " [ DONE ] Cleaning ... %s seconds\n" "$((endtime - starttime))"
-    endtotaltime=$(date +%s)
-    printf "\n Total Execution Time ... %s seconds\n" "$((endtotaltime - starttotaltime))"
     variables=(
         PREVIOUS_PWD
         starttotaltime
@@ -304,4 +346,9 @@
         apps
     )
     unset "${variables[@]}"
+    endtime=$(date +%s)
+    printf "\n [ DONE ] Cleaning ... %s seconds\n" "$((endtime - starttime))"
+
+    endtotaltime=$(date +%s)
+    printf "\n Total Execution Time ... %s seconds\n" "$((endtotaltime - starttotaltime))"
 }
