@@ -41,9 +41,9 @@ EOF
     else
         debugmode=false
     fi
-    jq '.configurations.debug = "'"${debugmode}"'"' "${PREVIOUS_PWD}"/bootstrap/settings.json | sponge "${PREVIOUS_PWD}"/bootstrap/settings.json
+    jq '.configurations.debug = "'"${debugmode}"'"' "${PREVIOUS_PWD}"/bootstrap/unix-settings.json | sponge "${PREVIOUS_PWD}"/bootstrap/unix-settings.json
     unset debugmode
-    if [ "$(jq -r '.configurations.debug' "${PREVIOUS_PWD}"/bootstrap/settings.json)" == true ]; then
+    if [ "$(jq -r '.configurations.debug' "${PREVIOUS_PWD}"/bootstrap/unix-settings.json)" == true ]; then
         set +e
     else
         set -e
@@ -100,7 +100,7 @@ EOF
         else
             purgemode=false
         fi
-        jq '.configurations.purge = "'"${purgemode}"'"' "${PREVIOUS_PWD}"/bootstrap/settings.json | sponge "${PREVIOUS_PWD}"/bootstrap/settings.json
+        jq '.configurations.purge = "'"${purgemode}"'"' "${PREVIOUS_PWD}"/bootstrap/unix-settings.json | sponge "${PREVIOUS_PWD}"/bootstrap/unix-settings.json
         unset purgemode
     else
         kill $$
@@ -113,17 +113,17 @@ EOF
         printf "\n Use default program instalation (y/N): "
         read -r defaultprogram
         printf "\n"
-        for row in $(jq -r '.programs[] | @base64' "${PREVIOUS_PWD}"/bootstrap/settings.json); do
+        for row in $(jq -r '.programs[] | @base64' "${PREVIOUS_PWD}"/bootstrap/unix-settings.json); do
             _jq() {
                 echo "${row}" | base64 --decode | jq -r "${1}"
             }
             if [ "$defaultprogram" == Y ] || [ "$defaultprogram" == y ]; then
                 programdefault=$(_jq '.default')
-                jq '.programs['"${i}"'].installation = "'"${programdefault}"'"' "${PREVIOUS_PWD}"/bootstrap/settings.json | sponge "${PREVIOUS_PWD}"/bootstrap/settings.json
+                jq '.programs['"${i}"'].installation = "'"${programdefault}"'"' "${PREVIOUS_PWD}"/bootstrap/unix-settings.json | sponge "${PREVIOUS_PWD}"/bootstrap/unix-settings.json
             fi
             ((i++))
         done
-        for row in $(jq -r '.programs[] | @base64' "${PREVIOUS_PWD}"/bootstrap/settings.json); do
+        for row in $(jq -r '.programs[] | @base64' "${PREVIOUS_PWD}"/bootstrap/unix-settings.json); do
             _jq() {
                 echo "${row}" | base64 --decode | jq -r "${1}"
             }
@@ -135,7 +135,6 @@ EOF
         endtime=$(date +%s)
         printf " [ DONE ] Software Instalation List ... %s seconds\n" "$((endtime - starttime))"
     elif [ "${instalationtype}" == 2 ]; then
-        :'
         printf "\n Your Name (Default: Matheus Rocha Vieira): "
         read -r username
         if [ -z "${username}" ]; then
@@ -143,7 +142,7 @@ EOF
             echo "$username"
         fi
         git config --global user.name "${username}"
-        jq '.personal.name = "'"${username}"'"' "${PREVIOUS_PWD}"/bootstrap/settings.json | sponge "${PREVIOUS_PWD}"/bootstrap/settings.json
+        jq '.personal.name = "'"${username}"'"' "${PREVIOUS_PWD}"/bootstrap/unix-settings.json | sponge "${PREVIOUS_PWD}"/bootstrap/unix-settings.json
         unset username
         printf "\n Your E-Mail (Default: matheusrv@email.com): "
         read -r email
@@ -155,7 +154,7 @@ EOF
         if [ ! -d ~/.ssh ]; then
             ssh-keygen -t rsa -b 4096 -C "${email}"
         fi
-        jq '.personal.email = "'"${email}"'"' "${PREVIOUS_PWD}"/bootstrap/settings.json | sponge "${PREVIOUS_PWD}"/bootstrap/settings.json
+        jq '.personal.email = "'"${email}"'"' "${PREVIOUS_PWD}"/bootstrap/unix-settings.json | sponge "${PREVIOUS_PWD}"/bootstrap/unix-settings.json
         unset email
         printf "\n Your GitHub Username (Default: MatheusRV): "
         read -r githubuser
@@ -163,7 +162,7 @@ EOF
             githubuser="MatheusRV"
             echo "$githubuser"
         fi
-        jq '.personal.githubuser = "'"${githubuser}"'"' "${PREVIOUS_PWD}"/bootstrap/settings.json | sponge "${PREVIOUS_PWD}"/bootstrap/settings.json
+        jq '.personal.githubuser = "'"${githubuser}"'"' "${PREVIOUS_PWD}"/bootstrap/unix-settings.json | sponge "${PREVIOUS_PWD}"/bootstrap/unix-settings.json
         unset githubuser
         if [[ "$(uname -r)" =~ "Microsoft$" ]]; then
             defaultoption="(Default for WSL: '/mnt/c/Dev')"
@@ -180,6 +179,7 @@ EOF
             fi
             if [ ! -d "${defaultfolder}" ]; then
                 mkdir "${defaultfolder}"
+                echo " [ DOING ] mkdir ${defaultfolder}"
             fi
             echo "${defaultfolder}"
         else
@@ -188,17 +188,16 @@ EOF
                 echo " [ DOING ] mkdir ${defaultfolder}"
             fi
         fi
-        jq '.personal.defaultfolder = "'"${defaultfolder}"'"' "${PREVIOUS_PWD}"/bootstrap/settings.json | sponge "${PREVIOUS_PWD}"/bootstrap/settings.json
+        jq '.personal.defaultfolder = "'"${defaultfolder}"'"' "${PREVIOUS_PWD}"/bootstrap/unix-settings.json | sponge "${PREVIOUS_PWD}"/bootstrap/unix-settings.json
         unset defaultfolder
-        '
         i=0
-        for row in $(jq -r '.programs[] | @base64' "${PREVIOUS_PWD}"/bootstrap/settings.json); do
+        for row in $(jq -r '.programs[] | @base64' "${PREVIOUS_PWD}"/bootstrap/unix-settings.json); do
             _jq() {
                 echo "${row}" | base64 --decode | jq -r "${1}"
             }
             programslug="$(_jq '.program')"
-            programdependencies="$(jq -r '.programs[] | select(.program=="'"${programslug}"'").dependencies' "${PREVIOUS_PWD}"/bootstrap/settings.json)"
-            dependencieinstallation="$(jq -r '.programs[] | select(.program=="'"${programdependencies}"'").installation' "${PREVIOUS_PWD}"/bootstrap/settings.json)"
+            programdependencies="$(jq -r '.programs[] | select(.program=="'"${programslug}"'").dependencies' "${PREVIOUS_PWD}"/bootstrap/unix-settings.json)"
+            dependencieinstallation="$(jq -r '.programs[] | select(.program=="'"${programdependencies}"'").installation' "${PREVIOUS_PWD}"/bootstrap/unix-settings.json)"
             if [ "${programdependencies}" == "null" ] || [ "${dependencieinstallation}" == true ]; then
                 programdefault=$(_jq '.default')
                 if [ "$programdefault" == true ]; then
@@ -218,7 +217,7 @@ EOF
                     programinstallation=false
                     echo "${programinstallation}"
                 fi
-                jq '.programs['"${i}"'].installation = "'"${programinstallation}"'"' "${PREVIOUS_PWD}"/bootstrap/settings.json | sponge "${PREVIOUS_PWD}"/bootstrap/settings.json
+                jq '.programs['"${i}"'].installation = "'"${programinstallation}"'"' "${PREVIOUS_PWD}"/bootstrap/unix-settings.json | sponge "${PREVIOUS_PWD}"/bootstrap/unix-settings.json
             else
                 printf "\n %s depends on %s\n" "$(_jq '.name')" "$programdependencies"
             fi
@@ -237,7 +236,7 @@ EOF
         kill $$
     fi
     unset instalationtype
-    for row in $(jq -r '.programs[] | @base64' "${PREVIOUS_PWD}"/bootstrap/settings.json); do
+    for row in $(jq -r '.programs[] | @base64' "${PREVIOUS_PWD}"/bootstrap/unix-settings.json); do
         _jq() {
             echo "${row}" | base64 --decode | jq -r "${1}"
         }
@@ -245,8 +244,8 @@ EOF
             programslug="$(_jq '.program')"
             #shellcheck disable=SC2116
             programname="$(echo _jq '.name')"
-            programdependencies="$(jq -r '.programs[] | select(.program=="'"${programslug}"'").dependencies' "${PREVIOUS_PWD}"/bootstrap/settings.json)"
-            dependencieinstallation="$(jq -r '.programs[] | select(.program=="'"${programdependencies}"'").installation' "${PREVIOUS_PWD}"/bootstrap/settings.json)"
+            programdependencies="$(jq -r '.programs[] | select(.program=="'"${programslug}"'").dependencies' "${PREVIOUS_PWD}"/bootstrap/unix-settings.json)"
+            dependencieinstallation="$(jq -r '.programs[] | select(.program=="'"${programdependencies}"'").installation' "${PREVIOUS_PWD}"/bootstrap/unix-settings.json)"
             if [ "${programdependencies}" == "null" ] || [ "${dependencieinstallation}" == true ]; then
                 installflag=true
             else
@@ -265,7 +264,7 @@ EOF
                     endtime=$(date +%s)
                     printf "\n  [ ERROR ] %s returns a non-zero exit status ... %s seconds\n" "$($programname)" "$((endtime - starttime))"
                 else
-                    programconfiguration="$(jq -r '.programs[] | select(.program=="'"${programslug}"'").config' "${PREVIOUS_PWD}"/bootstrap/settings.json)"
+                    programconfiguration="$(jq -r '.programs[] | select(.program=="'"${programslug}"'").config' "${PREVIOUS_PWD}"/bootstrap/unix-settings.json)"
                     if [ "${programconfiguration}" == true ]; then
                         printf "\n [ START ] %s configuration\n" "$($programname)"
                         trap 2
@@ -308,7 +307,7 @@ EOF
     trap '' 2
     sudo apt -y autoremove && sudo apt -y autoclean && sudo apt -y clean
     trap 2
-    cd "${PREVIOUS_PWD}" && echo "cd ${PREVIOUS_PWD}" || return
+    cd "${PREVIOUS_PWD}" && echo " [ DOING ] cd ${PREVIOUS_PWD}" || return
     sudo rm -R -f "${HOME}"/tmp
     variables=(
         PREVIOUS_PWD
@@ -321,7 +320,6 @@ EOF
     unset "${variables[@]}"
     endtime=$(date +%s)
     printf " [ DONE ] Cleaning ... %s seconds\n" "$((endtime - starttime))"
-
     endtotaltime=$(date +%s)
     printf "\n Total Execution Time ... %s seconds\n" "$((endtotaltime - starttotaltime))"
 }

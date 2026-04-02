@@ -1,7 +1,7 @@
 #!/bin/bash
 PREVIOUS_PWD="$1"
-SHFMT_VERSION="$(jq -r '.SHFMT_VERSION' "${PREVIOUS_PWD}"/bootstrap/settings.json)"
-if [ "$(jq -r '.configurations.debug' "${PREVIOUS_PWD}"/bootstrap/settings.json)" == true ]; then
+SHFMT_VERSION="$(jq -r '.SHFMT_VERSION' "${PREVIOUS_PWD}"/bootstrap/unix-settings.json)"
+if [ "$(jq -r '.configurations.debug' "${PREVIOUS_PWD}"/bootstrap/unix-settings.json)" == true ]; then
 	set +e
 else
 	set -e

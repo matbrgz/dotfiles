@@ -1,6 +1,6 @@
 #!/bin/bash
 PREVIOUS_PWD="$1"
-if [ "$(jq -r '.configurations.debug' "${PREVIOUS_PWD}"/bootstrap/settings.json)" == true ]; then
+if [ "$(jq -r '.configurations.debug' "${PREVIOUS_PWD}"/bootstrap/unix-settings.json)" == true ]; then
 	set +e
 else
 	set -e
@@ -8,7 +8,7 @@ fi
 HEADER_TYPE="$(uname -s)"
 ARCHITECTURE_TYPE="$(dpkg --print-architecture)"
 GOLANG_VERSION="$(jq -r '.GOLANG_VERSION' "${PREVIOUS_PWD}"/bootstrap/version.json)"
-if [ "$(jq -r '.configurations.purge' "${PREVIOUS_PWD}"/bootstrap/settings.json)" == true ]; then
+if [ "$(jq -r '.configurations.purge' "${PREVIOUS_PWD}"/bootstrap/unix-settings.json)" == true ]; then
 	sudo rm -f -R /usr/local/go
 	sudo rm -f -R /usr/local/.go
 	sudo rm -rf "${HOME}"/.go/

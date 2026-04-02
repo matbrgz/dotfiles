@@ -1,13 +1,13 @@
 #!/bin/bash
 PREVIOUS_PWD="$1"
-if [ "$(jq -r '.configurations.debug' "${PREVIOUS_PWD}"/bootstrap/settings.json)" == true ]; then
+if [ "$(jq -r '.configurations.debug' "${PREVIOUS_PWD}"/bootstrap/unix-settings.json)" == true ]; then
 	set +e
 else
 	set -e
 fi
 NETKIT_VERSION="$(jq -r '.NETKIT_VERSION' "${PREVIOUS_PWD}"/bootstrap/version.json)"
 NETKITFS_VERSION="$(jq -r '.NETKITFS_VERSION' "${PREVIOUS_PWD}"/bootstrap/version.json)"
-if [ "$(jq -r '.configurations.purge' "${PREVIOUS_PWD}"/bootstrap/settings.json)" == true ]; then
+if [ "$(jq -r '.configurations.purge' "${PREVIOUS_PWD}"/bootstrap/unix-settings.json)" == true ]; then
 	echo "NetKit purge not implemented yet! Skipping."
 fi
 if ! curl http://wiki.netkit.org/download/netkit/netkit-"${NETKIT_VERSION}".tar.bz2; then

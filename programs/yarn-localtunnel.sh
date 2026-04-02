@@ -1,12 +1,12 @@
 #!/bin/bash
 PREVIOUS_PWD="$1"
-if [ "$(jq -r '.configurations.debug' "${PREVIOUS_PWD}"/bootstrap/settings.json)" == true ]; then
+if [ "$(jq -r '.configurations.debug' "${PREVIOUS_PWD}"/bootstrap/unix-settings.json)" == true ]; then
     set +e
 else
     set -e
 fi
-port="$(jq -r '.programs[] | select(.program=="yarn-localtunnel").port' "${PREVIOUS_PWD}"/bootstrap/settings.json)"
-hostname="$(jq -r '.programs[] | select(.program=="yarn-localtunnel").hostname' "${PREVIOUS_PWD}"/bootstrap/settings.json)"
+port="$(jq -r '.programs[] | select(.program=="yarn-localtunnel").port' "${PREVIOUS_PWD}"/bootstrap/unix-settings.json)"
+hostname="$(jq -r '.programs[] | select(.program=="yarn-localtunnel").hostname' "${PREVIOUS_PWD}"/bootstrap/unix-settings.json)"
 yarn global add localtunnel
 sudo chmod a+x "${PREVIOUS_PWD}"/programs/tools-and-services/localtunnel-service.sh
 sudo cp "${PREVIOUS_PWD}"/programs/tools-and-services/localtunnel-service.sh /etc/init.d/localtunnel

@@ -1,11 +1,11 @@
 #!/bin/bash
 PREVIOUS_PWD="$1"
-if [ "$(jq -r '.configurations.debug' "${PREVIOUS_PWD}"/bootstrap/settings.json)" == true ]; then
+if [ "$(jq -r '.configurations.debug' "${PREVIOUS_PWD}"/bootstrap/unix-settings.json)" == true ]; then
     set +e
 else
     set -e
 fi
-email=$(jq -r '.personal.email' "${PREVIOUS_PWD}"/bootstrap/settings.json)
+email=$(jq -r '.personal.email' "${PREVIOUS_PWD}"/bootstrap/unix-settings.json)
 ssh-keygen -t rsa -b 4096 -C "$email"
 eval "$(ssh-agent -s)"
 ssh-add ~/.ssh/id_rsa
