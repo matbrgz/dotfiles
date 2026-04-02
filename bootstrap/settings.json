@@ -5,8 +5,7 @@
     "githubuser": "MatheusRV",
     "defaultfolder": "/mnt/c/Dev"
   },
-  "programs": [
-    {
+  "programs": [{
       "program": "ssh",
       "name": "Secure Shell (SSH)",
       "installation": "true",
