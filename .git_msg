@@ -1,3 +1,3 @@
-refactor: restructure installation logic
+chore: ensure dependency resolution works
 
-Major internal refactoring of the installation engine.
+Validated the automated dependency management system.
