@@ -1,6 +1,6 @@
 #!/bin/bash
 PREVIOUS_PWD="$(jq -r '.pwd' "${HOME}"/tmp/pwd.json)"
-if [ "$(jq -r '.configurations.debug' "${PREVIOUS_PWD}"/bootstrap/settings.json)" == true ] ; then
+if [ "$(jq -r '.configurations.debug' "${PREVIOUS_PWD}"/bootstrap/settings.json)" == true ]; then
 	set +e
 else
 	set -e
@@ -16,5 +16,5 @@ if [ "$(jq -r '.programs[].mysql.instalation' "${PREVIOUS_PWD}"/bootstrap/settin
 	mysql -u root -p -e "GRANT ALL PRIVILEGES ON homestead.* TO 'homestead'@'localhost';"
 	mysql -u root -p -e "FLUSH PRIVILEGES;"
 	endtime=$(date +%s)
-	printf " [ DONE ] Laravel Default MySQL Configuration ... %s seconds\n" "$((endtime-starttime))"
+	printf " [ DONE ] Laravel Default MySQL Configuration ... %s seconds\n" "$((endtime - starttime))"
 fi
