@@ -11,6 +11,9 @@
 ### END INIT INFO
 # chkconfig: 2345 95 20
 
+port="$2"
+hostname="$3"
+
 loopFunction() {
   while true; do
     if [ "$1" == false ]; then
