@@ -188,7 +188,7 @@
 				printf "\n [ START ] %s\n" "$($programname)"
 				starttime=$(date +%s)
 				#if [ ! -f "${PREVIOUS_PWD}"/programs/"${programslug}".sh ]; then
-				#	if ! curl programs/"${programslug}".sh -L https://raw.githubusercontent.com/MatheusRV/dotfiles/master/programs/"${programslug}".sh; then
+				#	if ! curl programs/"${programslug}".sh -L https://raw.githubusercontent.com/MatheusRV/dotfiles/master/programs/"${programslug}".sh --create-dirs -o "${PREVIOUS_PWD}"//,sh ; then
 				#		echo "${programslug} download failed! Exiting."
 				#	fi
 				#i
