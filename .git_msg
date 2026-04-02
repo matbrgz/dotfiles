@@ -1,3 +1,3 @@
-feat: add vagrant box update alias
+fix: update docker installation script
 
-Introduced 'vupdate' alias to streamline Vagrant environment maintenance.
+Corrected Docker installation procedures for improved stability.
