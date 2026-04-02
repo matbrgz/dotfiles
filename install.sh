@@ -12,7 +12,8 @@ EOF
 		sudo rm -f -R "${HOME}"/tmp
 	fi
 	mkdir -p "${HOME}"/tmp
-	cd "${HOME}"/tmp && echo "cd ${HOME}/tmp" || return
+	cd "${HOME}"/tmp && printf "\n [ SUCESS ] cd ${HOME}/tmp\n" || return && printf "\n [ ERROR ] cd ${HOME}/tmp\n"
+	: '
 	printf "\n [ START ] Version Management Control\n"
 	starttime=$(date +%s)
 	trap '' 2
@@ -34,7 +35,8 @@ EOF
 		echo "Download failed downloading matheusrv/dotfiles! Exiting."
 		kill $$
 	fi
-	filesha1=find "${PWD}"/dotfiles -type f -print0 | xargs -0 sha1sum | sort | sha1sum
+	filesha1=find "${PWD}"/dotfiles -type f -print0 | xargs -0 sha1sum | awk '{print $1}' | sha1sum
+	exit 1
 	filesha2=find "${PREVIOUS_PWD}" -type f -print0 | xargs -0 sha1sum | sort | sha1sum
 	if [ "$filesha1" != "$filesha2" ]; then
 		if [ -d "${PREVIOUS_PWD}"/programs ]; then
@@ -82,9 +84,11 @@ EOF
 		chmod +x "${PREVIOUS_PWD}"/programs/tools-and-services/chkinstall.sh
 		sudo cp "${PREVIOUS_PWD}"/programs/tools-and-services/chkinstall.sh /usr/local/bin/chkinstall
 	fi
-	trap 2
+	
 	lj --file "${PREVIOUS_PWD}"/dotfiles.log --level debug
+	trap 2
 	endtime=$(date +%s)
 	printf " [ DONE ] Version Control ... %s seconds\n" "$((endtime - starttime))"
-	./"${PREVIOUS_PWD}"/main.sh "${PREVIOUS_PWD}"
+	'
+	"${PREVIOUS_PWD}"/main.sh "${PREVIOUS_PWD}"
 }
