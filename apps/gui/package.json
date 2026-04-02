@@ -1,0 +1,41 @@
+{
+  "name": "@dotfiles/gui",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tauri dev",
+    "dev:web": "vite",
+    "build": "tauri build",
+    "preview": "tauri preview",
+    "type-check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@dotfiles/core": "workspace:*",
+    "@dotfiles/registry": "workspace:*",
+    "@dotfiles/schema": "workspace:*",
+    "@dotfiles/ui": "workspace:*",
+    "@tauri-apps/api": "^1.4.0",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "framer-motion": "^12.38.0",
+    "lucide-react": "^1.7.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "tailwind-merge": "^3.5.0"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.2.2",
+    "@tauri-apps/cli": "^1.4.0",
+    "@types/node": "^25.5.0",
+    "@types/react": "^18.2.0",
+    "@types/react-dom": "^18.2.0",
+    "@vitejs/plugin-react": "^4.0.0",
+    "autoprefixer": "^10.4.27",
+    "postcss": "^8.5.8",
+    "tailwindcss": "^4.2.2",
+    "tailwindcss-animate": "^1.0.7",
+    "typescript": "^6.0.2",
+    "vite": "^4.3.0"
+  }
+}
