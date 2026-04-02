@@ -1,3 +1,3 @@
-docs: summarize paths and directory structure
+feat: add Lepton installation script
 
-Updated documentation to include a high-level summary of the project's file paths and organization.
+Introduced a new installation module for Lepton, a lean GitHub Gist client.

@@ -372,6 +372,7 @@ if (([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::
         "sysinternals"
         # Dev Tools Must Have
         "git.install"
+        "lepton"
         "powershell"
         "virtualbox"
         "vagrant"
