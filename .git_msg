@@ -1,3 +1,3 @@
-docs: update project readme
+chore: improve debugging output
 
-Comprehensive update to the main documentation.
+Enhanced log verbosity for troubleshooting installation failures.

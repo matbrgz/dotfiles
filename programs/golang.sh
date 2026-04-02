@@ -1,13 +1,17 @@
-#!/bin/bash -e
-printf " [ START ] GoLang \n"
-starttime=$(date +%s)
-# Linux, Dawrin, BSD etc
+#!/bin/bash
+debug="$(jq -r '.debug' "${PREVIOUS_PWD}"/bootstrap/settings.json)"
+if [ "${debug}" == true ]; then
+	# Disable exit on non 0
+	set +e
+else
+	# Enable exit on non 0
+	set -e
+fi
 HEADER_TYPE="$(uname -s)"
-# Architeture x86_64 amd64
 ARCHITECTURE_TYPE="$(dpkg --print-architecture)"
 PREVIOUS_PWD="$(jq -r '.pwd' "${HOME}"/tmp/pwd.json)"
 GOLANG_VERSION="$(jq -r '.GOLANG_VERSION' "${PREVIOUS_PWD}"/bootstrap/version.json)"
-if [ "$(jq -r '.purge' "${PREVIOUS_PWD}"/bootstrap/settings.json)" == y ] ; then
+if [ "$(jq -r '.purge' "${PREVIOUS_PWD}"/bootstrap/settings.json)" == true ] ; then
 	sudo rm -f -R /usr/local/go
 	sudo rm -f -R /usr/local/.go
 	sudo rm -rf "${HOME}"/.go/
@@ -29,7 +33,7 @@ else
 fi
 if ! sudo wget https://dl.google.com/go/go"${GOLANG_VERSION,,}"."${HEADER_TYPE,,}"-"${ARCHITECTURE_TYPE,,}".tar.gz
 then
-	echo "Download failed! Exiting."
+	echo "GoLang Download failed! Exiting."
 	exit 1
 fi
 sudo tar -C "/usr/local" -xzf go"${GOLANG_VERSION,,}"."${HEADER_TYPE,,}"-"${ARCHITECTURE_TYPE,,}".tar.gz
@@ -37,5 +41,3 @@ sudo tar -C "/usr/local" -xzf go"${GOLANG_VERSION,,}"."${HEADER_TYPE,,}"-"${ARCH
 	export GOBIN=${HOME}/go/bin
 	export PATH=$PATH:/usr/local/go/bin:${HOME}/go
 } >> "${HOME}"/.bashrc
-endtime=$(date +%s)
-printf " [ DONE ] GoLang ... %s seconds \n" "$((endtime-starttime))"
