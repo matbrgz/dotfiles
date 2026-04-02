@@ -4,7 +4,6 @@ if (([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::
     Write-Output "`n [ START ] Configuring System Run"
     $StopWatch = [System.Diagnostics.Stopwatch]::StartNew()
     Set-ExecutionPolicy RemoteSigned
-    Disable-UAC
     $ComputerName = Get-Random -InputObject "Turing", "Knuth", "Berners-Lee", "Torvalds", "Hopper", "Ritchie", "Stallman", "Gosling", "Church", "Dijkstra", "Cooper", "Gates", "Jobs", "Wozniak", "Zuckerberg", "Musk", "Nakamoto", "Dotcom", "Snowden", "Kruskal", "Neumann"
     $StopWatch.Stop()
     $StopWatchElapsed = $StopWatch.Elapsed.TotalSeconds
@@ -20,8 +19,9 @@ if (([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::
         Write-Output "`n [ START ] Instaling Common Requirements"
         $StopWatch = [System.Diagnostics.Stopwatch]::StartNew()
         Set-ExecutionPolicy Bypass -Scope Process -Force; Invoke-Expression ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
-        refreshenv
+        RefreshEnv
         cinst -y boxstarter
+        
         $StopWatch.Stop()
         $StopWatchElapsed = $StopWatch.Elapsed.TotalSeconds
         Write-Output " [ DONE ] Instaling Common Requirements ... $StopWatchElapsed seconds`n"
@@ -173,6 +173,7 @@ if (([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::
             Set-ItemProperty -Path HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize -Name AppsUseLightTheme -Value 0
             Write-Output "`n [ DOING ] Show hidden files, Show protected OS files, Show file extensions"
             Set-WindowsExplorerOptions -EnableShowHiddenFilesFoldersDrives -EnableShowProtectedOSFiles -EnableShowFileExtensions
+            Set-ItemProperty -Path HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced HideFileExt "0"
             #--- File Explorer Settings ---
             Write-Output "`n [ DOING ] Adds things back in your left pane like recycle bin"
             Set-ItemProperty -Path HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced -Name NavPaneExpandToCurrentFolder -Value 1
@@ -185,9 +186,8 @@ if (([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::
             Set-ItemProperty -Path HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer -Name ShowRecent -Type DWord -Value 0
             Write-Output "`n [ DOING ] Disable Quick Access: Frequent Folders"
             Set-ItemProperty -Path HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer -Name ShowFrequent -Type DWord -Value 0
+            Stop-Process -processName: Explorer -force # This will restart the Explorer service to make this work.
         }
-        Write-Output "`n [ DOING ] Enable developer mode on the system"
-        Set-ItemProperty -Path HKLM:\Software\Microsoft\Windows\CurrentVersion\AppModelUnlock -Name AllowDevelopmentWithoutDevLicense -Value 1
         Write-Output "`n [ START ] Unistall Windows10 Unnecessary and Blotware Apps"
         $StopWatch = [System.Diagnostics.Stopwatch]::StartNew()
         $AppXApps = @(
@@ -258,13 +258,6 @@ if (([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::
         Get-AppxPackage -AllUsers | Where-Object { $_.Name -NotMatch $WhitelistedApps } | Remove-AppxPackage
         Get-AppxPackage | Where-Object { $_.Name -NotMatch $WhitelistedApps } | Remove-AppxPackage
         Get-AppxProvisionedPackage -Online | Where-Object { $_.PackageName -NotMatch $WhitelistedApps } | Remove-AppxProvisionedPackage -Online
-        Write-Output " [ DOING ] Unpinning all tiles from the start menu"
-        (New-Object -Com Shell.Application).
-        NameSpace('shell:::{4234d49b-0245-4df3-b780-3893943456e1}').
-        Items() |
-        ForEach-Object { $_.Verbs() } |
-        Where-Object { $_.Name -match 'Un.*pin from Start' } |
-        ForEach-Object { $_.DoIt() }
         $StopWatch.Stop()
         $StopWatchElapsed = $StopWatch.Elapsed.TotalSeconds
         Write-Output " [ DONE ] Unistall Windows10 Unnecessary and Blotware Apps ... $StopWatchElapsed seconds`n"
@@ -321,7 +314,7 @@ if (([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::
                 $row.installation = $row.default
             }
         }
-        $AllPrograms | ConvertTo-Json -depth 100 | Out-File -Encoding UTF8NoBOM 'bootstrap\w10-settings.json'
+        $AllPrograms | ConvertTo-Json -depth 100 | Out-File -Encoding UTF8 'bootstrap\w10-settings.json'
         ForEach ($row in $AllPrograms.programs) {
             $ProgramName = $row.name
             $ProgramInstallation = $row.installation
@@ -354,11 +347,14 @@ if (([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::
             }
             $row.installation = $ProgramInstallation
         }
-        $AllPrograms | ConvertTo-Json -depth 100 | Out-File -Encoding UTF8NoBOM 'bootstrap\w10-settings.json'
+        $AllPrograms | ConvertTo-Json -depth 100 | Out-File -Encoding UTF8 'bootstrap\w10-settings.json'
     }
     else {
         
     }
+    Write-Output "`n [ DOING ] Enable developer mode on the system"
+    Set-ItemProperty -Path HKLM:\Software\Microsoft\Windows\CurrentVersion\AppModelUnlock -Name AllowDevelopmentWithoutDevLicense -Value 1
+    Disable-UAC
     $Programs = @(
         #Fonts
         "hackfont"
@@ -404,7 +400,59 @@ if (([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::
         }
     }
     Enable-UAC
-    refreshenv
+    RefreshEnv
+    Start-Process -FilePath 'autoruns' -Wait
+    $OzoneInstall = Read-Host -Prompt "`n Do you wish to install Ozone Exon V30 Mice Driver? (Y/n)"
+    if ([string]::IsNullOrWhiteSpace($OzoneInstall) -Or $OzoneInstall -eq 'Y' -Or $OzoneInstall -eq 'y') {
+        Start-Process -FilePath 'C:\Program Files (x86)\Google\Chrome\Application\chrome.exe' -ArgumentList 'https://www.ozonegaming.com/product/exon-v30'
+    }
+    $OfficeInstall = Read-Host -Prompt "`n Do you wish to install Office? (Y/n)"
+    if ([string]::IsNullOrWhiteSpace($OfficeInstall) -Or $OfficeInstall -eq 'Y' -Or $OfficeInstall -eq 'y') {
+        Start-Process -FilePath 'C:\Program Files (x86)\Google\Chrome\Application\chrome.exe' -ArgumentList 'https://old.reddit.com/r/sjain_guides/comments/9m4m0k/microsoft_office_201319_simple_method_to_download'
+    }
+    $AdobeInstall = Read-Host -Prompt "`n Do you wish to install Adobe Products? (Y/n)"
+    if ([string]::IsNullOrWhiteSpace($AdobeInstall) -Or $AdobeInstall -eq 'Y' -Or $AdobeInstall -eq 'y') {
+        Start-Process -FilePath 'C:\Program Files (x86)\Google\Chrome\Application\chrome.exe' -ArgumentList 'https://old.reddit.com/r/sjain_guides/wiki/downloads'
+    }
+    function Set-DefaultBrowser {
+        param($defaultBrowser)
+        $regKey = "HKCU:\Software\Microsoft\Windows\Shell\Associations\UrlAssociations\{0}\UserChoice"
+        $regKeyHttp = $regKey -f 'http'
+        $regKeyHttps = $regKey -f 'https'
+        switch -Regex ($defaultBrowser.ToLower()) {
+            # Internet Explorer
+            'ie|internet|explorer' {
+                Set-ItemProperty $regKeyHttp  -name ProgId IE.HTTP
+                Set-ItemProperty $regKeyHttps -name ProgId IE.HTTPS
+                break
+            }
+            # Firefox
+            'ff|firefox' {
+                Set-ItemProperty $regKeyHttp  -name ProgId FirefoxURL
+                Set-ItemProperty $regKeyHttps -name ProgId FirefoxURL
+                break
+            }
+            # Google Chrome
+            'cr|google|chrome' {
+                Set-ItemProperty $regKeyHttp  -name ProgId ChromeHTML
+                Set-ItemProperty $regKeyHttps -name ProgId ChromeHTML
+                break
+            }
+            # Safari
+            'sa*|apple' {
+                Set-ItemProperty $regKeyHttp  -name ProgId SafariURL
+                Set-ItemProperty $regKeyHttps -name ProgId SafariURL
+                break
+            }
+            # Opera
+            'op*' {
+                Set-ItemProperty $regKeyHttp  -name ProgId Opera.Protocol
+                Set-ItemProperty $regKeyHttps -name ProgId Opera.Protocol
+                break
+            }
+        }
+    }
+    Set-DefaultBrowser chrome
     $GlobalStopWatch.Stop()
     $GlobalStopWatchElapsed = $StopWatch.Elapsed.TotalSeconds
     Write-Output "`n Total Execution Time ... $GlobalStopWatchElapsed seconds`n" 
