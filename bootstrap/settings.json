@@ -49,6 +49,19 @@
       "default": "false"
     },
     {
+      "program": "rstudio",
+      "name": "RStudio",
+      "installation": "false",
+      "default": "false",
+      "dependencies": "rlang"
+    },
+    {
+      "program": "powershell",
+      "name": "PowerShell",
+      "installation": "true",
+      "default": "true"
+    },
+    {
       "program": "dotnet",
       "name": "dotNet",
       "installation": "false",
@@ -259,6 +272,18 @@
       "name": "Mosh",
       "installation": "true",
       "default": "true"
+    },
+    {
+      "program": "shfmt",
+      "name": "shfmt",
+      "installation": "true",
+      "default": "true"
+    },
+    {
+      "program": "x11server",
+      "name": "X11 Server",
+      "installation": "true",
+      "default": "false"
     },
     {
       "program": "netkit",
