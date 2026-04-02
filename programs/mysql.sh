@@ -7,6 +7,8 @@ if [ "$(jq -r '.purge' "${PREVIOUS_PWD}"/bootstrap/settings.json)" == y ] ; then
 fi
 sudo apt -y install mysql-server mysql-client
 sudo usermod -d /var/lib/mysql/ mysql
+printf "Press enter when asked for mysql password"
+sudo mysql_secure_installation
 dpkg --get-selections | grep mysql
 endtime=$(date +%s)
 printf " [ DONE ] MySQL ... %s seconds \n" "$((endtime-starttime))"
