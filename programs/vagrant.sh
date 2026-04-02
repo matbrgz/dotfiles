@@ -23,6 +23,7 @@ echo '
 ' >> "${HOME}"/.bashrc
 echo '
 alias vup="vagrant up && vagrant ssh"
+alias vupdate="vagrant box update"
 alias vhalt="vagrant halt"
 alias vdestroy="vagrant halt && vagrant destroy"
 ' >> "${HOME}"/.bash_aliases
