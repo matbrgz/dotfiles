@@ -40,4 +40,14 @@ validation-status.json
 # Folders to ignore
 bower_components
 node_modules
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/sdks
+!.yarn/versions
+.pnp.*
+dist/
+.turbo/
+apps/gui/src-tauri/target/
 LICENSE

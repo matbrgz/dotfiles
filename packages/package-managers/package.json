@@ -1,0 +1,19 @@
+{
+  "name": "@dotfiles/package-managers",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "dependencies": {
+    "@dotfiles/core": "workspace:*",
+    "@dotfiles/shared-utils": "workspace:*"
+  },
+  "scripts": {
+    "build": "tsc"
+  },
+  "devDependencies": {
+    "@types/node": "^25.5.0",
+    "typescript": "^6.0.2"
+  }
+}

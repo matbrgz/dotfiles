@@ -1,0 +1,44 @@
+{
+  "build": {
+    "beforeDevCommand": "yarn dev:web",
+    "beforeBuildCommand": "yarn build",
+    "devPath": "http://localhost:1420",
+    "distDir": "../dist",
+    "withGlobalTauri": true
+  },
+  "package": {
+    "productName": "Universal Dotfiles",
+    "version": "0.1.0"
+  },
+  "tauri": {
+    "allowlist": {
+      "all": true
+    },
+    "bundle": {
+      "active": true,
+      "category": "DeveloperTool",
+      "identifier": "com.matbrgz.dotfiles",
+      "icon": [
+        "icons/32x32.png",
+        "icons/128x128.png",
+        "icons/128x128@2x.png",
+        "icons/icon.icns",
+        "icons/icon.ico"
+      ],
+      "targets": "all",
+      "resources": [
+        "../../../packages/registry/data",
+        "../../../packages/registry/settings.json"
+      ]
+    },
+    "windows": [
+      {
+        "fullscreen": false,
+        "height": 600,
+        "resizable": true,
+        "title": "Universal Dotfiles & Setup",
+        "width": 800
+      }
+    ]
+  }
+}
