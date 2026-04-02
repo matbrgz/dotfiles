@@ -10,6 +10,6 @@ export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
 nvm install --lts
 nvm use --lts
+echo "nvm use --lts" >>"${HOME}"/.bashrc
 npm install -g yarn
-yarn add leasot
 echo "alias ss=\"script/server\"" >>"${HOME}"/.bash_aliases

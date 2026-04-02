@@ -45,6 +45,10 @@ alias hosts=\"nano /mnt/c/Windows/System32/drivers/etc/hosts\"
 alias code=\"code .\"
 alias np=\"cmd.exe /c notepad\"
 
+#NetWork
+alias ip=\"curl ipinfo.io/ip\"
+alias ips=\"ifconfig -a | perl -nle'/(\d+.\d+.\d+.\d+)/ && print \$1'\"
+alias speedtest=\"wget -O /dev/null http://speedtest.wdc01.softlayer.com/downloads/test100.zip\"
 
 # Handy Extract Program
 function extract()      
@@ -98,10 +102,13 @@ function makezip() { zip -r \"\${1%%/}.zip\" \"\$1\" ; }
 # Make your directories and files access rights sane.
 function sanitize() { chmod -R u=rwX,g=rX,o= \"\$@\" ;}
 
+cd ${defaultfolder}
 " >>"${HOME}"/.bash_aliases
 
 if [[ ! "$(uname -r)" =~ "Microsoft$" ]]; then
-    echo '# Alias to run Windows cmd.exe from WSL
-alias cmd="/mnt/c/Windows/System32/cmd.exe"
-alias cmdc="/mnt/c/Windows/System32/cmd.exe /c"' >>"${HOME}"/.bash_aliases
+    {
+        # Alias to run Windows cmd.exe from WSL
+        alias cmd="/mnt/c/Windows/System32/cmd.exe"
+        alias cmdc="/mnt/c/Windows/System32/cmd.exe /c"
+    } >>"${HOME}"/.bash_aliases
 fi
