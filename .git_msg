@@ -1,3 +1,3 @@
-fix: update main installation entrypoint
+feat: add additional system tools
 
-Refined the primary install.sh script for better error handling.
+Expanded the toolset with new utility modules.
