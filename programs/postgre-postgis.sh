@@ -1,6 +1,12 @@
-#!/bin/bash -e
-printf " [ START ] PostGIS \n"
-starttime=$(date +%s)
+#!/bin/bash
+debug="$(jq -r '.debug' "${PREVIOUS_PWD}"/bootstrap/settings.json)"
+if [ "${debug}" == true ]; then
+	# Disable exit on non 0
+	set +e
+else
+	# Enable exit on non 0
+	set -e
+fi
 PREVIOUS_PWD="$(jq -r '.pwd' "${HOME}"/tmp/pwd.json)"
 POSTGIS_VERSION="$(jq -r '.POSTGIS_VERSION' "${PREVIOUS_PWD}"/bootstrap/version.json)"
 LIBGEOS_VERSION="$(jq -r '.LIBGEOS_VERSION' "${PREVIOUS_PWD}"/bootstrap/version.json)"
@@ -37,6 +43,3 @@ make install
 #CREATE EXTENSION address_standardizer_data_us;
 #-- Enable US Tiger Geocoder
 #CREATE EXTENSION postgis_tiger_geocoder;
-
-endtime=$(date +%s)
-printf " [ DONE ] PostGIS ... %s seconds \n" "$((endtime-starttime))"

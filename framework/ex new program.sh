@@ -7,16 +7,15 @@ else
 	# Enable exit on non 0
 	set -e
 fi
+PREVIOUS_PWD="$(jq -r '.pwd' "${HOME}"/tmp/pwd.json)"
+defaultfolder="$(jq -r '.defaultfolder' "${PREVIOUS_PWD}"/bootstrap/settings.json)"
+# Linux, Dawrin, BSD etc
 HEADER_TYPE="$(uname -s)"
+# Architeture x86_64 amd64
 ARCHITECTURE_TYPE="$(uname -m)"
-ANACONDA_VERSION="$(jq -r '.anaconda' "${PREVIOUS_PWD}"/bootstrap/settings.json)"
+# Bionic, Xenial, Trusty
+RELEASE_VERSION="$(lsb_release -cs)"
+DOCKER_COMPOSE_VERSION="$(jq -r '.DOCKER_COMPOSE_VERSION' "${PREVIOUS_PWD}"/bootstrap/version.json)"/
 if [ "$(jq -r '.purge' "${PREVIOUS_PWD}"/bootstrap/settings.json)" == true ] ; then
 	echo "Anaconda purge not implemented yet! Skipping."
 fi
-if ! curl https://repo.anaconda.com/archive/Anaconda"${ANACONDA_VERSION}"-"${HEADER_TYPE}"-"${ARCHITECTURE_TYPE}".sh | bash
-then
-	echo "Anaconda Download failed! Skipping."
-	exit 1
-fi
-wait
-bash
