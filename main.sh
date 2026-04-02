@@ -9,7 +9,7 @@
  This may take a few minutes and you will be prompted for the password
  to elevate the user's permission several times.
 EOF
-    printf "\n [ START ] Configuring System Run\n"
+    printf "\n [ START ] Configuring System Run"
     starttime=$(date +%s)
 	if [ -d "${HOME}"/tmp ]; then
 		sudo rm -f -R "${HOME}"/tmp
@@ -19,7 +19,7 @@ EOF
     sudo apt -qq update
     endtime=$(date +%s)
     printf " [ DONE ] Configuring System Run ... %s seconds\n" "$((endtime - starttime))"
-    printf "\n [ START ] Instaling Major Requirements\n"
+    printf "\n [ START ] Instaling Major Requirements"
     starttime=$(date +%s)
     trap '' 2
     sudo apt -y install jq moreutils
@@ -51,14 +51,14 @@ EOF
     printf "\n First time runing script? (Y/n): "
     read -r firstrun
     if [ -z "${firstrun}" ] || [ "${firstrun}" == Y ] || [ "${firstrun}" == y ]; then
-        printf "\n [ START ] Update & Upgrade\n"
+        printf "\n [ START ] Update & Upgrade"
         starttime=$(date +%s)
         trap '' 2
         sudo apt -y upgrade && sudo apt -y dist-upgrade
         trap 2
         endtime=$(date +%s)
         printf " [ DONE ] Update & Upgrade ... %s seconds\n" "$((endtime - starttime))"
-        printf "\n [ START ] Instaling Common Requirements\n"
+        printf "\n [ START ] Instaling Common Requirements"
         starttime=$(date +%s)
         apps=(
             software-properties-common
@@ -76,7 +76,7 @@ EOF
         unset apps
         endtime=$(date +%s)
         printf " [ DONE ] Common Requirements ... %s seconds\n" "$((endtime - starttime))"
-        printf "\n [ START ] Configurating Command Alias\n"
+        printf "\n [ START ] Configurating Command Alias"
         starttime=$(date +%s)
         trap '' 2
         "${PREVIOUS_PWD}"/configurations/alias.sh "${PREVIOUS_PWD}"
@@ -85,7 +85,7 @@ EOF
         endtime=$(date +%s)
         printf " [ DONE ] Configurating Command Alias ... %s seconds\n" "$((endtime - starttime))"
     elif [ "${firstrun}" == N ] || [ "${firstrun}" == n ]; then
-        printf "\n [ START ] Fix Possible Erros\n"
+        printf "\n [ START ] Fix Possible Erros"
         starttime=$(date +%s)
         trap '' 2
         sudo apt --fix-broken install
@@ -107,12 +107,12 @@ EOF
     fi
     unset firstrun
     if [ "${instalationtype}" == 1 ]; then
-        printf "\n [ START ] Software Instalation List\n"
+        printf "\n [ START ] Software Instalation List"
         starttime=$(date +%s)
-        i=0
         printf "\n Use default program instalation (y/N): "
         read -r defaultprogram
         printf "\n"
+        i=0
         for row in $(jq -r '.programs[] | @base64' "${PREVIOUS_PWD}"/bootstrap/unix-settings.json); do
             _jq() {
                 echo "${row}" | base64 --decode | jq -r "${1}"
@@ -253,7 +253,7 @@ EOF
                 printf "\n [ ERROR ] You are instaling %s without install it dependecies\n" "$($programname)"
             fi
             if [ "${installflag}" == true ]; then
-                printf "\n [ START ] %s\n" "$($programname)"
+                printf "\n [ START ] %s" "$($programname)"
                 starttime=$(date +%s)
                 trap '' 2
                 "${PREVIOUS_PWD}"/programs/"${programslug}".sh "${PREVIOUS_PWD}" || installationerror=true
@@ -266,7 +266,7 @@ EOF
                 else
                     programconfiguration="$(jq -r '.programs[] | select(.program=="'"${programslug}"'").config' "${PREVIOUS_PWD}"/bootstrap/unix-settings.json)"
                     if [ "${programconfiguration}" == true ]; then
-                        printf "\n [ START ] %s configuration\n" "$($programname)"
+                        printf "\n [ START ] %s configuration" "$($programname)"
                         trap 2
                         "${PREVIOUS_PWD}"/programs/"${programslug}"-config.sh "${PREVIOUS_PWD}" || installationerror=true
                         wait
@@ -291,7 +291,7 @@ EOF
         dependencieinstallation
     )
     unset "${variables[@]}"
-    printf "\n [ START ] Common Requirements\n"
+    printf "\n [ START ] Common Requirements"
     starttime=$(date +%s)
     apps=(
         htop
@@ -302,7 +302,7 @@ EOF
     trap 2
     endtime=$(date +%s)
     printf " [ DONE ] Common Requirements ... %s seconds\n" "$((endtime - starttime))"
-    printf "\n [ START ] Cleaning\n"
+    printf "\n [ START ] Cleaning"
     starttime=$(date +%s)
     trap '' 2
     sudo apt -y autoremove && sudo apt -y autoclean && sudo apt -y clean
