@@ -138,52 +138,67 @@ export const guiCommands = {
     });
   },
 
-  scanDisk: async (onCategory?: (cat: DiskCategory) => void): Promise<DiskCategory[]> => {
+  scanDisk: async (onCategory?: (cat: DiskCategory) => void): Promise<void> => {
     return new Promise(async (resolve, reject) => {
-      const results: DiskCategory[] = [];
-      let unlisten: (() => void) | null = null;
+      const unlisteners: Array<() => void> = [];
+
       if (onCategory) {
-        unlisten = await listen<DiskCategory>('scan-category', (e) => {
-          results.push(e.payload);
-          onCategory(e.payload);
-        });
+        const ul = await listen<DiskCategory>('scan-category', (e) => onCategory(e.payload));
+        unlisteners.push(ul);
       }
-      try {
-        const cats = await invoke<DiskCategory[]>('scan_disk_usage');
-        resolve(cats);
-      } catch (e) {
-        reject(e);
-      } finally {
-        if (unlisten) unlisten();
-      }
+
+      const cleanup = () => unlisteners.forEach(fn => fn());
+
+      const doneUl = await listen<null>('scan-done', () => {
+        cleanup();
+        doneUl();
+        resolve();
+      });
+
+      invoke('scan_disk_usage').catch((err) => {
+        cleanup();
+        doneUl();
+        reject(err);
+      });
     });
   },
 
   cleanItems: async (ids: string[], onProgress?: (e: CleanEvent) => void): Promise<void> => {
     return new Promise(async (resolve, reject) => {
       const unlisteners: Array<() => void> = [];
+
       if (onProgress) {
         const ul = await listen<CleanEvent>('clean-progress', (e) => onProgress(e.payload));
         unlisteners.push(ul);
       }
+
       const cleanup = () => unlisteners.forEach(fn => fn());
-      try {
-        await invoke('clean_items', { ids });
+
+      const doneUl = await listen<null>('clean-done', () => {
         cleanup();
+        doneUl();
         resolve();
-      } catch (e) {
+      });
+
+      invoke('clean_items', { ids }).catch((err) => {
         cleanup();
-        reject(e);
-      }
+        doneUl();
+        reject(err);
+      });
     });
   },
 
   scanLargeFiles: async (): Promise<LargeFile[]> => {
-    try {
-      return await invoke<LargeFile[]>('scan_large_files');
-    } catch {
-      return [];
-    }
+    return new Promise(async (resolve) => {
+      const ul = await listen<LargeFile[]>('large-files-done', (e) => {
+        ul();
+        resolve(e.payload);
+      });
+      invoke('scan_large_files').catch(() => {
+        ul();
+        resolve([]);
+      });
+    });
   },
 
   getMemoryInfo: async (): Promise<MemoryInfo> => {

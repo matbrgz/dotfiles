@@ -266,78 +266,84 @@ async fn run_cli_command(command: String, name: Option<String>, window: tauri::W
 
 // ── Disk Cleaner ───────────────────────────────────────────────────────────────
 
+fn emit_cat(window: &tauri::Window, cat: DiskCategory) {
+    let _ = window.emit("scan-category", cat);
+}
+
+fn dev_dir(home: &str) -> Option<String> {
+    let dev = format!("{}/dev", home);
+    if std::path::Path::new(&dev).exists() { Some(dev) } else { None }
+}
+
 #[tauri::command]
-fn scan_disk_usage(window: tauri::Window) -> Vec<DiskCategory> {
-    let home = std::env::var("HOME").unwrap_or_else(|_| "/tmp".to_string());
-    let h = |p: &str| expand(p, &home);
-
-    let mut categories: Vec<DiskCategory> = Vec::new();
-
-    // Helper to emit and push
-    let emit_cat = |window: &tauri::Window, cats: &mut Vec<DiskCategory>, cat: DiskCategory| {
-        let _ = window.emit("scan-category", cat.clone());
-        cats.push(cat);
-    };
+fn scan_disk_usage(window: tauri::Window) {
+    std::thread::spawn(move || {
+        let home = std::env::var("HOME").unwrap_or_else(|_| "/tmp".to_string());
+        let h = |p: &str| expand(p, &home);
 
     // ── Development ───────────────────────────────────────────────────────────
 
     // node_modules
     {
-        let dirs_raw = sh(&format!(
-            "find {}/dev -maxdepth 6 -name node_modules -type d -prune 2>/dev/null",
-            home
-        ));
-        let dirs: Vec<&str> = dirs_raw.lines().filter(|l| !l.is_empty()).collect();
-        let count = dirs.len() as u32;
-        let kb = if dirs.is_empty() { 0 } else {
-            let quoted = dirs.iter().map(|p| format!("\"{}\"", p)).collect::<Vec<_>>().join(" ");
-            sh(&format!(
-                "du -sk {} 2>/dev/null | awk '{{t+=$1}} END{{print t}}'",
-                quoted
-            )).trim().parse::<u64>().unwrap_or(0)
-        };
-        emit_cat(&window, &mut categories, DiskCategory {
+        let (size_bytes, item_count) = if let Some(dev) = dev_dir(&home) {
+            let dirs_raw = sh(&format!(
+                "find {} -maxdepth 6 -name node_modules -type d -prune 2>/dev/null",
+                dev
+            ));
+            let dirs: Vec<&str> = dirs_raw.lines().filter(|l| !l.is_empty()).collect();
+            let count = dirs.len() as u32;
+            let kb = if dirs.is_empty() { 0 } else {
+                let quoted = dirs.iter().map(|p| format!("\"{}\"", p)).collect::<Vec<_>>().join(" ");
+                sh(&format!(
+                    "du -sk {} 2>/dev/null | awk '{{t+=$1}} END{{print t}}'",
+                    quoted
+                )).trim().parse::<u64>().unwrap_or(0)
+            };
+            (kb * 1024, count)
+        } else { (0, 0) };
+        emit_cat(&window, DiskCategory {
             id: "node_modules".into(), label: "node_modules".into(),
             icon: "📦".into(), group: "Development".into(),
-            size_bytes: kb * 1024, item_count: count, safe: true,
+            size_bytes, item_count, safe: true,
         });
     }
 
     // build_outputs
     {
-        let dirs_raw = sh(&format!(
-            "find {}/dev -maxdepth 5 -type d \\( -name dist -o -name build -o -name .next -o -name .turbo -o -name .cache -o -name out -o -name .nuxt -o -name .svelte-kit \\) -prune 2>/dev/null",
-            home
-        ));
-        let dirs: Vec<&str> = dirs_raw.lines().filter(|l| !l.is_empty()).collect();
-        let count = dirs.len() as u32;
-        let kb = if dirs.is_empty() { 0 } else {
-            let quoted = dirs.iter().map(|p| format!("\"{}\"", p)).collect::<Vec<_>>().join(" ");
-            sh(&format!(
-                "du -sk {} 2>/dev/null | awk '{{t+=$1}} END{{print t}}'",
-                quoted
-            )).trim().parse::<u64>().unwrap_or(0)
-        };
-        emit_cat(&window, &mut categories, DiskCategory {
+        let (size_bytes, item_count) = if let Some(dev) = dev_dir(&home) {
+            let dirs_raw = sh(&format!(
+                "find {} -maxdepth 5 -type d \\( -name dist -o -name build -o -name .next -o -name .turbo -o -name .cache -o -name out -o -name .nuxt -o -name .svelte-kit \\) -prune 2>/dev/null",
+                dev
+            ));
+            let dirs: Vec<&str> = dirs_raw.lines().filter(|l| !l.is_empty()).collect();
+            let count = dirs.len() as u32;
+            let kb = if dirs.is_empty() { 0 } else {
+                let quoted = dirs.iter().map(|p| format!("\"{}\"", p)).collect::<Vec<_>>().join(" ");
+                sh(&format!(
+                    "du -sk {} 2>/dev/null | awk '{{t+=$1}} END{{print t}}'",
+                    quoted
+                )).trim().parse::<u64>().unwrap_or(0)
+            };
+            (kb * 1024, count)
+        } else { (0, 0) };
+        emit_cat(&window, DiskCategory {
             id: "build_outputs".into(), label: "Build outputs".into(),
             icon: "🏗".into(), group: "Development".into(),
-            size_bytes: kb * 1024, item_count: count, safe: true,
+            size_bytes, item_count, safe: true,
         });
     }
 
     // .DS_Store
     {
-        let files_raw = sh(&format!(
-            "find {}/dev -name .DS_Store 2>/dev/null",
-            home
-        ));
-        let files: Vec<&str> = files_raw.lines().filter(|l| !l.is_empty()).collect();
-        let count = files.len() as u32;
-        let size_bytes = count as u64 * 6144; // DS_Store files are tiny ~6KB each
-        emit_cat(&window, &mut categories, DiskCategory {
+        let (size_bytes, item_count) = if let Some(dev) = dev_dir(&home) {
+            let files_raw = sh(&format!("find {} -name .DS_Store 2>/dev/null", dev));
+            let count = files_raw.lines().filter(|l| !l.is_empty()).count() as u32;
+            (count as u64 * 6144, count)
+        } else { (0, 0) };
+        emit_cat(&window, DiskCategory {
             id: "ds_store".into(), label: ".DS_Store files".into(),
             icon: "🫧".into(), group: "Development".into(),
-            size_bytes, item_count: count, safe: true,
+            size_bytes, item_count, safe: true,
         });
     }
 
@@ -347,7 +353,7 @@ fn scan_disk_usage(window: tauri::Window) -> Vec<DiskCategory> {
     {
         let p = h("~/.npm/_cacache");
         let (size_bytes, item_count) = paths_size(&[&p]);
-        emit_cat(&window, &mut categories, DiskCategory {
+        emit_cat(&window, DiskCategory {
             id: "npm_cache".into(), label: "npm cache".into(),
             icon: "📦".into(), group: "Package Caches".into(),
             size_bytes, item_count, safe: true,
@@ -358,7 +364,7 @@ fn scan_disk_usage(window: tauri::Window) -> Vec<DiskCategory> {
     {
         let p = h("~/Library/Caches/Yarn");
         let (size_bytes, item_count) = paths_size(&[&p]);
-        emit_cat(&window, &mut categories, DiskCategory {
+        emit_cat(&window, DiskCategory {
             id: "yarn_cache".into(), label: "Yarn cache".into(),
             icon: "🧶".into(), group: "Package Caches".into(),
             size_bytes, item_count, safe: true,
@@ -369,7 +375,7 @@ fn scan_disk_usage(window: tauri::Window) -> Vec<DiskCategory> {
     {
         let p = h("~/Library/pnpm/store");
         let (size_bytes, item_count) = paths_size(&[&p]);
-        emit_cat(&window, &mut categories, DiskCategory {
+        emit_cat(&window, DiskCategory {
             id: "pnpm_store".into(), label: "pnpm store".into(),
             icon: "⚡".into(), group: "Package Caches".into(),
             size_bytes, item_count, safe: true,
@@ -384,7 +390,7 @@ fn scan_disk_usage(window: tauri::Window) -> Vec<DiskCategory> {
         } else {
             paths_size(&[&pip_dir])
         };
-        emit_cat(&window, &mut categories, DiskCategory {
+        emit_cat(&window, DiskCategory {
             id: "pip_cache".into(), label: "pip cache".into(),
             icon: "🐍".into(), group: "Package Caches".into(),
             size_bytes, item_count, safe: true,
@@ -396,7 +402,7 @@ fn scan_disk_usage(window: tauri::Window) -> Vec<DiskCategory> {
         let p1 = h("~/.cargo/registry/cache");
         let p2 = h("~/.cargo/git/db");
         let (size_bytes, item_count) = paths_size(&[&p1, &p2]);
-        emit_cat(&window, &mut categories, DiskCategory {
+        emit_cat(&window, DiskCategory {
             id: "cargo_cache".into(), label: "Cargo cache".into(),
             icon: "🦀".into(), group: "Package Caches".into(),
             size_bytes, item_count, safe: true,
@@ -407,7 +413,7 @@ fn scan_disk_usage(window: tauri::Window) -> Vec<DiskCategory> {
     {
         let p = h("~/.gradle/caches");
         let (size_bytes, item_count) = paths_size(&[&p]);
-        emit_cat(&window, &mut categories, DiskCategory {
+        emit_cat(&window, DiskCategory {
             id: "gradle_cache".into(), label: "Gradle cache".into(),
             icon: "🐘".into(), group: "Package Caches".into(),
             size_bytes, item_count, safe: true,
@@ -418,7 +424,7 @@ fn scan_disk_usage(window: tauri::Window) -> Vec<DiskCategory> {
     {
         let p = h("~/.m2/repository");
         let (size_bytes, item_count) = paths_size(&[&p]);
-        emit_cat(&window, &mut categories, DiskCategory {
+        emit_cat(&window, DiskCategory {
             id: "maven_cache".into(), label: "Maven cache".into(),
             icon: "☕".into(), group: "Package Caches".into(),
             size_bytes, item_count, safe: true,
@@ -433,7 +439,7 @@ fn scan_disk_usage(window: tauri::Window) -> Vec<DiskCategory> {
         } else {
             paths_size(&[&go_dir])
         };
-        emit_cat(&window, &mut categories, DiskCategory {
+        emit_cat(&window, DiskCategory {
             id: "go_cache".into(), label: "Go cache".into(),
             icon: "🐹".into(), group: "Package Caches".into(),
             size_bytes, item_count, safe: true,
@@ -444,7 +450,7 @@ fn scan_disk_usage(window: tauri::Window) -> Vec<DiskCategory> {
     {
         let p = h("~/.gem");
         let (size_bytes, item_count) = paths_size(&[&p]);
-        emit_cat(&window, &mut categories, DiskCategory {
+        emit_cat(&window, DiskCategory {
             id: "gem_cache".into(), label: "Ruby gems".into(),
             icon: "💎".into(), group: "Package Caches".into(),
             size_bytes, item_count, safe: true,
@@ -461,7 +467,7 @@ fn scan_disk_usage(window: tauri::Window) -> Vec<DiskCategory> {
         } else {
             paths_size(&[&brew_cache])
         };
-        emit_cat(&window, &mut categories, DiskCategory {
+        emit_cat(&window, DiskCategory {
             id: "brew_cache".into(), label: "Homebrew cache".into(),
             icon: "🍺".into(), group: "macOS".into(),
             size_bytes, item_count, safe: true,
@@ -472,7 +478,7 @@ fn scan_disk_usage(window: tauri::Window) -> Vec<DiskCategory> {
     {
         let p = h("~/Library/Logs/Homebrew");
         let (size_bytes, item_count) = paths_size(&[&p]);
-        emit_cat(&window, &mut categories, DiskCategory {
+        emit_cat(&window, DiskCategory {
             id: "brew_logs".into(), label: "Homebrew logs".into(),
             icon: "🍺".into(), group: "macOS".into(),
             size_bytes, item_count, safe: true,
@@ -483,7 +489,7 @@ fn scan_disk_usage(window: tauri::Window) -> Vec<DiskCategory> {
     {
         let p = h("~/Library/Developer/Xcode/DerivedData");
         let (size_bytes, item_count) = paths_size(&[&p]);
-        emit_cat(&window, &mut categories, DiskCategory {
+        emit_cat(&window, DiskCategory {
             id: "xcode_derived".into(), label: "Xcode DerivedData".into(),
             icon: "🔨".into(), group: "macOS".into(),
             size_bytes, item_count, safe: true,
@@ -494,7 +500,7 @@ fn scan_disk_usage(window: tauri::Window) -> Vec<DiskCategory> {
     {
         let p = h("~/Library/Developer/Xcode/Archives");
         let (size_bytes, item_count) = paths_size(&[&p]);
-        emit_cat(&window, &mut categories, DiskCategory {
+        emit_cat(&window, DiskCategory {
             id: "xcode_archives".into(), label: "Xcode Archives".into(),
             icon: "📦".into(), group: "macOS".into(),
             size_bytes, item_count, safe: false,
@@ -505,7 +511,7 @@ fn scan_disk_usage(window: tauri::Window) -> Vec<DiskCategory> {
     {
         let p = h("~/Library/Developer/CoreSimulator/Devices");
         let (size_bytes, item_count) = paths_size(&[&p]);
-        emit_cat(&window, &mut categories, DiskCategory {
+        emit_cat(&window, DiskCategory {
             id: "ios_sims".into(), label: "iOS Simulators (unavailable)".into(),
             icon: "📱".into(), group: "macOS".into(),
             size_bytes, item_count, safe: true,
@@ -516,7 +522,7 @@ fn scan_disk_usage(window: tauri::Window) -> Vec<DiskCategory> {
     {
         let p = h("~/Library/Caches");
         let (size_bytes, item_count) = paths_size(&[&p]);
-        emit_cat(&window, &mut categories, DiskCategory {
+        emit_cat(&window, DiskCategory {
             id: "lib_caches".into(), label: "~/Library/Caches".into(),
             icon: "📂".into(), group: "macOS".into(),
             size_bytes, item_count, safe: false,
@@ -527,7 +533,7 @@ fn scan_disk_usage(window: tauri::Window) -> Vec<DiskCategory> {
     {
         let p = h("~/.Trash");
         let (size_bytes, item_count) = paths_size(&[&p]);
-        emit_cat(&window, &mut categories, DiskCategory {
+        emit_cat(&window, DiskCategory {
             id: "trash".into(), label: "Trash".into(),
             icon: "🗑".into(), group: "macOS".into(),
             size_bytes, item_count, safe: false,
@@ -544,7 +550,7 @@ fn scan_disk_usage(window: tauri::Window) -> Vec<DiskCategory> {
         let p4 = h("~/.claude/telemetry");
         let p5 = h("~/.claude/file-history");
         let (size_bytes, item_count) = paths_size(&[&p1, &p2, &p3, &p4, &p5]);
-        emit_cat(&window, &mut categories, DiskCategory {
+        emit_cat(&window, DiskCategory {
             id: "claude_cache".into(), label: "Claude Code cache".into(),
             icon: "🤖".into(), group: "AI Tools".into(),
             size_bytes, item_count, safe: true,
@@ -557,7 +563,7 @@ fn scan_disk_usage(window: tauri::Window) -> Vec<DiskCategory> {
         let p2 = h("~/.codex/sessions");
         let p3 = h("~/Library/Application Support/Codex");
         let (size_bytes, item_count) = paths_size(&[&p1, &p2, &p3]);
-        emit_cat(&window, &mut categories, DiskCategory {
+        emit_cat(&window, DiskCategory {
             id: "codex_cache".into(), label: "Codex cache".into(),
             icon: "🤖".into(), group: "AI Tools".into(),
             size_bytes, item_count, safe: true,
@@ -568,7 +574,7 @@ fn scan_disk_usage(window: tauri::Window) -> Vec<DiskCategory> {
     {
         let p = h("~/.gemini/tmp");
         let (size_bytes, item_count) = paths_size(&[&p]);
-        emit_cat(&window, &mut categories, DiskCategory {
+        emit_cat(&window, DiskCategory {
             id: "gemini_tmp".into(), label: "Gemini CLI temp".into(),
             icon: "🤖".into(), group: "AI Tools".into(),
             size_bytes, item_count, safe: true,
@@ -580,7 +586,7 @@ fn scan_disk_usage(window: tauri::Window) -> Vec<DiskCategory> {
         let p1 = h("~/.fly/agent-logs");
         let p2 = h("~/.fly/logs");
         let (size_bytes, item_count) = paths_size(&[&p1, &p2]);
-        emit_cat(&window, &mut categories, DiskCategory {
+        emit_cat(&window, DiskCategory {
             id: "fly_logs".into(), label: "Fly.io logs".into(),
             icon: "🪰".into(), group: "AI Tools".into(),
             size_bytes, item_count, safe: true,
@@ -591,7 +597,7 @@ fn scan_disk_usage(window: tauri::Window) -> Vec<DiskCategory> {
     {
         let p = h("~/.npm/_logs");
         let (size_bytes, item_count) = paths_size(&[&p]);
-        emit_cat(&window, &mut categories, DiskCategory {
+        emit_cat(&window, DiskCategory {
             id: "npm_logs".into(), label: "npm logs".into(),
             icon: "📋".into(), group: "AI Tools".into(),
             size_bytes, item_count, safe: true,
@@ -604,7 +610,7 @@ fn scan_disk_usage(window: tauri::Window) -> Vec<DiskCategory> {
     {
         let p = h("~/Downloads");
         let (size_bytes, item_count) = paths_size(&[&p]);
-        emit_cat(&window, &mut categories, DiskCategory {
+        emit_cat(&window, DiskCategory {
             id: "downloads".into(), label: "Downloads folder".into(),
             icon: "📥".into(), group: "Other".into(),
             size_bytes, item_count, safe: false,
@@ -615,48 +621,53 @@ fn scan_disk_usage(window: tauri::Window) -> Vec<DiskCategory> {
     {
         let p = h("~/.zsh_sessions");
         let (size_bytes, item_count) = paths_size(&[&p]);
-        emit_cat(&window, &mut categories, DiskCategory {
+        emit_cat(&window, DiskCategory {
             id: "zsh_sessions".into(), label: "zsh sessions".into(),
             icon: "🐚".into(), group: "Other".into(),
             size_bytes, item_count, safe: true,
         });
     }
 
-    categories
+        let _ = window.emit("scan-done", ());
+    }); // end thread::spawn
 }
 
 #[tauri::command]
-fn clean_items(ids: Vec<String>, window: tauri::Window) -> Result<(), String> {
-    let home = std::env::var("HOME").unwrap_or_else(|_| "/tmp".to_string());
-    let h = |p: &str| expand(p, &home);
+fn clean_items(ids: Vec<String>, window: tauri::Window) {
+    std::thread::spawn(move || {
+        let home = std::env::var("HOME").unwrap_or_else(|_| "/tmp".to_string());
+        let h = |p: &str| expand(p, &home);
 
-    for id in &ids {
-        let freed_before = 0u64;
-        let error: Option<String> = None;
-
-        let result: Result<(), String> = (|| {
-            match id.as_str() {
-                "node_modules" => {
-                    let dirs_raw = sh(&format!(
-                        "find {}/dev -maxdepth 6 -name node_modules -type d -prune 2>/dev/null",
-                        home
-                    ));
-                    for dir in dirs_raw.lines().filter(|l| !l.is_empty()) {
-                        sh(&format!("rm -rf \"{}\" 2>/dev/null", dir));
+        for id in &ids {
+            let result: Result<(), String> = (|| {
+                match id.as_str() {
+                    "node_modules" => {
+                        if let Some(dev) = dev_dir(&home) {
+                            let dirs_raw = sh(&format!(
+                                "find {} -maxdepth 6 -name node_modules -type d -prune 2>/dev/null",
+                                dev
+                            ));
+                            for dir in dirs_raw.lines().filter(|l| !l.is_empty()) {
+                                sh(&format!("rm -rf \"{}\" 2>/dev/null", dir));
+                            }
+                        }
                     }
-                }
-                "build_outputs" => {
-                    let dirs_raw = sh(&format!(
-                        "find {}/dev -maxdepth 5 -type d \\( -name dist -o -name build -o -name .next -o -name .turbo -o -name .cache -o -name out -o -name .nuxt -o -name .svelte-kit \\) -prune 2>/dev/null",
-                        home
-                    ));
-                    for dir in dirs_raw.lines().filter(|l| !l.is_empty()) {
-                        sh(&format!("rm -rf \"{}\" 2>/dev/null", dir));
+                    "build_outputs" => {
+                        if let Some(dev) = dev_dir(&home) {
+                            let dirs_raw = sh(&format!(
+                                "find {} -maxdepth 5 -type d \\( -name dist -o -name build -o -name .next -o -name .turbo -o -name .cache -o -name out -o -name .nuxt -o -name .svelte-kit \\) -prune 2>/dev/null",
+                                dev
+                            ));
+                            for dir in dirs_raw.lines().filter(|l| !l.is_empty()) {
+                                sh(&format!("rm -rf \"{}\" 2>/dev/null", dir));
+                            }
+                        }
                     }
-                }
-                "ds_store" => {
-                    sh(&format!("find {}/dev -name .DS_Store -delete 2>/dev/null", home));
-                }
+                    "ds_store" => {
+                        if let Some(dev) = dev_dir(&home) {
+                            sh(&format!("find {} -name .DS_Store -delete 2>/dev/null", dev));
+                        }
+                    }
                 "npm_cache" => { sh("npm cache clean --force 2>/dev/null"); }
                 "yarn_cache" => { sh("yarn cache clean 2>/dev/null"); }
                 "pnpm_store" => { sh("pnpm store prune 2>/dev/null"); }
@@ -695,42 +706,66 @@ fn clean_items(ids: Vec<String>, window: tauri::Window) -> Result<(), String> {
                 "downloads"    => { sh(&format!("rm -rf {}/Downloads/* 2>/dev/null", home)); }
                 "zsh_sessions" => { sh(&format!("rm -rf {}/* 2>/dev/null", h("~/.zsh_sessions"))); }
                 _ => {}
-            }
-            Ok(())
-        })();
+                }
+                Ok(())
+            })();
 
-        let err_msg = result.err();
-        let _ = window.emit("clean-progress", CleanEvent {
-            id: id.clone(),
-            freed_bytes: freed_before,
-            error: err_msg.or(error),
-            done: true,
-        });
-    }
-
-    Ok(())
+            let _ = window.emit("clean-progress", CleanEvent {
+                id: id.clone(),
+                freed_bytes: 0,
+                error: result.err(),
+                done: true,
+            });
+        }
+        let _ = window.emit("clean-done", ());
+    }); // end thread::spawn
 }
 
 #[tauri::command]
-fn scan_large_files() -> Vec<LargeFile> {
-    let home = std::env::var("HOME").unwrap_or_else(|_| "/tmp".to_string());
-    let raw = sh(&format!(
-        "find {} -not \\( -path '*/node_modules*' -prune \\) -not \\( -path '*/.git*' -prune \\) -size +100M -type f 2>/dev/null | head -20",
-        home
-    ));
-    let mut files: Vec<LargeFile> = Vec::new();
-    for line in raw.lines().filter(|l| !l.is_empty()) {
-        let size_kb = sh(&format!("du -sk \"{}\" 2>/dev/null", line))
-            .split_whitespace().next()
-            .and_then(|s| s.parse::<u64>().ok())
-            .unwrap_or(0);
-        files.push(LargeFile {
-            path: line.to_string(),
-            size_bytes: size_kb * 1024,
-        });
-    }
-    files.sort_by(|a, b| b.size_bytes.cmp(&a.size_bytes));
-    files
+fn scan_large_files(window: tauri::Window) {
+    std::thread::spawn(move || {
+        let home = std::env::var("HOME").unwrap_or_else(|_| "/tmp".to_string());
+        // Only scan common directories, not the entire home (too slow)
+        let search_dirs = [
+            format!("{}/Downloads", home),
+            format!("{}/Documents", home),
+            format!("{}/Desktop", home),
+            format!("{}/Movies", home),
+            format!("{}/dev", home),
+        ];
+        let existing: Vec<String> = search_dirs.into_iter()
+            .filter(|d| std::path::Path::new(d).exists())
+            .collect();
+
+        if existing.is_empty() {
+            let _ = window.emit("large-files-done", Vec::<LargeFile>::new());
+            return;
+        }
+
+        let dirs_arg = existing.iter()
+            .map(|d| format!("\"{}\"", d))
+            .collect::<Vec<_>>()
+            .join(" ");
+
+        let raw = sh(&format!(
+            "find {} -not \\( -path '*/node_modules*' -prune \\) -not \\( -path '*/.git*' -prune \\) -not \\( -path '*/Library/Caches*' -prune \\) -size +100M -type f 2>/dev/null | head -30",
+            dirs_arg
+        ));
+
+        let mut files: Vec<LargeFile> = Vec::new();
+        for line in raw.lines().filter(|l| !l.is_empty()) {
+            let size_kb = sh(&format!("du -sk \"{}\" 2>/dev/null", line))
+                .split_whitespace().next()
+                .and_then(|s| s.parse::<u64>().ok())
+                .unwrap_or(0);
+            files.push(LargeFile {
+                path: line.to_string(),
+                size_bytes: size_kb * 1024,
+            });
+        }
+        files.sort_by(|a, b| b.size_bytes.cmp(&a.size_bytes));
+        let _ = window.emit("large-files-done", files);
+    }); // end thread::spawn
 }
 
 // ── Memory ─────────────────────────────────────────────────────────────────────
