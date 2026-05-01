@@ -13,10 +13,18 @@
     "source": "packages/configurations/git/gitignore.txt",
     "target": "~/.gitignore_global"
   },
-  "shell-aliases": {
-    "name": "Shell Aliases",
-    "description": "Custom shell aliases for bash/zsh",
-    "type": "script",
-    "source": "packages/configurations/alias.sh"
+  "zshrc": {
+    "name": "ZSH Configuration",
+    "description": "Main zsh configuration with prompt, history, aliases, and completions",
+    "type": "copy",
+    "source": "packages/configurations/zsh/zshrc",
+    "target": "~/.zshrc"
+  },
+  "zsh-cleanup": {
+    "name": "ZSH Cleanup Menu",
+    "description": "Interactive startup menu with updates, cleanup, and system controls",
+    "type": "copy",
+    "source": "packages/configurations/zsh/zsh_cleanup.zsh",
+    "target": "~/.zsh_cleanup.zsh"
   }
 }

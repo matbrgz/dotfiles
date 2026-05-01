@@ -1,0 +1,72 @@
+{
+  "claude": {
+    "name": "Claude Desktop",
+    "description": "Anthropic Claude desktop app",
+    "category": "ai",
+    "enabled": true,
+    "default": true,
+    "platforms": {
+      "macos": {
+        "method": "brew-cask",
+        "cask": "claude"
+      }
+    },
+    "post_install": []
+  },
+  "claude-code": {
+    "name": "Claude Code",
+    "description": "Anthropic Claude CLI for coding",
+    "category": "ai",
+    "enabled": true,
+    "default": true,
+    "platforms": {
+      "macos": {
+        "method": "brew-cask",
+        "cask": "claude-code"
+      }
+    },
+    "post_install": []
+  },
+  "codex": {
+    "name": "Codex CLI",
+    "description": "OpenAI Codex CLI agent",
+    "category": "ai",
+    "enabled": true,
+    "default": true,
+    "platforms": {
+      "macos": {
+        "method": "brew-cask",
+        "cask": "codex"
+      }
+    },
+    "post_install": []
+  },
+  "codex-app": {
+    "name": "Codex Desktop",
+    "description": "OpenAI Codex desktop app",
+    "category": "ai",
+    "enabled": true,
+    "default": true,
+    "platforms": {
+      "macos": {
+        "method": "brew-cask",
+        "cask": "codex-app"
+      }
+    },
+    "post_install": []
+  },
+  "gemini-cli": {
+    "name": "Gemini CLI",
+    "description": "Google Gemini CLI agent",
+    "category": "ai",
+    "enabled": true,
+    "default": true,
+    "platforms": {
+      "macos": {
+        "method": "brew",
+        "formula": "gemini-cli"
+      }
+    },
+    "post_install": []
+  }
+}

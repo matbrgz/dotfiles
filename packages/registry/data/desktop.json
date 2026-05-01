@@ -3,8 +3,8 @@
     "name": "Google Chrome",
     "description": "Web browser developed by Google",
     "category": "desktop",
-    "enabled": false,
-    "default": false,
+    "enabled": true,
+    "default": true,
     "platforms": {
       "linux": {
         "script": "packages/os-linux/scripts/chrome.sh",
@@ -15,30 +15,58 @@
         "method": "choco"
       },
       "macos": {
-        "script": "packages/os-macos/scripts/chrome.sh",
-        "method": "brew"
+        "method": "brew-cask",
+        "cask": "google-chrome"
       }
     },
     "post_install": []
   },
-  "firefox": {
-    "name": "Mozilla Firefox",
-    "description": "Open-source web browser",
+  "iterm2": {
+    "name": "iTerm2",
+    "description": "Terminal emulator for macOS",
     "category": "desktop",
-    "enabled": false,
-    "default": false,
+    "enabled": true,
+    "default": true,
+    "platforms": {
+      "macos": {
+        "method": "brew-cask",
+        "cask": "iterm2"
+      }
+    },
+    "post_install": []
+  },
+  "obsidian": {
+    "name": "Obsidian",
+    "description": "Knowledge base and note-taking app",
+    "category": "desktop",
+    "enabled": true,
+    "default": true,
+    "platforms": {
+      "macos": {
+        "method": "brew-cask",
+        "cask": "obsidian"
+      }
+    },
+    "post_install": []
+  },
+  "spotify": {
+    "name": "Spotify",
+    "description": "Digital music streaming service",
+    "category": "desktop",
+    "enabled": true,
+    "default": true,
     "platforms": {
       "linux": {
-        "script": "packages/os-linux/scripts/firefox.sh",
+        "script": "packages/os-linux/scripts/spotify.sh",
         "method": "apt"
       },
       "windows": {
-        "script": "packages/os-windows/scripts/firefox.ps1",
+        "script": "packages/os-windows/scripts/spotify.ps1",
         "method": "choco"
       },
       "macos": {
-        "script": "packages/os-macos/scripts/firefox.sh",
-        "method": "brew"
+        "method": "brew-cask",
+        "cask": "spotify"
       }
     },
     "post_install": []
@@ -59,52 +87,78 @@
         "method": "choco"
       },
       "macos": {
-        "script": "packages/os-macos/scripts/discord.sh",
-        "method": "brew"
+        "method": "brew-cask",
+        "cask": "discord"
       }
     },
     "post_install": []
   },
-  "spotify": {
-    "name": "Spotify",
-    "description": "Digital music streaming service",
+  "affinity": {
+    "name": "Affinity Suite",
+    "description": "Professional creative software suite",
     "category": "desktop",
-    "enabled": false,
+    "enabled": true,
     "default": false,
     "platforms": {
-      "linux": {
-        "script": "packages/os-linux/scripts/spotify.sh",
-        "method": "apt"
-      },
-      "windows": {
-        "script": "packages/os-windows/scripts/spotify.ps1",
-        "method": "choco"
-      },
       "macos": {
-        "script": "packages/os-macos/scripts/spotify.sh",
-        "method": "brew"
+        "method": "brew-cask",
+        "cask": "affinity"
       }
     },
     "post_install": []
   },
-  "qbittorrent": {
-    "name": "qBittorrent",
-    "description": "BitTorrent client",
+  "boring-notch": {
+    "name": "Boring Notch",
+    "description": "macOS notch customization utility",
     "category": "desktop",
-    "enabled": false,
+    "enabled": true,
     "default": false,
     "platforms": {
-      "linux": {
-        "script": "packages/os-linux/scripts/qbittorrent.sh",
-        "method": "apt"
-      },
-      "windows": {
-        "script": "packages/os-windows/scripts/qbittorrent.ps1",
-        "method": "choco"
-      },
       "macos": {
-        "script": "packages/os-macos/scripts/qbittorrent.sh",
-        "method": "brew"
+        "method": "brew-cask",
+        "cask": "boring-notch"
+      }
+    },
+    "post_install": []
+  },
+  "antigravity": {
+    "name": "Antigravity",
+    "description": "macOS window management utility",
+    "category": "desktop",
+    "enabled": true,
+    "default": false,
+    "platforms": {
+      "macos": {
+        "method": "brew-cask",
+        "cask": "antigravity"
+      }
+    },
+    "post_install": []
+  },
+  "pearcleaner": {
+    "name": "Pearcleaner",
+    "description": "macOS app uninstaller and cleaner",
+    "category": "desktop",
+    "enabled": true,
+    "default": false,
+    "platforms": {
+      "macos": {
+        "method": "brew-cask",
+        "cask": "pearcleaner"
+      }
+    },
+    "post_install": []
+  },
+  "languagetool": {
+    "name": "LanguageTool",
+    "description": "Grammar and spell checker",
+    "category": "desktop",
+    "enabled": true,
+    "default": false,
+    "platforms": {
+      "macos": {
+        "method": "brew-cask",
+        "cask": "languagetool-desktop"
       }
     },
     "post_install": []
