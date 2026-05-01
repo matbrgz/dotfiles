@@ -23,14 +23,14 @@ export const InventoryTab: React.FC<InventoryTabProps> = ({
 
   if (filtered.length === 0) {
     return (
-      <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', paddingBottom: 160 }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '60px 0' }}>
         <p style={{ color: 'var(--color-text-3)', fontSize: 12 }}>No packages match "{searchQuery}"</p>
       </div>
     );
   }
 
   return (
-    <div style={{ flex: 1, overflowY: 'auto', padding: '20px 24px 180px' }}>
+    <div style={{ padding: '20px 24px 40px' }}>
       {scanning && (
         <div style={{
           marginBottom: 16, padding: '8px 14px',

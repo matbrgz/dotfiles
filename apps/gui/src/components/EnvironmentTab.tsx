@@ -14,7 +14,7 @@ export const EnvironmentTab: React.FC<EnvironmentTabProps> = ({ dotfiles, dotfil
   const syncedCount = Object.values(dotfileStatus).filter(Boolean).length;
 
   return (
-    <div style={{ flex: 1, overflowY: 'auto', padding: '20px 24px 180px' }}>
+    <div style={{ padding: '20px 24px 40px' }}>
       {/* Summary bar */}
       <div style={{
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',

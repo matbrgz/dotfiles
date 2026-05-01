@@ -4,9 +4,10 @@ import { ChevronUp, ChevronDown, Copy, Check } from 'lucide-react';
 interface TerminalPanelProps {
   logs: string[];
   scrollRef: React.RefObject<HTMLDivElement>;
+  onCollapseChange?: (collapsed: boolean) => void;
 }
 
-export const TerminalPanel: React.FC<TerminalPanelProps> = ({ logs, scrollRef }) => {
+export const TerminalPanel: React.FC<TerminalPanelProps> = ({ logs, scrollRef, onCollapseChange }) => {
   const [collapsed, setCollapsed] = useState(false);
   const [copied, setCopied] = useState(false);
 
@@ -53,7 +54,11 @@ export const TerminalPanel: React.FC<TerminalPanelProps> = ({ logs, scrollRef })
             {copied ? 'Copied' : 'Copy'}
           </button>
           <button
-            onClick={() => setCollapsed(c => !c)}
+            onClick={() => {
+              const next = !collapsed;
+              setCollapsed(next);
+              onCollapseChange?.(next);
+            }}
             style={{
               display: 'flex', alignItems: 'center', padding: '3px 6px',
               borderRadius: 4, border: '1px solid var(--color-border)',

@@ -7,6 +7,43 @@ export interface LogEntry {
   is_error: boolean;
 }
 
+export interface DiskCategory {
+  id: string;
+  label: string;
+  icon: string;
+  group: string;
+  size_bytes: number;
+  item_count: number;
+  safe: boolean;
+}
+
+export interface CleanEvent {
+  id: string;
+  freed_bytes: number;
+  error: string | null;
+  done: boolean;
+}
+
+export interface LargeFile {
+  path: string;
+  size_bytes: number;
+}
+
+export interface MemoryInfo {
+  total_mb: number;
+  used_mb: number;
+  available_mb: number;
+  inactive_mb: number;
+  wired_mb: number;
+}
+
+export interface ProcInfo {
+  pid: number;
+  name: string;
+  memory_mb: number;
+  cpu_pct: number;
+}
+
 export const guiCommands = {
   getSystemInfo: async () => {
     try {
@@ -99,5 +136,69 @@ export const guiCommands = {
         reject(err);
       });
     });
+  },
+
+  scanDisk: async (onCategory?: (cat: DiskCategory) => void): Promise<DiskCategory[]> => {
+    return new Promise(async (resolve, reject) => {
+      const results: DiskCategory[] = [];
+      let unlisten: (() => void) | null = null;
+      if (onCategory) {
+        unlisten = await listen<DiskCategory>('scan-category', (e) => {
+          results.push(e.payload);
+          onCategory(e.payload);
+        });
+      }
+      try {
+        const cats = await invoke<DiskCategory[]>('scan_disk_usage');
+        resolve(cats);
+      } catch (e) {
+        reject(e);
+      } finally {
+        if (unlisten) unlisten();
+      }
+    });
+  },
+
+  cleanItems: async (ids: string[], onProgress?: (e: CleanEvent) => void): Promise<void> => {
+    return new Promise(async (resolve, reject) => {
+      const unlisteners: Array<() => void> = [];
+      if (onProgress) {
+        const ul = await listen<CleanEvent>('clean-progress', (e) => onProgress(e.payload));
+        unlisteners.push(ul);
+      }
+      const cleanup = () => unlisteners.forEach(fn => fn());
+      try {
+        await invoke('clean_items', { ids });
+        cleanup();
+        resolve();
+      } catch (e) {
+        cleanup();
+        reject(e);
+      }
+    });
+  },
+
+  scanLargeFiles: async (): Promise<LargeFile[]> => {
+    try {
+      return await invoke<LargeFile[]>('scan_large_files');
+    } catch {
+      return [];
+    }
+  },
+
+  getMemoryInfo: async (): Promise<MemoryInfo> => {
+    return invoke<MemoryInfo>('get_memory_info');
+  },
+
+  getTopProcesses: async (limit: number): Promise<ProcInfo[]> => {
+    try {
+      return await invoke<ProcInfo[]>('get_top_processes', { limit });
+    } catch {
+      return [];
+    }
+  },
+
+  killProcess: async (pid: number): Promise<void> => {
+    await invoke('kill_process', { pid });
   },
 };

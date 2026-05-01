@@ -8,7 +8,9 @@ import { InventoryTab } from './components/InventoryTab';
 import { EnvironmentTab } from './components/EnvironmentTab';
 import { SettingsTab } from './components/SettingsTab';
 import { ProfileTab } from './components/ProfileTab';
-import { Package, Settings, User, FileCode } from 'lucide-react';
+import { DiskCleanerTab } from './components/DiskCleanerTab';
+import { MemoryTab } from './components/MemoryTab';
+import { Package, Settings, User, FileCode, HardDrive, Cpu } from 'lucide-react';
 
 export default function App() {
   const [registry, setRegistry] = useState<Record<string, ProgramManifest>>({});
@@ -25,13 +27,16 @@ export default function App() {
   const [isApplying, setIsApplying] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [scanningDone, setScanningDone] = useState(false);
+  const [terminalCollapsed, setTerminalCollapsed] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const TABS = [
-    { id: 'inventory',   label: 'Packages',  icon: Package },
-    { id: 'environment', label: 'Dotfiles',  icon: FileCode },
-    { id: 'settings',   label: 'Settings',  icon: Settings },
-    { id: 'profile',    label: 'Profile',   icon: User },
+    { id: 'inventory',    label: 'Packages',      icon: Package },
+    { id: 'environment',  label: 'Dotfiles',      icon: FileCode },
+    { id: 'settings',     label: 'Settings',      icon: Settings },
+    { id: 'profile',      label: 'Profile',       icon: User },
+    { id: 'disk-cleaner', label: 'Disk Cleaner',  icon: HardDrive },
+    { id: 'memory',       label: 'Memory',        icon: Cpu },
   ];
 
   useEffect(() => {
@@ -177,33 +182,41 @@ export default function App() {
           scanning={!scanningDone}
         />
 
-        <div className="flex-1 overflow-hidden relative">
-          {activeTab === 'inventory' && (
-            <InventoryTab
-              registry={registry}
-              searchQuery={searchQuery}
-              installing={installing}
-              onInstall={handleInstall}
-              installedStatus={installedStatus}
-              scanning={!scanningDone}
-            />
-          )}
-          {activeTab === 'environment' && (
-            <EnvironmentTab
-              dotfiles={dotfiles}
-              dotfileStatus={dotfileStatus}
-              onApply={handleApplyDotfiles}
-              isApplying={isApplying}
-            />
-          )}
-          {activeTab === 'settings' && settings && (
-            <SettingsTab settings={settings} setSettings={setSettings} onSave={handleSaveSettings} isSaving={isSaving} />
-          )}
-          {activeTab === 'profile' && settings && (
-            <ProfileTab settings={settings} registry={registry} dotfiles={dotfiles} osInfo={osInfo} />
-          )}
+        <div style={{ position: 'relative', flex: 1, overflow: 'hidden' }}>
+          <div style={{
+            position: 'absolute', top: 0, left: 0, right: 0,
+            bottom: terminalCollapsed ? 36 : 140,
+            overflowY: 'auto',
+          }}>
+            {activeTab === 'inventory' && (
+              <InventoryTab
+                registry={registry}
+                searchQuery={searchQuery}
+                installing={installing}
+                onInstall={handleInstall}
+                installedStatus={installedStatus}
+                scanning={!scanningDone}
+              />
+            )}
+            {activeTab === 'environment' && (
+              <EnvironmentTab
+                dotfiles={dotfiles}
+                dotfileStatus={dotfileStatus}
+                onApply={handleApplyDotfiles}
+                isApplying={isApplying}
+              />
+            )}
+            {activeTab === 'settings' && settings && (
+              <SettingsTab settings={settings} setSettings={setSettings} onSave={handleSaveSettings} isSaving={isSaving} />
+            )}
+            {activeTab === 'profile' && settings && (
+              <ProfileTab settings={settings} registry={registry} dotfiles={dotfiles} osInfo={osInfo} />
+            )}
+            {activeTab === 'disk-cleaner' && <DiskCleanerTab />}
+            {activeTab === 'memory' && <MemoryTab />}
+          </div>
 
-          <TerminalPanel logs={logs} scrollRef={scrollRef} />
+          <TerminalPanel logs={logs} scrollRef={scrollRef} onCollapseChange={setTerminalCollapsed} />
         </div>
       </main>
     </div>
