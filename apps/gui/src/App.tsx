@@ -8,12 +8,7 @@ import { InventoryTab } from './components/InventoryTab';
 import { EnvironmentTab } from './components/EnvironmentTab';
 import { SettingsTab } from './components/SettingsTab';
 import { ProfileTab } from './components/ProfileTab';
-import { 
-  Package, 
-  Settings, 
-  User, 
-  FileCode
-} from 'lucide-react';
+import { Package, Settings, User, FileCode } from 'lucide-react';
 
 export default function App() {
   const [registry, setRegistry] = useState<Record<string, ProgramManifest>>({});
@@ -23,18 +18,20 @@ export default function App() {
   const [osInfo, setOsInfo] = useState({ os: 'unknown', platform: '' });
   const [installing, setInstalling] = useState<Record<string, boolean>>({});
   const [installedStatus, setInstalledStatus] = useState<Record<string, boolean>>({});
-  const [logs, setLogs] = useState<string[]>(["SYSTEM_INITIALIZED", "READY_FOR_INPUT"]);
+  const [dotfileStatus, setDotfileStatus] = useState<Record<string, boolean>>({});
+  const [logs, setLogs] = useState<string[]>(['System initialized', 'Ready']);
   const [activeTab, setActiveTab] = useState('inventory');
   const [searchQuery, setSearchQuery] = useState('');
   const [isApplying, setIsApplying] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [scanningDone, setScanningDone] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const TABS = [
-    { id: 'inventory', label: 'Inv', icon: Package },
-    { id: 'environment', label: 'Env', icon: FileCode },
-    { id: 'settings', label: 'Cfg', icon: Settings },
-    { id: 'profile', label: 'Usr', icon: User },
+    { id: 'inventory',   label: 'Packages',  icon: Package },
+    { id: 'environment', label: 'Dotfiles',  icon: FileCode },
+    { id: 'settings',   label: 'Settings',  icon: Settings },
+    { id: 'profile',    label: 'Profile',   icon: User },
   ];
 
   useEffect(() => {
@@ -48,12 +45,11 @@ export default function App() {
         setDotfiles(dotData);
         const userSettings = await guiCommands.getUserSettings();
         setSettings(userSettings);
-        addLog(`CORE_READY: ${Object.keys(data).length} MODULES DETECTED`);
-        
-        // Initial check for all programs
-        checkAllInstallations(data);
+        addLog(`Loaded ${Object.keys(data).length} packages, ${Object.keys(dotData).length} dotfiles`);
+        scanInstallations(data);
+        scanDotfiles(dotData);
       } catch (err) {
-        addLog(`ERROR: FAILED_TO_INITIALIZE_CORE: ${err}`, true);
+        addLog(`Init error: ${err}`, true);
       } finally {
         setLoading(false);
       }
@@ -61,40 +57,60 @@ export default function App() {
     init();
   }, []);
 
-  const checkAllInstallations = async (data: Record<string, ProgramManifest>) => {
-    addLog("SCANNING_LOCAL_SYSTEM_FOR_INSTALLED_MODULES...");
-    for (const id of Object.keys(data)) {
-      const isInstalled = await guiCommands.checkInstallation(id);
-      setInstalledStatus(prev => ({ ...prev, [id]: isInstalled }));
-    }
-    addLog("SYSTEM_SCAN_COMPLETE");
-  };
-
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
   }, [logs]);
 
+  const scanInstallations = async (data: Record<string, ProgramManifest>) => {
+    addLog('Scanning installed packages...');
+    const results: Record<string, boolean> = {};
+    for (const [id, prog] of Object.entries(data)) {
+      const mac = (prog.platforms as any)?.macos;
+      if (!mac) { results[id] = false; continue; }
+      const pkg = mac.formula || mac.cask || id;
+      const method = mac.method || 'which';
+      results[id] = await guiCommands.checkBrewPackage(method, pkg);
+      setInstalledStatus(prev => ({ ...prev, [id]: results[id] }));
+    }
+    setScanningDone(true);
+    const installed = Object.values(results).filter(Boolean).length;
+    addLog(`Scan complete — ${installed}/${Object.keys(data).length} packages installed`);
+  };
+
+  const scanDotfiles = async (dots: Record<string, DotfileManifest>) => {
+    for (const [id, dot] of Object.entries(dots)) {
+      if ((dot as any).target) {
+        const exists = await guiCommands.checkDotfileExists((dot as any).target);
+        setDotfileStatus(prev => ({ ...prev, [id]: exists }));
+      }
+    }
+  };
+
   const addLog = (msg: string, isError = false) => {
-    const timestamp = new Date().toLocaleTimeString('en-GB', { hour12: false });
-    const prefix = isError ? "!! ERROR: " : "";
-    setLogs(prev => [...prev, `[${timestamp}] ${prefix}${msg}`]);
+    const ts = new Date().toLocaleTimeString('en-GB', { hour12: false });
+    const prefix = isError ? '[ERR] ' : '';
+    setLogs(prev => [...prev, `${ts}  ${prefix}${msg}`]);
   };
 
   const handleInstall = async (id: string) => {
     setInstalling(prev => ({ ...prev, [id]: true }));
-    addLog(`INITIATING_INSTALL: MODULE_${id.toUpperCase()}`);
+    addLog(`Installing ${id}...`);
     try {
       await guiCommands.runCommand('install', id, (log: LogEntry) => {
         addLog(log.message, log.is_error);
       });
-      addLog(`SUCCESS: ${id.toUpperCase()}_DEPLOY_COMPLETE`);
-      // Update status after install
-      const isInstalled = await guiCommands.checkInstallation(id);
-      setInstalledStatus(prev => ({ ...prev, [id]: isInstalled }));
+      addLog(`${id} installed`);
+      // Re-check status after install
+      const prog = registry[id];
+      const mac = (prog?.platforms as any)?.macos;
+      if (mac) {
+        const isInstalled = await guiCommands.checkBrewPackage(mac.method || 'which', mac.formula || mac.cask || id);
+        setInstalledStatus(prev => ({ ...prev, [id]: isInstalled }));
+      }
     } catch (err) {
-      addLog(`CRITICAL_FAILURE: ${id.toUpperCase()}_ABORTED: ${err}`, true);
+      addLog(`Failed to install ${id}: ${err}`, true);
     } finally {
       setInstalling(prev => ({ ...prev, [id]: false }));
     }
@@ -103,14 +119,15 @@ export default function App() {
   const handleApplyDotfiles = async () => {
     if (isApplying) return;
     setIsApplying(true);
-    addLog("INITIATING_DOTFILES_SYNC...");
+    addLog('Syncing dotfiles...');
     try {
       await guiCommands.runCommand('apply', undefined, (log: LogEntry) => {
         addLog(log.message, log.is_error);
       });
-      addLog("SUCCESS: DOTFILES_SYNC_COMPLETE");
+      addLog('Dotfiles synced');
+      scanDotfiles(dotfiles);
     } catch (err) {
-      addLog(`ERROR: DOTFILES_SYNC_FAILED: ${err}`, true);
+      addLog(`Sync failed: ${err}`, true);
     } finally {
       setIsApplying(false);
     }
@@ -119,60 +136,75 @@ export default function App() {
   const handleSaveSettings = async () => {
     if (!settings || isSaving) return;
     setIsSaving(true);
-    addLog("PERSISTING_USER_DATA...");
+    addLog('Saving settings...');
     try {
       await guiCommands.saveUserSettings(settings);
-      addLog("SUCCESS: CONFIGURATIONS_SAVED");
+      addLog('Settings saved');
     } catch (err) {
-      addLog(`ERROR: FAILED_TO_SAVE_SETTINGS: ${err}`, true);
+      addLog(`Save failed: ${err}`, true);
     } finally {
       setIsSaving(false);
     }
   };
 
   if (loading) return (
-    <div className="flex h-screen items-center justify-center bg-blueprint-bg font-mono">
-      <div className="text-cyan-500 animate-pulse text-sm tracking-[0.5em] uppercase text-center text-white">Establishing Link...</div>
+    <div className="flex h-screen items-center justify-center" style={{ background: 'var(--color-bg)' }}>
+      <div style={{ color: 'var(--color-green)', fontFamily: 'var(--font-mono)' }} className="text-xs tracking-widest animate-pulse">
+        Loading...
+      </div>
     </div>
   );
 
+  const installedCount = Object.values(installedStatus).filter(Boolean).length;
+  const syncedCount = Object.values(dotfileStatus).filter(Boolean).length;
+
   return (
-    <div className="flex h-screen bg-blueprint-bg text-zinc-300 font-mono select-none overflow-hidden">
+    <div className="flex h-screen overflow-hidden" style={{ background: 'var(--color-bg)', fontFamily: 'var(--font-mono)' }}>
       <Sidebar activeTab={activeTab} onTabChange={setActiveTab} tabs={TABS} />
-      
-      <main className="flex-1 flex flex-col relative overflow-hidden">
-        <Header 
-          osInfo={osInfo} 
-          isApplying={isApplying} 
+
+      <main className="flex-1 flex flex-col overflow-hidden">
+        <Header
+          osInfo={osInfo}
+          isApplying={isApplying}
           onApplyDotfiles={handleApplyDotfiles}
           searchQuery={searchQuery}
           onSearchChange={setSearchQuery}
           activeTab={activeTab}
+          installedCount={installedCount}
+          totalCount={Object.keys(registry).length}
+          syncedCount={syncedCount}
+          totalDotfiles={Object.keys(dotfiles).length}
+          scanning={!scanningDone}
         />
 
-        {activeTab === 'inventory' && (
-          <InventoryTab 
-            registry={registry} 
-            searchQuery={searchQuery} 
-            installing={installing} 
-            onInstall={handleInstall} 
-            installedStatus={installedStatus}
-          />
-        )}
+        <div className="flex-1 overflow-hidden relative">
+          {activeTab === 'inventory' && (
+            <InventoryTab
+              registry={registry}
+              searchQuery={searchQuery}
+              installing={installing}
+              onInstall={handleInstall}
+              installedStatus={installedStatus}
+              scanning={!scanningDone}
+            />
+          )}
+          {activeTab === 'environment' && (
+            <EnvironmentTab
+              dotfiles={dotfiles}
+              dotfileStatus={dotfileStatus}
+              onApply={handleApplyDotfiles}
+              isApplying={isApplying}
+            />
+          )}
+          {activeTab === 'settings' && settings && (
+            <SettingsTab settings={settings} setSettings={setSettings} onSave={handleSaveSettings} isSaving={isSaving} />
+          )}
+          {activeTab === 'profile' && settings && (
+            <ProfileTab settings={settings} registry={registry} dotfiles={dotfiles} osInfo={osInfo} />
+          )}
 
-        {activeTab === 'environment' && (
-          <EnvironmentTab dotfiles={dotfiles} onApply={handleApplyDotfiles} />
-        )}
-
-        {activeTab === 'settings' && settings && (
-          <SettingsTab settings={settings} setSettings={setSettings} onSave={handleSaveSettings} isSaving={isSaving} />
-        )}
-
-        {activeTab === 'profile' && settings && (
-          <ProfileTab settings={settings} registry={registry} dotfiles={dotfiles} osInfo={osInfo} />
-        )}
-
-        <TerminalPanel logs={logs} scrollRef={scrollRef} />
+          <TerminalPanel logs={logs} scrollRef={scrollRef} />
+        </div>
       </main>
     </div>
   );

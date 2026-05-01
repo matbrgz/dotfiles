@@ -9,26 +9,78 @@ interface SidebarProps {
 
 export const Sidebar: React.FC<SidebarProps> = ({ activeTab, onTabChange, tabs }) => {
   return (
-    <aside className="w-16 flex flex-col items-center py-8 border-r border-zinc-900 bg-black/40 z-20">
-      <div className="mb-12 p-2 bg-cyan-500 text-black shadow-[0_0_15px_rgba(34,211,238,0.3)]">
-        <div className="w-6 h-6 border-2 border-black flex items-center justify-center font-black">D</div>
+    <aside style={{
+      width: 200,
+      background: 'var(--color-surface)',
+      borderRight: '1px solid var(--color-border)',
+      display: 'flex',
+      flexDirection: 'column',
+      flexShrink: 0,
+    }}>
+      {/* Logo */}
+      <div style={{ padding: '20px 16px 16px', borderBottom: '1px solid var(--color-border)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <div style={{
+            width: 28, height: 28,
+            background: 'var(--color-green)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            borderRadius: 6,
+            flexShrink: 0,
+          }}>
+            <span style={{ color: '#000', fontSize: 13, fontWeight: 700 }}>D</span>
+          </div>
+          <div>
+            <div style={{ color: 'var(--color-text)', fontSize: 12, fontWeight: 700, lineHeight: 1.2 }}>Dotfiles</div>
+            <div style={{ color: 'var(--color-text-3)', fontSize: 10, lineHeight: 1 }}>v1.0.0</div>
+          </div>
+        </div>
       </div>
-      
-      <nav className="flex-1 flex flex-col gap-8 text-[10px] font-black uppercase tracking-tighter">
-        {tabs.map((tab) => (
-          <button 
-            key={tab.id}
-            onClick={() => onTabChange(tab.id)} 
-            className={`${activeTab === tab.id ? 'text-cyan-400' : 'text-zinc-600'} hover:text-cyan-400 transition-all flex flex-col items-center gap-1 group`}
-          >
-            <tab.icon className={`w-5 h-5 ${activeTab === tab.id ? 'drop-shadow-[0_0_5px_rgba(34,211,238,0.5)]' : ''}`} />
-            <span className="opacity-0 group-hover:opacity-100 transition-opacity">{tab.label}</span>
-          </button>
-        ))}
+
+      {/* Nav */}
+      <nav style={{ padding: '12px 8px', flex: 1 }}>
+        <div style={{ fontSize: 9, color: 'var(--color-text-3)', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', padding: '0 8px 8px' }}>
+          Navigation
+        </div>
+        {tabs.map((tab) => {
+          const active = activeTab === tab.id;
+          return (
+            <button
+              key={tab.id}
+              onClick={() => onTabChange(tab.id)}
+              style={{
+                width: '100%',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 10,
+                padding: '8px 10px',
+                borderRadius: 6,
+                border: 'none',
+                cursor: 'pointer',
+                background: active ? 'var(--color-surface-2)' : 'transparent',
+                color: active ? 'var(--color-text)' : 'var(--color-text-2)',
+                fontSize: 12,
+                fontWeight: active ? 600 : 400,
+                fontFamily: 'inherit',
+                transition: 'all 0.1s ease',
+                textAlign: 'left',
+                marginBottom: 2,
+              }}
+              onMouseEnter={e => { if (!active) (e.currentTarget as HTMLButtonElement).style.background = 'var(--color-surface-2)'; (e.currentTarget as HTMLButtonElement).style.color = 'var(--color-text)'; }}
+              onMouseLeave={e => { if (!active) { (e.currentTarget as HTMLButtonElement).style.background = 'transparent'; (e.currentTarget as HTMLButtonElement).style.color = 'var(--color-text-2)'; }}}
+            >
+              <tab.icon size={14} style={{ flexShrink: 0, color: active ? 'var(--color-green)' : 'currentColor' }} />
+              {tab.label}
+              {active && (
+                <div style={{ marginLeft: 'auto', width: 4, height: 4, borderRadius: '50%', background: 'var(--color-green)' }} />
+              )}
+            </button>
+          );
+        })}
       </nav>
 
-      <div className="text-[10px] font-black text-zinc-800 rotate-180 [writing-mode:vertical-lr] uppercase tracking-[0.3em] mb-4">
-        Universal Dotfiles v1.0
+      {/* Footer */}
+      <div style={{ padding: '12px 16px', borderTop: '1px solid var(--color-border)' }}>
+        <div style={{ fontSize: 9, color: 'var(--color-text-3)' }}>matbrgz/dotfiles</div>
       </div>
     </aside>
   );

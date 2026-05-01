@@ -24,6 +24,22 @@ export const guiCommands = {
     }
   },
 
+  checkBrewPackage: async (method: string, package_name: string): Promise<boolean> => {
+    try {
+      return await invoke<boolean>('check_brew_package', { method, package: package_name });
+    } catch {
+      return false;
+    }
+  },
+
+  checkDotfileExists: async (target: string): Promise<boolean> => {
+    try {
+      return await invoke<boolean>('check_dotfile_exists', { target });
+    } catch {
+      return false;
+    }
+  },
+
   getRegistryData: async () => {
     try {
       return await invoke<Record<string, ProgramManifest>>('get_registry_data');
@@ -55,14 +71,6 @@ export const guiCommands = {
       await invoke('save_user_settings', { settings });
     } catch (e) {
       throw new Error(`Failed to save settings: ${e}`);
-    }
-  },
-
-  checkInstallation: async (name: string): Promise<boolean> => {
-    try {
-      return await invoke<boolean>('check_installation', { name });
-    } catch {
-      return false;
     }
   },
 
