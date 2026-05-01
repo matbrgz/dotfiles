@@ -7,15 +7,20 @@ export interface LogEntry {
   is_error: boolean;
 }
 
-/**
- * Tauri Commands Wrapper (Bridge to Rust Backend)
- */
 export const guiCommands = {
   getSystemInfo: async () => {
     try {
       return await invoke<{ os: string; platform: string }>('get_system_info');
-    } catch (e) {
+    } catch {
       return { os: 'browser-dev', platform: window.navigator.platform };
+    }
+  },
+
+  getRuntimeInfo: async (): Promise<{ node: string; tauri: string }> => {
+    try {
+      return await invoke<{ node: string; tauri: string }>('get_runtime_info');
+    } catch {
+      return { node: 'n/a', tauri: 'n/a' };
     }
   },
 
@@ -23,7 +28,7 @@ export const guiCommands = {
     try {
       return await invoke<Record<string, ProgramManifest>>('get_registry_data');
     } catch (e) {
-      console.warn('Tauri not detected or failed to load registry:', e);
+      console.warn('Failed to load registry:', e);
       return {};
     }
   },
@@ -56,27 +61,35 @@ export const guiCommands = {
   checkInstallation: async (name: string): Promise<boolean> => {
     try {
       return await invoke<boolean>('check_installation', { name });
-    } catch (e) {
+    } catch {
       return false;
     }
   },
 
-  /**
-   * Runs a CLI command and sets up a callback for real-time logs
-   */
-  runCommand: async (command: string, name?: string, onLog?: (log: LogEntry) => void) => {
-    let unlisten: (() => void) | null = null;
-    
-    if (onLog) {
-      unlisten = await listen<LogEntry>('cli-log', (event) => {
-        onLog(event.payload);
-      });
-    }
+  runCommand: async (command: string, name?: string, onLog?: (log: LogEntry) => void): Promise<void> => {
+    return new Promise(async (resolve, reject) => {
+      const unlisteners: Array<() => void> = [];
 
-    try {
-      await invoke('run_cli_command', { command, name });
-    } finally {
-      if (unlisten) unlisten();
-    }
-  }
+      if (onLog) {
+        const unlisten = await listen<LogEntry>('cli-log', (event) => {
+          onLog(event.payload);
+        });
+        unlisteners.push(unlisten);
+      }
+
+      const cleanup = () => unlisteners.forEach(fn => fn());
+
+      const finishUnlisten = await listen<boolean>('cli-finished', (event) => {
+        cleanup();
+        finishUnlisten();
+        event.payload ? resolve() : reject(new Error('Command failed'));
+      });
+
+      invoke('run_cli_command', { command, name }).catch((err) => {
+        cleanup();
+        finishUnlisten();
+        reject(err);
+      });
+    });
+  },
 };
