@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Terminal as TerminalIcon, Copy, Check } from 'lucide-react';
+import { ChevronUp, ChevronDown, Copy, Check } from 'lucide-react';
 
 interface TerminalPanelProps {
   logs: string[];
@@ -7,57 +7,92 @@ interface TerminalPanelProps {
 }
 
 export const TerminalPanel: React.FC<TerminalPanelProps> = ({ logs, scrollRef }) => {
+  const [collapsed, setCollapsed] = useState(false);
   const [copied, setCopied] = useState(false);
 
   const handleCopy = () => {
-    const text = logs.join('\n');
-    navigator.clipboard.writeText(text);
+    navigator.clipboard.writeText(logs.join('\n'));
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
 
   return (
-    <footer className="absolute bottom-0 left-0 right-0 h-56 bg-black border-t border-zinc-900 flex flex-col z-30 shadow-[0_-20px_50px_rgba(0,0,0,0.5)]">
-      <div className="h-8 border-b border-zinc-900 px-4 flex items-center justify-between bg-zinc-950">
-        <div className="flex items-center gap-2">
-          <TerminalIcon className="w-3.5 h-3.5 text-cyan-500" />
-          <span className="text-[10px] font-black text-cyan-500 uppercase tracking-[0.2em]">Live_Telemetry_Feed</span>
+    <div style={{
+      position: 'absolute', bottom: 0, left: 0, right: 0,
+      height: collapsed ? 36 : 140,
+      background: 'var(--color-surface)',
+      borderTop: '1px solid var(--color-border)',
+      display: 'flex', flexDirection: 'column',
+      transition: 'height 0.2s ease',
+      zIndex: 30,
+    }}>
+      {/* Toolbar */}
+      <div style={{
+        height: 36, flexShrink: 0,
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        padding: '0 14px',
+        borderBottom: collapsed ? 'none' : '1px solid var(--color-border)',
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <div style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--color-green)', boxShadow: '0 0 4px rgba(52,211,153,0.5)' }} />
+          <span style={{ fontSize: 10, color: 'var(--color-text-3)', fontWeight: 500 }}>
+            Log — {logs.length} lines
+          </span>
         </div>
-        <div className="flex gap-4 items-center">
-          <button 
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <button
             onClick={handleCopy}
-            className={`flex items-center gap-1.5 px-2 py-0.5 border text-[9px] font-black uppercase tracking-widest transition-all
-              ${copied ? 'bg-green-500/20 border-green-500 text-green-400' : 'bg-zinc-900 border-zinc-800 text-zinc-500 hover:border-cyan-500/50 hover:text-cyan-400'}`}
+            style={{
+              display: 'flex', alignItems: 'center', gap: 4, padding: '3px 8px',
+              borderRadius: 4, border: '1px solid var(--color-border)',
+              background: 'transparent', color: copied ? 'var(--color-green)' : 'var(--color-text-3)',
+              fontSize: 10, fontFamily: 'inherit', cursor: 'pointer',
+            }}
           >
-            {copied ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
-            {copied ? 'BUFFER_COPIED' : 'COPY_BUFFER'}
+            {copied ? <Check size={10} /> : <Copy size={10} />}
+            {copied ? 'Copied' : 'Copy'}
           </button>
-          <div className="h-4 w-px bg-zinc-800 mx-1"></div>
-          <div className="flex gap-1.5 items-center">
-            <div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse shadow-[0_0_5px_#22c55e]"></div>
-            <span className="text-[9px] text-green-500 font-bold uppercase tracking-widest">Uplink_Active</span>
-          </div>
+          <button
+            onClick={() => setCollapsed(c => !c)}
+            style={{
+              display: 'flex', alignItems: 'center', padding: '3px 6px',
+              borderRadius: 4, border: '1px solid var(--color-border)',
+              background: 'transparent', color: 'var(--color-text-3)',
+              fontSize: 10, fontFamily: 'inherit', cursor: 'pointer',
+            }}
+          >
+            {collapsed ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
+          </button>
         </div>
       </div>
-      <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 font-mono text-[11px] leading-relaxed bg-[#020202] custom-scrollbar">
-        {logs.map((log, i) => (
-          <div key={i} className="flex gap-4 group hover:bg-zinc-900/30 px-2 py-0.5 transition-colors">
-            <span className="text-zinc-800 font-bold shrink-0 select-none">{String(i + 1).padStart(4, '0')}</span>
-            <span className={`
-              ${log.includes('ERROR') || log.includes('FAILURE') ? 'text-red-500 font-bold' : ''}
-              ${log.includes('SUCCESS') ? 'text-green-400 font-bold' : ''}
-              ${log.includes('INITIATING') || log.includes('SYNCING') || log.includes('PERSISTING') ? 'text-yellow-400 font-bold' : ''}
-              ${!log.includes('ERROR') && !log.includes('FAILURE') && !log.includes('SUCCESS') && !log.includes('INITIATING') && !log.includes('SYNCING') && !log.includes('PERSISTING') ? 'text-zinc-500' : ''}
-            `}>
-              {log}
-            </span>
+
+      {/* Log content */}
+      {!collapsed && (
+        <div ref={scrollRef} style={{ flex: 1, overflowY: 'auto', padding: '8px 14px', fontFamily: 'inherit' }}>
+          {logs.map((log, i) => (
+            <div key={i} style={{ display: 'flex', gap: 12, lineHeight: 1.6 }}>
+              <span style={{ fontSize: 10, color: 'var(--color-text-3)', flexShrink: 0, userSelect: 'none', minWidth: 32 }}>
+                {String(i + 1).padStart(3, ' ')}
+              </span>
+              <span style={{
+                fontSize: 10,
+                color: log.includes('[ERR]') ? 'var(--color-red)'
+                     : log.includes('installed') || log.includes('synced') || log.includes('saved') ? 'var(--color-green)'
+                     : log.includes('Scanning') || log.includes('Syncing') || log.includes('Installing') || log.includes('Saving') ? 'var(--color-amber)'
+                     : 'var(--color-text-2)',
+              }}>
+                {log}
+              </span>
+            </div>
+          ))}
+          <div style={{ display: 'flex', gap: 12 }}>
+            <span style={{ fontSize: 10, color: 'var(--color-text-3)', minWidth: 32 }}>{String(logs.length + 1).padStart(3, ' ')}</span>
+            <span style={{ fontSize: 10, color: 'var(--color-green)', animation: 'blink 1.2s ease infinite' }}>▍</span>
           </div>
-        ))}
-        <div className="flex gap-4 px-2 py-0.5">
-          <span className="text-zinc-800 font-bold shrink-0">{String(logs.length + 1).padStart(4, '0')}</span>
-          <span className="text-cyan-500 animate-pulse">_</span>
         </div>
-      </div>
-    </footer>
+      )}
+
+      <style>{`@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }`}</style>
+    </div>
   );
 };

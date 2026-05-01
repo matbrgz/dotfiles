@@ -1,46 +1,124 @@
 import React from 'react';
 import { type DotfileManifest } from '@dotfiles/schema';
-import { FileCode, ArrowRight } from 'lucide-react';
+import { Check, X, RefreshCw } from 'lucide-react';
 
 interface EnvironmentTabProps {
   dotfiles: Record<string, DotfileManifest>;
+  dotfileStatus: Record<string, boolean>;
   onApply: () => void;
+  isApplying: boolean;
 }
 
-export const EnvironmentTab: React.FC<EnvironmentTabProps> = ({ dotfiles, onApply }) => {
+export const EnvironmentTab: React.FC<EnvironmentTabProps> = ({ dotfiles, dotfileStatus, onApply, isApplying }) => {
+  const entries = Object.entries(dotfiles);
+  const syncedCount = Object.values(dotfileStatus).filter(Boolean).length;
+
   return (
-    <div className="flex-1 overflow-y-auto p-8 pb-64 custom-scrollbar">
-      <div className="mb-8 max-w-3xl">
-        <h2 className="text-lg font-black text-white uppercase tracking-tight mb-2">Dotfiles_Repository</h2>
-        <p className="text-xs text-zinc-500 font-bold uppercase tracking-wider">Sync local environment with centralized configurations.</p>
+    <div style={{ flex: 1, overflowY: 'auto', padding: '20px 24px 180px' }}>
+      {/* Summary bar */}
+      <div style={{
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        marginBottom: 20, padding: '12px 16px',
+        background: 'var(--color-surface)', border: '1px solid var(--color-border)',
+        borderRadius: 8,
+      }}>
+        <div style={{ display: 'flex', gap: 20 }}>
+          <Stat label="Total" value={entries.length} />
+          <Stat label="Synced" value={syncedCount} color="green" />
+          <Stat label="Missing" value={entries.length - syncedCount} color={entries.length - syncedCount > 0 ? 'red' : undefined} />
+        </div>
+        <button
+          onClick={onApply}
+          disabled={isApplying}
+          style={{
+            display: 'flex', alignItems: 'center', gap: 6,
+            padding: '7px 16px', borderRadius: 6,
+            border: '1px solid rgba(52,211,153,0.3)',
+            background: 'var(--color-green-bg)',
+            color: 'var(--color-green)',
+            fontSize: 11, fontWeight: 600, fontFamily: 'inherit',
+            cursor: isApplying ? 'not-allowed' : 'pointer',
+          }}
+        >
+          <RefreshCw size={11} style={{ animation: isApplying ? 'spin 1s linear infinite' : 'none' }} />
+          Sync all
+        </button>
       </div>
-      
-      <div className="grid grid-cols-1 gap-4 max-w-4xl">
-        {Object.entries(dotfiles).map(([id, dot]) => (
-          <div key={id} className="bg-zinc-950/50 border border-zinc-900 p-6 flex items-center justify-between group hover:border-cyan-500/20 transition-all">
-            <div className="flex items-center gap-6">
-              <div className="p-3 bg-zinc-900 border border-zinc-800 text-zinc-500 group-hover:text-cyan-400 transition-colors">
-                <FileCode className="w-5 h-5" />
+
+      {/* Dotfile list */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+        {entries.map(([id, dot]) => {
+          const synced = dotfileStatus[id] ?? false;
+          const target = (dot as any).target;
+          return (
+            <div
+              key={id}
+              style={{
+                display: 'flex', alignItems: 'center',
+                padding: '12px 16px', gap: 14,
+                background: 'var(--color-surface)',
+                border: `1px solid ${synced ? 'rgba(52,211,153,0.12)' : 'var(--color-border)'}`,
+                borderRadius: 8,
+              }}
+            >
+              {/* Status icon */}
+              <div style={{
+                width: 28, height: 28, borderRadius: 6, flexShrink: 0,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                background: synced ? 'var(--color-green-bg)' : 'var(--color-surface-2)',
+                border: `1px solid ${synced ? 'rgba(52,211,153,0.2)' : 'var(--color-border)'}`,
+              }}>
+                {synced
+                  ? <Check size={13} style={{ color: 'var(--color-green)' }} />
+                  : <X size={13} style={{ color: 'var(--color-text-3)' }} />
+                }
               </div>
-              <div>
-                <h3 className="text-sm font-black text-white uppercase tracking-wider">{dot.name}</h3>
-                <p className="text-[10px] text-zinc-600 font-bold uppercase mt-1">{dot.description}</p>
-                <div className="flex items-center gap-2 mt-3 text-[9px] font-bold text-zinc-700">
-                  <span className="bg-zinc-900 px-2 py-0.5 rounded uppercase">{dot.type}</span>
-                  <ArrowRight className="w-2 h-2" />
-                  <span className="font-mono text-zinc-500">{dot.target || 'N/A'}</span>
+
+              {/* Info */}
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--color-text)', marginBottom: 2 }}>
+                  {dot.name}
+                </div>
+                <div style={{ fontSize: 10, color: 'var(--color-text-3)' }}>
+                  {dot.description}
                 </div>
               </div>
+
+              {/* Source → Target */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 10, color: 'var(--color-text-3)', flexShrink: 0 }}>
+                <code style={{ color: 'var(--color-text-2)', background: 'var(--color-surface-2)', padding: '2px 6px', borderRadius: 3 }}>
+                  {(dot as any).source?.split('/').pop() ?? '—'}
+                </code>
+                <span>→</span>
+                <code style={{ color: synced ? 'var(--color-green)' : 'var(--color-text-3)', background: 'var(--color-surface-2)', padding: '2px 6px', borderRadius: 3 }}>
+                  {target ?? '—'}
+                </code>
+              </div>
+
+              {/* Type badge */}
+              <div style={{
+                fontSize: 9, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em',
+                color: 'var(--color-text-3)', background: 'var(--color-surface-2)',
+                border: '1px solid var(--color-border)', borderRadius: 3, padding: '2px 6px', flexShrink: 0,
+              }}>
+                {dot.type}
+              </div>
             </div>
-            <button 
-              onClick={onApply}
-              className="px-6 py-2 border border-zinc-800 text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 hover:border-cyan-500 hover:text-cyan-400 transition-all"
-            >
-              Apply
-            </button>
-          </div>
-        ))}
+          );
+        })}
       </div>
+
+      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </div>
   );
 };
+
+function Stat({ label, value, color }: { label: string; value: number; color?: 'green' | 'red' }) {
+  const textColor = color === 'green' ? 'var(--color-green)' : color === 'red' ? 'var(--color-red)' : 'var(--color-text)';
+  return (
+    <div>
+      <div style={{ fontSize: 18, fontWeight: 700, color: textColor, lineHeight: 1 }}>{value}</div>
+      <div style={{ fontSize: 10, color: 'var(--color-text-3)', marginTop: 2 }}>{label}</div>
+    </div>
+  );
+}
