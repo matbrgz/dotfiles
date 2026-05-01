@@ -1,6 +1,6 @@
 import React from 'react';
 import { type ProgramManifest } from '@dotfiles/schema';
-import { ProgramCard } from '@dotfiles/ui';
+import { ProgramCard } from './ProgramCard';
 
 interface InventoryTabProps {
   registry: Record<string, ProgramManifest>;
