@@ -20,10 +20,12 @@ export const Header: React.FC<HeaderProps> = ({
   activeTab, installedCount, totalCount, syncedCount, totalDotfiles, scanning,
 }) => {
   const tabTitles: Record<string, string> = {
-    inventory:   'Packages',
-    environment: 'Dotfiles',
-    settings:    'Settings',
-    profile:     'Profile',
+    inventory:    'Packages',
+    environment:  'Dotfiles',
+    settings:     'Settings',
+    profile:      'Profile',
+    'disk-cleaner': 'Disk Cleaner',
+    memory:       'Memory',
   };
 
   return (

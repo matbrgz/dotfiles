@@ -24,7 +24,7 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({ settings, registry, dotf
   ];
 
   return (
-    <div style={{ flex: 1, overflowY: 'auto', padding: '24px 24px 180px' }}>
+    <div style={{ padding: '24px 24px 40px' }}>
       <div style={{ maxWidth: 720, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
 
         {/* Identity card */}

@@ -61,7 +61,7 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({ settings, setSettings,
     setSettings({ ...settings, system: { ...settings.system, behavior: { ...settings.system.behavior, [key]: value } } });
 
   return (
-    <div style={{ flex: 1, overflowY: 'auto', padding: '24px 24px 180px' }}>
+    <div style={{ padding: '24px 24px 40px' }}>
       <div style={{ maxWidth: 560, display: 'flex', flexDirection: 'column', gap: 32 }}>
 
         {/* Identity */}
