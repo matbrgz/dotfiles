@@ -1,0 +1,100 @@
+# Brewfile — managed by dotfiles
+# Run: brew bundle --file=Brewfile
+
+# ─────────────────────────────────────────────
+# TAPS
+# ─────────────────────────────────────────────
+tap "homebrew/bundle"
+
+# ─────────────────────────────────────────────
+# FORMULAE (CLI)
+# ─────────────────────────────────────────────
+
+# Essential
+brew "git"
+brew "curl"
+brew "wget"
+brew "tree"
+brew "mas"
+
+# Development
+brew "nvm"
+brew "go"
+brew "rust"
+brew "ruby"
+brew "php"
+brew "gradle"
+brew "openjdk@21"
+brew "dotnet-sdk"
+brew "cmake"
+brew "vcpkg"
+brew "just"
+
+# DevOps / Cloud
+brew "flyctl"
+brew "gh"
+
+# AI CLI
+brew "gemini-cli"
+
+# C++ / Game Dev
+brew "asio"
+brew "boost"
+brew "glew"
+brew "luajit"
+brew "openal-soft"
+brew "physfs"
+brew "libvorbis"
+brew "cpp-httplib"
+brew "nlohmann-json"
+brew "parallel-hashmap"
+brew "pugixml"
+brew "utf8cpp"
+
+# Utilities
+brew "protobuf"
+brew "pandoc"
+brew "poppler"
+brew "librsvg"
+brew "loc"
+
+# ─────────────────────────────────────────────
+# CASKS (GUI)
+# ─────────────────────────────────────────────
+
+# Browsers
+cask "google-chrome"
+
+# AI / Dev Tools
+cask "claude"
+cask "claude-code"
+cask "codex"
+cask "codex-app"
+
+# Development
+cask "iterm2"
+cask "bruno"
+cask "dbeaver-community"
+cask "android-commandlinetools"
+cask "android-platform-tools"
+cask "gcloud-cli"
+cask "dotnet-sdk"
+cask "temurin"
+cask "temurin@21"
+cask "xquartz"
+cask "mactex-no-gui"
+
+# Productivity
+cask "obsidian"
+cask "bitwarden"
+cask "languagetool-desktop"
+cask "affinity"
+
+# Media / Social
+cask "spotify"
+cask "discord"
+
+# macOS Utilities
+cask "boring-notch"
+cask "antigravity"
+cask "pearcleaner"
