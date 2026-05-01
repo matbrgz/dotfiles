@@ -6,7 +6,8 @@
     "defaultfolder": {
       "linux": "~/dev",
       "wsl": "~/dev",
-      "windows": "~/dev"
+      "windows": "~/dev",
+      "macos": "~/dev"
     }
   },
   "system": {
