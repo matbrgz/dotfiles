@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { guiCommands } from '@dotfiles/gui-engine';
 import { type UserSettings, type ProgramManifest, type DotfileManifest } from '@dotfiles/schema';
 import { User, GitFork, HardDrive, Fingerprint } from 'lucide-react';
 
@@ -9,9 +10,15 @@ interface ProfileTabProps {
   osInfo: { os: string; platform: string };
 }
 
-export const ProfileTab: React.FC<ProfileTabProps> = ({ 
-  settings, registry, dotfiles, osInfo 
+export const ProfileTab: React.FC<ProfileTabProps> = ({
+  settings, registry, dotfiles, osInfo
 }) => {
+  const [runtimeInfo, setRuntimeInfo] = useState({ node: '...', tauri: '...' });
+
+  useEffect(() => {
+    guiCommands.getRuntimeInfo().then(setRuntimeInfo);
+  }, []);
+
   return (
     <div className="flex-1 overflow-y-auto p-8 pb-64 custom-scrollbar">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl">
@@ -56,8 +63,8 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
               {[
                 { label: 'OS_KERNEL', val: osInfo.os },
                 { label: 'CPU_ARCH', val: osInfo.platform },
-                { label: 'NODE_RT', val: 'v24.13.0' },
-                { label: 'TAURI_VER', val: 'v1.8.3' }
+                { label: 'NODE_RT', val: runtimeInfo.node },
+                { label: 'TAURI_VER', val: runtimeInfo.tauri }
               ].map(stat => (
                 <div key={stat.label} className="flex justify-between items-center border-b border-zinc-900/50 pb-2">
                   <span className="text-[10px] font-bold text-zinc-600 uppercase">{stat.label}</span>
