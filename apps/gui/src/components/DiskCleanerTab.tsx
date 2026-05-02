@@ -1,5 +1,15 @@
-import React, { useState, useCallback } from 'react';
-import { guiCommands, type DiskCategory, type CleanEvent, type LargeFile } from '@dotfiles/gui-engine';
+import React, { useState, useCallback, useMemo, useEffect } from 'react';
+import { guiCommands, type DiskCategory, type ScanProgress } from '@dotfiles/gui-engine';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Progress } from '@/components/ui/progress';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Separator } from '@/components/ui/separator';
+
+type CatSel = 'all' | Set<string>;
+type Selection = Map<string, CatSel>;
 
 function formatBytes(bytes: number): string {
   if (bytes < 1_048_576) return `${(bytes / 1024).toFixed(0)} KB`;
@@ -7,332 +17,352 @@ function formatBytes(bytes: number): string {
   return `${(bytes / 1_073_741_824).toFixed(1)} GB`;
 }
 
+function formatRelative(ts: number): string {
+  const diff = Math.floor(Date.now() / 1000) - ts;
+  if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
+  if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
+  if (diff < 604800) return `${Math.floor(diff / 86400)}d ago`;
+  if (diff < 2592000) return `${Math.floor(diff / 604800)}w ago`;
+  return `${Math.floor(diff / 2592000)}mo ago`;
+}
+
+function catChecked(sel: Selection, id: string): true | false | 'indeterminate' {
+  const s = sel.get(id);
+  if (s === 'all') return true;
+  if (s instanceof Set && s.size > 0) return 'indeterminate';
+  return false;
+}
+
+function groupChecked(sel: Selection, cats: DiskCategory[]): true | false | 'indeterminate' {
+  if (cats.every(c => sel.get(c.id) === 'all')) return true;
+  if (cats.some(c => sel.has(c.id))) return 'indeterminate';
+  return false;
+}
+
+function itemChecked(sel: Selection, catId: string, path: string): boolean {
+  const s = sel.get(catId);
+  return s === 'all' || (s instanceof Set && s.has(path));
+}
+
+function toggleCat(sel: Selection, id: string): Selection {
+  const next = new Map(sel);
+  if (sel.get(id) === 'all') next.delete(id); else next.set(id, 'all');
+  return next;
+}
+
+function toggleGroup(sel: Selection, cats: DiskCategory[]): Selection {
+  const next = new Map(sel);
+  const allSel = cats.every(c => sel.get(c.id) === 'all');
+  for (const cat of cats) { if (allSel) next.delete(cat.id); else next.set(cat.id, 'all'); }
+  return next;
+}
+
+function toggleItem(sel: Selection, catId: string, path: string, cat: DiskCategory): Selection {
+  const next = new Map(sel);
+  const current = sel.get(catId);
+  if (current === 'all') { next.delete(catId); return next; }
+  const set = new Set(current instanceof Set ? current : []);
+  if (set.has(path)) {
+    set.delete(path);
+    if (set.size === 0) next.delete(catId); else next.set(catId, set);
+  } else {
+    set.add(path);
+    if (cat.items.length > 0 && set.size === cat.items.length) next.set(catId, 'all');
+    else next.set(catId, set);
+  }
+  return next;
+}
+
+function selectedBytes(sel: Selection, categories: DiskCategory[]): number {
+  let total = 0;
+  for (const cat of categories) {
+    const s = sel.get(cat.id);
+    if (!s) continue;
+    if (s === 'all') { total += cat.size_bytes; continue; }
+    for (const path of s) {
+      const item = cat.items.find(i => i.path === path);
+      if (item) total += item.size_bytes;
+    }
+  }
+  return total;
+}
+
+const ALL = 'All';
+
 export const DiskCleanerTab: React.FC = () => {
   const [categories, setCategories] = useState<DiskCategory[]>([]);
-  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [selection, setSelection] = useState<Selection>(new Map());
   const [scanning, setScanning] = useState(false);
+  const [progress, setProgress] = useState<ScanProgress | null>(null);
   const [cleaning, setCleaning] = useState(false);
   const [cleanLog, setCleanLog] = useState<string[]>([]);
-  const [largeFiles, setLargeFiles] = useState<LargeFile[]>([]);
-  const [loadingLarge, setLoadingLarge] = useState(false);
+  const [activeGroup, setActiveGroup] = useState<string>(ALL);
 
-  const totalFound = categories.reduce((sum, c) => sum + c.size_bytes, 0);
+  const groups = useMemo(() => [ALL, ...Array.from(new Set(categories.map(c => c.group)))], [categories]);
+
+  const visible = useMemo(
+    () => activeGroup === ALL ? categories : categories.filter(c => c.group === activeGroup),
+    [categories, activeGroup],
+  );
+
+  const groupMap = useMemo(() => {
+    const m = new Map<string, DiskCategory[]>();
+    for (const cat of visible) {
+      const g = m.get(cat.group) ?? [];
+      g.push(cat);
+      m.set(cat.group, g);
+    }
+    return m;
+  }, [visible]);
+
+  const selBytes = useMemo(() => selectedBytes(selection, categories), [selection, categories]);
+  const selCount = selection.size;
+
+  const runScan = useCallback(async (
+    onCat: (c: DiskCategory) => void,
+    onProg: (p: ScanProgress) => void,
+  ) => {
+    await guiCommands.scanDisk(onCat, onProg);
+  }, []);
 
   const handleScan = useCallback(async () => {
     setScanning(true);
     setCategories([]);
-    setLargeFiles([]);
+    setSelection(new Map());
     setCleanLog([]);
+    setProgress(null);
     try {
-      await guiCommands.scanDisk((cat) => {
-        setCategories(prev => {
-          const exists = prev.find(c => c.id === cat.id);
-          if (exists) return prev.map(c => c.id === cat.id ? cat : c);
-          return [...prev, cat];
-        });
-      });
-      setLoadingLarge(true);
-      const large = await guiCommands.scanLargeFiles();
-      setLargeFiles(large);
-    } catch (e) {
-      console.error('Scan error:', e);
-    } finally {
-      setScanning(false);
-      setLoadingLarge(false);
-    }
-  }, []);
+      await runScan(
+        (cat) => setCategories(prev => {
+          const idx = prev.findIndex(c => c.id === cat.id);
+          return idx >= 0 ? prev.map((c, i) => i === idx ? cat : c) : [...prev, cat];
+        }),
+        setProgress,
+      );
+    } catch (e) { console.error('Scan error:', e); }
+    finally { setScanning(false); setProgress(null); }
+  }, [runScan]);
 
   const handleClean = useCallback(async () => {
-    if (selected.size === 0 || cleaning) return;
-    const confirmed = window.confirm(
-      `Clean ${selected.size} item(s) totaling ${formatBytes(
-        categories.filter(c => selected.has(c.id)).reduce((s, c) => s + c.size_bytes, 0)
-      )}?\n\nThis cannot be undone.`
-    );
-    if (!confirmed) return;
-
+    if (selCount === 0 || cleaning) return;
+    const ids = Array.from(selection.keys());
+    if (!window.confirm(`Clean ${ids.length} item(s) totaling ${formatBytes(selBytes)}?\n\nThis cannot be undone.`)) return;
     setCleaning(true);
     setCleanLog([]);
     try {
-      await guiCommands.cleanItems(Array.from(selected), (ev: CleanEvent) => {
-        const msg = ev.error
-          ? `[ERR] ${ev.id}: ${ev.error}`
-          : `✓ ${ev.id} cleaned`;
-        setCleanLog(prev => [...prev, msg]);
+      await guiCommands.cleanItems(ids, (ev) => {
+        setCleanLog(prev => [...prev, ev.error ? `[ERR] ${ev.id}: ${ev.error}` : `✓ ${ev.id} cleaned`]);
       });
       setCleanLog(prev => [...prev, 'Done! Rescanning...']);
-      setSelected(new Set());
-      await guiCommands.scanDisk((cat) => {
-        setCategories(prev => prev.map(c => c.id === cat.id ? cat : c));
-      });
-    } catch (e) {
-      setCleanLog(prev => [...prev, `[ERR] ${e}`]);
-    } finally {
-      setCleaning(false);
-    }
-  }, [selected, categories, cleaning]);
-
-  const toggleSelect = (id: string) => {
-    setSelected(prev => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id); else next.add(id);
-      return next;
-    });
-  };
+      setSelection(new Map());
+      setCategories([]);
+      await runScan(
+        (cat) => setCategories(prev => {
+          const idx = prev.findIndex(c => c.id === cat.id);
+          return idx >= 0 ? prev.map((c, i) => i === idx ? cat : c) : [...prev, cat];
+        }),
+        setProgress,
+      );
+    } catch (e) { setCleanLog(prev => [...prev, `[ERR] ${e}`]); }
+    finally { setCleaning(false); setProgress(null); }
+  }, [selCount, cleaning, selection, selBytes, runScan]);
 
   const selectSafe = () => {
-    setSelected(new Set(categories.filter(c => c.safe).map(c => c.id)));
+    const next = new Map<string, CatSel>();
+    for (const cat of categories) { if (cat.safe) next.set(cat.id, 'all'); }
+    setSelection(next);
   };
 
-  const clearSelection = () => setSelected(new Set());
-
-  const toggleGroup = (group: string, cats: DiskCategory[]) => {
-    const groupIds = cats.filter(c => c.group === group).map(c => c.id);
-    const allSelected = groupIds.every(id => selected.has(id));
-    setSelected(prev => {
-      const next = new Set(prev);
-      if (allSelected) {
-        groupIds.forEach(id => next.delete(id));
-      } else {
-        groupIds.forEach(id => next.add(id));
-      }
-      return next;
-    });
-  };
-
-  const groups = Array.from(new Set(categories.map(c => c.group)));
-  const selectedCategories = categories.filter(c => selected.has(c.id));
-  const selectedBytes = selectedCategories.reduce((s, c) => s + c.size_bytes, 0);
-
-  const btnStyle = (variant: 'primary' | 'ghost' | 'danger', disabled: boolean): React.CSSProperties => ({
-    padding: '6px 14px', borderRadius: 6, fontSize: 11, fontWeight: 600,
-    fontFamily: 'inherit', cursor: disabled ? 'not-allowed' : 'pointer',
-    border: variant === 'ghost' ? '1px solid var(--color-border)'
-      : variant === 'danger' ? '1px solid rgba(239,68,68,0.3)' : 'none',
-    background: variant === 'primary'
-      ? (disabled ? 'var(--color-surface-2)' : 'var(--color-green)')
-      : variant === 'danger'
-      ? (disabled ? 'var(--color-surface-2)' : 'rgba(239,68,68,0.12)')
-      : 'transparent',
-    color: variant === 'primary'
-      ? (disabled ? 'var(--color-text-3)' : '#000')
-      : variant === 'danger'
-      ? (disabled ? 'var(--color-text-3)' : 'var(--color-red)')
-      : 'var(--color-text-2)',
-    transition: 'all 0.15s ease',
-  });
+  const pct = progress ? Math.round((progress.step / progress.total) * 100) : 0;
 
   return (
-    <div style={{ minHeight: '100%', display: 'flex', flexDirection: 'column' }}>
-      {/* Sticky top toolbar */}
-      <div style={{
-        position: 'sticky', top: 0, zIndex: 10,
-        padding: '12px 20px',
-        borderBottom: '1px solid var(--color-border)',
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        background: 'var(--color-surface)',
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <button
-            onClick={handleScan}
-            disabled={scanning}
-            style={btnStyle('primary', scanning)}
-          >
-            {scanning ? 'Scanning...' : '⟳ Scan System'}
-          </button>
-          {categories.length > 0 && (
-            <span style={{ fontSize: 11, color: 'var(--color-text-3)' }}>
-              Total: <strong style={{ color: 'var(--color-text)' }}>{formatBytes(totalFound)}</strong> found in{' '}
-              <strong style={{ color: 'var(--color-text)' }}>{categories.length}</strong> categories
+    <div className="flex flex-col h-full">
+      {/* Toolbar */}
+      <div className="flex items-center gap-3 px-5 py-3 border-b border-border sticky top-0 bg-card z-10 shrink-0">
+        <Button variant="default" size="sm" onClick={handleScan} disabled={scanning} className="shrink-0">
+          {scanning ? 'Scanning...' : '⟳ Scan System'}
+        </Button>
+        {scanning && progress && (
+          <div className="flex-1 flex items-center gap-3 min-w-0">
+            <span className="text-xs text-muted-foreground truncate">{progress.current}</span>
+            <div className="flex items-center gap-2 shrink-0 ml-auto">
+              <Progress value={pct} className="w-24 h-1.5" />
+              <span className="text-xs text-muted-foreground tabular-nums">{progress.step}/{progress.total}</span>
+            </div>
+          </div>
+        )}
+        {!scanning && categories.length > 0 && (
+          <span className="text-xs text-muted-foreground">
+            {categories.length} categories ·{' '}
+            <span className="text-foreground font-semibold">
+              {formatBytes(categories.reduce((s, c) => s + c.size_bytes, 0))}
             </span>
-          )}
-        </div>
+          </span>
+        )}
       </div>
 
-      {/* Scrollable content */}
-      <div style={{ flex: 1, padding: '16px 20px' }}>
-        {categories.length === 0 && !scanning && (
-          <div style={{ textAlign: 'center', color: 'var(--color-text-3)', fontSize: 12, marginTop: 60 }}>
-            Click "Scan System" to analyze disk usage
-          </div>
-        )}
+      {/* Group pills */}
+      {categories.length > 0 && (
+        <div className="flex items-center gap-1.5 px-5 py-2 border-b border-border overflow-x-auto shrink-0">
+          {groups.map(g => (
+            <button
+              key={g}
+              onClick={() => setActiveGroup(g)}
+              className={`px-3 py-1 rounded-full text-xs font-medium shrink-0 transition-colors ${
+                activeGroup === g
+                  ? 'bg-primary text-primary-foreground'
+                  : 'bg-secondary text-secondary-foreground hover:bg-accent'
+              }`}
+            >
+              {g}
+            </button>
+          ))}
+        </div>
+      )}
 
-        {scanning && categories.length === 0 && (
-          <div style={{ textAlign: 'center', color: 'var(--color-amber)', fontSize: 11, marginTop: 40 }}>
-            Scanning...
-          </div>
-        )}
+      {/* Content */}
+      <ScrollArea className="flex-1">
+        <div className="px-5 py-4 space-y-1">
+          {categories.length === 0 && !scanning && (
+            <p className="text-center text-muted-foreground text-xs mt-14">
+              Click "Scan System" to analyze disk usage
+            </p>
+          )}
+          {scanning && categories.length === 0 && (
+            <p className="text-center text-muted-foreground text-xs mt-14 animate-pulse">Scanning...</p>
+          )}
 
-        {groups.map(group => {
-          const groupCats = categories.filter(c => c.group === group);
-          const groupIds = groupCats.map(c => c.id);
-          const allGroupSelected = groupIds.length > 0 && groupIds.every(id => selected.has(id));
-          const someGroupSelected = groupIds.some(id => selected.has(id));
-
-          return (
-            <section key={group} style={{ marginBottom: 24 }}>
-              <div style={{
-                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                marginBottom: 8,
-              }}>
-                <span style={{
-                  fontSize: 10, fontWeight: 700, color: 'var(--color-text-3)',
-                  textTransform: 'uppercase', letterSpacing: '0.1em',
-                }}>
-                  {group}
-                </span>
-                <label style={{ display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer', fontSize: 10, color: 'var(--color-text-3)' }}>
-                  <input
-                    type="checkbox"
-                    checked={allGroupSelected}
-                    ref={el => { if (el) el.indeterminate = someGroupSelected && !allGroupSelected; }}
-                    onChange={() => toggleGroup(group, categories)}
-                    style={{ cursor: 'pointer' }}
-                  />
-                  Select group
-                </label>
-              </div>
-
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                {groupCats.map(cat => (
-                  <label
-                    key={cat.id}
-                    style={{
-                      display: 'flex', alignItems: 'center', gap: 12,
-                      padding: '10px 14px',
-                      background: selected.has(cat.id) ? 'var(--color-surface-2)' : 'var(--color-surface)',
-                      border: `1px solid ${selected.has(cat.id) ? 'var(--color-border-2)' : 'var(--color-border)'}`,
-                      borderRadius: 8, cursor: 'pointer',
-                      transition: 'all 0.1s ease',
-                    }}
-                  >
-                    <input
-                      type="checkbox"
-                      checked={selected.has(cat.id)}
-                      onChange={() => toggleSelect(cat.id)}
-                      style={{ cursor: 'pointer', flexShrink: 0 }}
+          <Accordion type="multiple">
+            {Array.from(groupMap.entries()).map(([group, cats], gi) => (
+              <div key={group}>
+                {gi > 0 && <Separator className="my-4" />}
+                {/* Group header */}
+                <div className="flex items-center justify-between mb-2 px-1">
+                  <div className="flex items-center gap-2">
+                    <Checkbox
+                      checked={groupChecked(selection, cats)}
+                      onCheckedChange={() => setSelection(toggleGroup(selection, cats))}
                     />
-                    <span style={{ fontSize: 15 }}>{cat.icon}</span>
-                    <span style={{ flex: 1, fontSize: 12, color: 'var(--color-text)', fontWeight: 500 }}>
-                      {cat.label}
-                    </span>
-                    {cat.item_count > 0 && (
-                      <span style={{ fontSize: 10, color: 'var(--color-text-3)' }}>
-                        {cat.item_count} {cat.item_count === 1 ? 'item' : 'items'}
-                      </span>
-                    )}
-                    <span style={{
-                      fontSize: 11, fontWeight: 600, minWidth: 70, textAlign: 'right',
-                      color: cat.size_bytes > 1_073_741_824 ? 'var(--color-red)'
-                        : cat.size_bytes > 104_857_600 ? 'var(--color-amber)'
-                        : 'var(--color-text-2)',
-                    }}>
-                      {cat.size_bytes > 0 ? formatBytes(cat.size_bytes) : '—'}
-                    </span>
-                    <span style={{
-                      fontSize: 9, fontWeight: 600, padding: '2px 6px', borderRadius: 3,
-                      textTransform: 'uppercase', letterSpacing: '0.05em',
-                      background: cat.safe ? 'var(--color-green-bg)' : 'rgba(239,68,68,0.1)',
-                      color: cat.safe ? 'var(--color-green)' : 'var(--color-red)',
-                      border: `1px solid ${cat.safe ? 'rgba(52,211,153,0.2)' : 'rgba(239,68,68,0.2)'}`,
-                      flexShrink: 0,
-                    }}>
-                      {cat.safe ? 'safe' : 'caution'}
-                    </span>
-                  </label>
+                    <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest">{group}</span>
+                  </div>
+                  <span className="text-xs text-muted-foreground">
+                    {formatBytes(cats.reduce((s, c) => s + c.size_bytes, 0))}
+                  </span>
+                </div>
+
+                {/* Category items */}
+                {cats.map(cat => (
+                  <AccordionItem
+                    key={cat.id}
+                    value={cat.id}
+                    className="border border-border rounded-lg mb-1.5 overflow-hidden bg-card"
+                  >
+                    <div className="flex items-center gap-2 pl-3">
+                      <Checkbox
+                        checked={catChecked(selection, cat.id)}
+                        onCheckedChange={() => setSelection(toggleCat(selection, cat.id))}
+                        onClick={e => e.stopPropagation()}
+                      />
+                      <AccordionTrigger className="flex-1 py-2.5 hover:no-underline">
+                        <div className="flex items-center gap-2.5 flex-1 min-w-0 mr-2">
+                          <span className="text-sm leading-none shrink-0">{cat.icon}</span>
+                          <span className="text-xs font-medium text-foreground truncate flex-1 text-left">
+                            {cat.label}
+                          </span>
+                          {cat.item_count > 0 && (
+                            <span className="text-xs text-muted-foreground shrink-0 tabular-nums">
+                              {cat.item_count}
+                            </span>
+                          )}
+                          <span className={`text-xs font-semibold shrink-0 tabular-nums ${
+                            cat.size_bytes > 1_073_741_824 ? 'text-destructive'
+                            : cat.size_bytes > 104_857_600 ? 'text-amber-400'
+                            : 'text-muted-foreground'
+                          }`}>
+                            {cat.size_bytes > 0 ? formatBytes(cat.size_bytes) : '—'}
+                          </span>
+                          <Badge
+                            variant={cat.safe ? 'outline' : 'destructive'}
+                            className="shrink-0 text-[9px] px-1.5 py-0"
+                          >
+                            {cat.safe ? 'safe' : 'caution'}
+                          </Badge>
+                        </div>
+                      </AccordionTrigger>
+                    </div>
+
+                    <AccordionContent className="pb-0">
+                      {cat.items.length === 0
+                        ? <p className="px-10 py-2 text-xs text-muted-foreground">No detail available</p>
+                        : (
+                          <div className="border-t border-border">
+                            {cat.items.map((item, i) => (
+                              <div
+                                key={item.path}
+                                className={`flex items-center gap-2.5 pl-10 pr-3 py-2 text-xs ${
+                                  i < cat.items.length - 1 ? 'border-b border-border/50' : ''
+                                }`}
+                              >
+                                <Checkbox
+                                  checked={itemChecked(selection, cat.id, item.path)}
+                                  onCheckedChange={() => setSelection(toggleItem(selection, cat.id, item.path, cat))}
+                                />
+                                <span className="flex-1 text-muted-foreground truncate font-mono">
+                                  {item.path}
+                                </span>
+                                {item.modified_at != null && (
+                                  <span className="text-muted-foreground/50 shrink-0">
+                                    {formatRelative(item.modified_at)}
+                                  </span>
+                                )}
+                                <span className={`font-semibold shrink-0 tabular-nums ${
+                                  item.size_bytes > 1_073_741_824 ? 'text-destructive'
+                                  : item.size_bytes > 104_857_600 ? 'text-amber-400'
+                                  : 'text-muted-foreground'
+                                }`}>
+                                  {formatBytes(item.size_bytes)}
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        )
+                      }
+                    </AccordionContent>
+                  </AccordionItem>
                 ))}
               </div>
-            </section>
-          );
-        })}
+            ))}
+          </Accordion>
 
-        {/* Large files */}
-        {(largeFiles.length > 0 || loadingLarge) && (
-          <section style={{ marginTop: 8, marginBottom: 24 }}>
-            <div style={{
-              display: 'flex', alignItems: 'center', gap: 12, marginBottom: 10,
-            }}>
-              <div style={{ height: 1, flex: 1, background: 'var(--color-border)' }} />
-              <span style={{ fontSize: 10, fontWeight: 700, color: 'var(--color-text-3)', textTransform: 'uppercase', letterSpacing: '0.1em', whiteSpace: 'nowrap' }}>
-                Large Files (&gt;100 MB)
-              </span>
-              <div style={{ height: 1, flex: 1, background: 'var(--color-border)' }} />
+          {cleanLog.length > 0 && (
+            <div className="mt-4 rounded-lg border border-border p-3 bg-background font-mono">
+              {cleanLog.map((line, i) => (
+                <div key={i} className={`text-xs leading-relaxed ${
+                  line.startsWith('[ERR]') ? 'text-destructive'
+                  : line.startsWith('✓') ? 'text-primary'
+                  : 'text-muted-foreground'
+                }`}>{line}</div>
+              ))}
             </div>
+          )}
+        </div>
+      </ScrollArea>
 
-            {loadingLarge && (
-              <div style={{ fontSize: 10, color: 'var(--color-amber)', padding: '8px 0' }}>
-                Scanning for large files...
-              </div>
-            )}
-
-            {largeFiles.map((f, i) => (
-              <div key={i} style={{
-                display: 'flex', alignItems: 'center', gap: 12,
-                padding: '8px 14px', marginBottom: 4,
-                background: 'var(--color-surface)',
-                border: '1px solid var(--color-border)',
-                borderRadius: 8,
-              }}>
-                <span style={{ fontSize: 13 }}>📄</span>
-                <span style={{ flex: 1, fontSize: 11, color: 'var(--color-text-2)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                  {f.path}
-                </span>
-                <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--color-red)', flexShrink: 0 }}>
-                  {formatBytes(f.size_bytes)}
-                </span>
-              </div>
-            ))}
-          </section>
-        )}
-
-        {/* Clean log */}
-        {cleanLog.length > 0 && (
-          <div style={{
-            marginTop: 16, padding: '10px 14px',
-            background: 'var(--color-bg)',
-            border: '1px solid var(--color-border)',
-            borderRadius: 8,
-          }}>
-            {cleanLog.map((line, i) => (
-              <div key={i} style={{
-                fontSize: 10, lineHeight: 1.8,
-                color: line.startsWith('[ERR]') ? 'var(--color-red)'
-                  : line.startsWith('✓') ? 'var(--color-green)'
-                  : 'var(--color-text-2)',
-                fontFamily: 'var(--font-mono)',
-              }}>
-                {line}
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* Sticky bottom action bar */}
-      <div style={{
-        position: 'sticky', bottom: 0,
-        padding: '10px 20px',
-        borderTop: '1px solid var(--color-border)',
-        background: 'var(--color-surface)',
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <button onClick={selectSafe} disabled={scanning} style={btnStyle('ghost', scanning)}>Select safe</button>
-          <button onClick={clearSelection} disabled={selected.size === 0} style={btnStyle('ghost', selected.size === 0)}>Clear</button>
-          {selected.size > 0 && (
-            <span style={{ fontSize: 11, color: 'var(--color-text-3)' }}>
-              Selected: <strong style={{ color: 'var(--color-text)' }}>{selected.size}</strong> items,{' '}
-              <strong style={{ color: 'var(--color-amber)' }}>{formatBytes(selectedBytes)}</strong>
+      {/* Action bar */}
+      <div className="flex items-center justify-between px-5 py-3 border-t border-border bg-card shrink-0">
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" onClick={selectSafe} disabled={scanning}>Select safe</Button>
+          <Button variant="outline" size="sm" onClick={() => setSelection(new Map())} disabled={selCount === 0}>Clear</Button>
+          {selCount > 0 && (
+            <span className="text-xs text-muted-foreground">
+              <span className="text-foreground font-semibold">{selCount}</span> selected ·{' '}
+              <span className="text-amber-400 font-semibold">{formatBytes(selBytes)}</span>
             </span>
           )}
         </div>
-        <button
-          onClick={handleClean}
-          disabled={selected.size === 0 || cleaning}
-          style={btnStyle('danger', selected.size === 0 || cleaning)}
-        >
-          {cleaning ? 'Cleaning...' : `🗑 Clean selected (${selected.size})`}
-        </button>
+        <Button variant="destructive" size="sm" onClick={handleClean} disabled={selCount === 0 || cleaning}>
+          {cleaning ? 'Cleaning...' : `🗑 Clean (${selCount})`}
+        </Button>
       </div>
     </div>
   );
