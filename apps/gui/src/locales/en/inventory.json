@@ -1,1 +1,8 @@
-{}
+{
+  "install": "Install",
+  "reinstall": "Reinstall",
+  "installing": "Installing...",
+  "scanning": "Scanning installed packages...",
+  "statsInstalled": "{{count}} / {{total}} installed",
+  "emptySearch": "No packages match \"{{query}}\""
+}
