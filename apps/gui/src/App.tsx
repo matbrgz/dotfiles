@@ -10,7 +10,8 @@ import { SettingsTab } from './components/SettingsTab';
 import { ProfileTab } from './components/ProfileTab';
 import { DiskCleanerTab } from './components/DiskCleanerTab';
 import { MemoryTab } from './components/MemoryTab';
-import { Package, Settings, User, FileCode, HardDrive, Cpu } from 'lucide-react';
+import { GitReposTab } from './components/GitReposTab';
+import { Package, Settings, User, FileCode, HardDrive, Cpu, GitBranch } from 'lucide-react';
 
 export default function App() {
   const [registry, setRegistry] = useState<Record<string, ProgramManifest>>({});
@@ -37,6 +38,7 @@ export default function App() {
     { id: 'profile',      label: 'Profile',       icon: User },
     { id: 'disk-cleaner', label: 'Disk Cleaner',  icon: HardDrive },
     { id: 'memory',       label: 'Memory',        icon: Cpu },
+    { id: 'git-repos',   label: 'Git Repos',     icon: GitBranch },
   ];
 
   useEffect(() => {
@@ -214,6 +216,7 @@ export default function App() {
             )}
             {activeTab === 'disk-cleaner' && <DiskCleanerTab />}
             {activeTab === 'memory' && <MemoryTab />}
+            {activeTab === 'git-repos' && <GitReposTab />}
           </div>
 
           <TerminalPanel logs={logs} scrollRef={scrollRef} onCollapseChange={setTerminalCollapsed} />
