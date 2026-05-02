@@ -45,6 +45,7 @@ export const UserSettingsSchema = z.object({
       backup_configs: z.boolean(),
     }),
   }),
+  git_scan_roots: z.array(z.string()).optional().default(['~']),
 });
 
 export type ProgramPlatformConfig = z.infer<typeof ProgramPlatformConfigSchema>;
