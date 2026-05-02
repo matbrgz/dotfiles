@@ -109,6 +109,7 @@ export const DiskCleanerTab: React.FC = () => {
   const [cleaning, setCleaning] = useState(false);
   const [cleanLog, setCleanLog] = useState<string[]>([]);
   const [activeGroup, setActiveGroup] = useState<string>(() => loadGroup() ?? ALL);
+  const scanCollectedRef = React.useRef<DiskCategory[]>([]);
 
   useEffect(() => { saveSelection(selection); }, [selection]);
   useEffect(() => { saveGroup(activeGroup); }, [activeGroup]);
@@ -146,11 +147,14 @@ export const DiskCleanerTab: React.FC = () => {
     setSelection(new Map());
     setCleanLog([]);
     setProgress(null);
+    scanCollectedRef.current = [];
     try {
       await runScan(
         (cat) => setCategories(prev => {
           const idx = prev.findIndex(c => c.id === cat.id);
-          return idx >= 0 ? prev.map((c, i) => i === idx ? cat : c) : [...prev, cat];
+          const next = idx >= 0 ? prev.map((c, i) => i === idx ? cat : c) : [...prev, cat];
+          scanCollectedRef.current = next;
+          return next;
         }),
         setProgress,
       );
@@ -158,7 +162,10 @@ export const DiskCleanerTab: React.FC = () => {
     finally {
       setScanning(false);
       setProgress(null);
-      setCategories(prev => { const ts = Date.now(); saveScan(prev); setLastScanAt(ts); return prev; });
+      if (scanCollectedRef.current.length > 0) {
+        saveScan(scanCollectedRef.current);
+        setLastScanAt(Date.now());
+      }
     }
   }, [runScan]);
 
@@ -176,15 +183,25 @@ export const DiskCleanerTab: React.FC = () => {
       setSelection(new Map());
       clearSelection();
       setCategories([]);
+      scanCollectedRef.current = [];
       await runScan(
         (cat) => setCategories(prev => {
           const idx = prev.findIndex(c => c.id === cat.id);
-          return idx >= 0 ? prev.map((c, i) => i === idx ? cat : c) : [...prev, cat];
+          const next = idx >= 0 ? prev.map((c, i) => i === idx ? cat : c) : [...prev, cat];
+          scanCollectedRef.current = next;
+          return next;
         }),
         setProgress,
       );
     } catch (e) { setCleanLog(prev => [...prev, `[ERR] ${e}`]); }
-    finally { setCleaning(false); setProgress(null); }
+    finally {
+      setCleaning(false);
+      setProgress(null);
+      if (scanCollectedRef.current.length > 0) {
+        saveScan(scanCollectedRef.current);
+        setLastScanAt(Date.now());
+      }
+    }
   }, [selCount, cleaning, selection, selBytes, runScan]);
 
   const selectSafe = () => {
