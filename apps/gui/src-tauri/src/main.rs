@@ -278,6 +278,132 @@ fn scan_git_repos(roots: Vec<String>, window: tauri::Window) {
     });
 }
 
+#[tauri::command]
+fn get_repo_detail(path: String) -> GitRepoDetail {
+    let summary = repo_summary(&path);
+
+    // Branches
+    let branches_raw = git(&path, &["branch", "-a", "--format=%(refname:short)|%(objectname:short)|%(subject)|%(upstream:track)"]);
+    let branches: Vec<GitBranch> = branches_raw.lines().filter(|l| !l.is_empty()).map(|line| {
+        let parts: Vec<&str> = line.splitn(4, '|').collect();
+        let name = parts.first().copied().unwrap_or("").to_string();
+        let last_commit_hash = parts.get(1).copied().unwrap_or("").to_string();
+        let last_commit_msg = parts.get(2).copied().unwrap_or("").to_string();
+        let track = parts.get(3).copied().unwrap_or("");
+        let is_remote = name.contains('/');
+        let is_current = name == summary.current_branch;
+        let ahead = if track.contains("ahead") {
+            track.split("ahead ").nth(1)
+                .and_then(|s| s.split(|c: char| !c.is_ascii_digit()).next())
+                .and_then(|s| s.parse().ok())
+        } else { None };
+        let behind = if track.contains("behind") {
+            track.split("behind ").nth(1)
+                .and_then(|s| s.split(|c: char| !c.is_ascii_digit()).next())
+                .and_then(|s| s.parse().ok())
+        } else { None };
+        GitBranch { name, is_remote, is_current, ahead, behind, last_commit_hash, last_commit_msg }
+    }).collect();
+
+    // Commits (last 30) — use \x1f as separator to avoid issues with | in messages
+    let commits_raw = git(&path, &["log", "-30", "--format=%h\x1f%H\x1f%s\x1f%an\x1f%ct"]);
+    let commits: Vec<GitCommit> = commits_raw.lines().filter(|l| !l.is_empty()).filter_map(|line| {
+        let parts: Vec<&str> = line.splitn(5, '\x1f').collect();
+        if parts.len() < 5 { return None; }
+        Some(GitCommit {
+            short_hash: parts[0].to_string(),
+            full_hash: parts[1].to_string(),
+            message: parts[2].to_string(),
+            author: parts[3].to_string(),
+            ts: parts[4].trim().parse().unwrap_or(0),
+        })
+    }).collect();
+
+    // Remotes (deduplicated)
+    let remotes_raw = git(&path, &["remote", "-v"]);
+    let mut seen: std::collections::HashSet<String> = std::collections::HashSet::new();
+    let remotes: Vec<GitRemote> = remotes_raw.lines().filter(|l| !l.is_empty()).filter_map(|line| {
+        let mut cols = line.split_whitespace();
+        let name = cols.next()?.to_string();
+        let url = cols.next()?.to_string();
+        if !seen.insert(name.clone()) { return None; }
+        Some(GitRemote { name, url })
+    }).collect();
+
+    // Stashes — use \x1f separator
+    let stashes_raw = git(&path, &["stash", "list", "--format=%gd\x1f%s\x1f%ct"]);
+    let stashes: Vec<GitStash> = stashes_raw.lines().filter(|l| !l.is_empty()).enumerate().filter_map(|(i, line)| {
+        let parts: Vec<&str> = line.splitn(3, '\x1f').collect();
+        Some(GitStash {
+            index: i as u32,
+            message: parts.get(1).copied().unwrap_or("").to_string(),
+            ts: parts.get(2).and_then(|s| s.trim().parse().ok()).unwrap_or(0),
+        })
+    }).collect();
+
+    // Tags (20 most recent)
+    let tags_raw = git(&path, &["tag", "--sort=-creatordate"]);
+    let tags: Vec<String> = tags_raw.lines().filter(|l| !l.is_empty()).take(20).map(|s| s.to_string()).collect();
+
+    GitRepoDetail { summary, branches, commits, remotes, stashes, tags }
+}
+
+#[tauri::command]
+fn git_action(path: String, action_type: String, params: serde_json::Value) -> Result<String, String> {
+    let run = |args: &[&str]| -> Result<String, String> {
+        let out = Command::new("git")
+            .arg("-C").arg(&path)
+            .args(args)
+            .output()
+            .map_err(|e| e.to_string())?;
+        let stdout = String::from_utf8_lossy(&out.stdout).trim().to_string();
+        let stderr = String::from_utf8_lossy(&out.stderr).trim().to_string();
+        if out.status.success() { Ok(stdout) } else { Err(if stderr.is_empty() { stdout } else { stderr }) }
+    };
+    match action_type.as_str() {
+        "fetch" => run(&["fetch", params["remote"].as_str().unwrap_or("origin")]),
+        "pull"  => run(&["pull", params["remote"].as_str().unwrap_or("origin"), params["branch"].as_str().unwrap_or("")]),
+        "push"  => run(&["push", params["remote"].as_str().unwrap_or("origin"), params["branch"].as_str().unwrap_or("")]),
+        "checkout"      => run(&["checkout", params["branch"].as_str().ok_or("missing branch")?]),
+        "create_branch" => run(&["checkout", "-b", params["name"].as_str().ok_or("missing name")?, params["from"].as_str().unwrap_or("HEAD")]),
+        "delete_branch" => {
+            let flag = if params["force"].as_bool().unwrap_or(false) { "-D" } else { "-d" };
+            run(&["branch", flag, params["name"].as_str().ok_or("missing name")?])
+        }
+        "stash_push" => {
+            if let Some(m) = params["message"].as_str() {
+                run(&["stash", "push", "-m", m])
+            } else {
+                run(&["stash", "push"])
+            }
+        }
+        "stash_pop" => {
+            let idx = params["index"].as_u64().unwrap_or(0);
+            let ref_str = format!("stash@{{{}}}", idx);
+            run(&["stash", "pop", &ref_str])
+        }
+        "stash_drop" => {
+            let idx = params["index"].as_u64().unwrap_or(0);
+            let ref_str = format!("stash@{{{}}}", idx);
+            run(&["stash", "drop", &ref_str])
+        }
+        "open_terminal" => {
+            #[cfg(target_os = "macos")]
+            let _ = Command::new("open").args(["-a", "Terminal", &path]).spawn();
+            #[cfg(target_os = "linux")]
+            { let _ = Command::new(std::env::var("TERMINAL").unwrap_or_else(|_| "xterm".to_string())).arg(&path).spawn(); }
+            #[cfg(target_os = "windows")]
+            let _ = Command::new("cmd").args(["/c", "start", "cmd", "/k", &format!("cd /d {}", path)]).spawn();
+            Ok("opened".into())
+        }
+        "open_vscode" => {
+            let _ = Command::new("code").arg(&path).spawn();
+            Ok("opened".into())
+        }
+        _ => Err(format!("unknown action: {}", action_type))
+    }
+}
+
 // ── Tauri commands ─────────────────────────────────────────────────────────────
 
 #[tauri::command]
@@ -956,7 +1082,10 @@ fn main() {
             scan_large_files,
             get_memory_info,
             get_top_processes,
-            kill_process
+            kill_process,
+            scan_git_repos,
+            get_repo_detail,
+            git_action
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
