@@ -57,6 +57,59 @@ export interface ProcInfo {
   name: string;
   memory_mb: number;
   cpu_pct: number;
+  elapsed_secs: number;
+  status: string;
+  user: string;
+}
+
+export interface GitRepoSummary {
+  path: string;
+  name: string;
+  current_branch: string;
+  is_dirty: boolean;
+  ahead: number;
+  behind: number;
+  last_commit_msg: string;
+  last_commit_ts: number;
+  stash_count: number;
+}
+
+export interface GitBranch {
+  name: string;
+  is_remote: boolean;
+  is_current: boolean;
+  ahead: number | null;
+  behind: number | null;
+  last_commit_hash: string;
+  last_commit_msg: string;
+}
+
+export interface GitCommit {
+  short_hash: string;
+  full_hash: string;
+  message: string;
+  author: string;
+  ts: number;
+}
+
+export interface GitRemote {
+  name: string;
+  url: string;
+}
+
+export interface GitStash {
+  index: number;
+  message: string;
+  ts: number;
+}
+
+export interface GitRepoDetail {
+  summary: GitRepoSummary;
+  branches: GitBranch[];
+  commits: GitCommit[];
+  remotes: GitRemote[];
+  stashes: GitStash[];
+  tags: string[];
 }
 
 export const guiCommands = {
@@ -237,5 +290,46 @@ export const guiCommands = {
 
   killProcess: async (pid: number): Promise<void> => {
     await invoke('kill_process', { pid });
+  },
+
+  scanGitRepos: async (
+    roots: string[],
+    onRepo?: (repo: GitRepoSummary) => void,
+    onCount?: (count: number) => void,
+  ): Promise<void> => {
+    return new Promise(async (resolve, reject) => {
+      const unlisteners: Array<() => void> = [];
+
+      if (onRepo) {
+        const ul = await listen<GitRepoSummary>('git-repo-found', (e) => onRepo(e.payload));
+        unlisteners.push(ul);
+      }
+      if (onCount) {
+        const ul = await listen<number>('git-scan-count', (e) => onCount(e.payload));
+        unlisteners.push(ul);
+      }
+
+      const cleanup = () => unlisteners.forEach(fn => fn());
+
+      const doneUl = await listen<null>('git-scan-done', () => {
+        cleanup();
+        doneUl();
+        resolve();
+      });
+
+      invoke('scan_git_repos', { roots }).catch((err) => {
+        cleanup();
+        doneUl();
+        reject(err);
+      });
+    });
+  },
+
+  getRepoDetail: async (path: string): Promise<GitRepoDetail> => {
+    return invoke<GitRepoDetail>('get_repo_detail', { path });
+  },
+
+  gitAction: async (path: string, actionType: string, params: Record<string, unknown> = {}): Promise<string> => {
+    return invoke<string>('git_action', { path, action_type: actionType, params });
   },
 };
