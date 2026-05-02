@@ -1,7 +1,6 @@
 import React from 'react';
 import { Search, RefreshCw } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import i18n from '../i18n';
 
 interface HeaderProps {
   osInfo: { os: string; platform: string };
@@ -40,7 +39,7 @@ export const Header: React.FC<HeaderProps> = ({
   };
 
   const handleLangChange = (code: string) => {
-    i18n.changeLanguage(code);
+    i18nInstance.changeLanguage(code);
     try { localStorage.setItem('dotfiles-lang', code); } catch {}
   };
 

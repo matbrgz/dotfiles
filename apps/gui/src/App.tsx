@@ -16,6 +16,7 @@ import { Package, Settings, User, FileCode, HardDrive, Cpu, GitBranch } from 'lu
 
 export default function App() {
   const { t } = useTranslation('layout');
+  const { t: tCommon } = useTranslation('common');
   const [registry, setRegistry] = useState<Record<string, ProgramManifest>>({});
   const [dotfiles, setDotfiles] = useState<Record<string, DotfileManifest>>({});
   const [settings, setSettings] = useState<UserSettings | null>(null);
@@ -159,7 +160,7 @@ export default function App() {
   if (loading) return (
     <div className="flex h-screen items-center justify-center" style={{ background: 'var(--color-bg)' }}>
       <div style={{ color: 'var(--color-green)', fontFamily: 'var(--font-mono)' }} className="text-xs tracking-widest animate-pulse">
-        {t('loading', { ns: 'common' })}
+        {tCommon('loading')}
       </div>
     </div>
   );
