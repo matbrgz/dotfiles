@@ -72,9 +72,10 @@ export function mergeRepo(
 ): ProjectBook {
   const existing = book[repo.path];
   if (existing) {
+    const { category, subcategory } = deriveCategory(repo.path, expandedRoots);
     return {
       ...book,
-      [repo.path]: { ...existing, summary: repo, lastSeen: scanStart, stale: false },
+      [repo.path]: { ...existing, category, subcategory, summary: repo, lastSeen: scanStart, stale: false },
     };
   }
   const { category, subcategory } = deriveCategory(repo.path, expandedRoots);
