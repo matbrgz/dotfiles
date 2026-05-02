@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useMemo, useEffect } from 'react';
-import { guiCommands, type DiskCategory, type ScanProgress } from '@dotfiles/gui-engine';
+import { guiCommands, type DiskCategory, type ScanProgress, type CleanEvent } from '@dotfiles/gui-engine';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Progress } from '@/components/ui/progress';
@@ -107,6 +107,7 @@ export const DiskCleanerTab: React.FC = () => {
   const [scanning, setScanning] = useState(false);
   const [progress, setProgress] = useState<ScanProgress | null>(null);
   const [cleaning, setCleaning] = useState(false);
+  const [cleanProgress, setCleanProgress] = useState<{ current: string; step: number; total: number } | null>(null);
   const [cleanLog, setCleanLog] = useState<string[]>([]);
   const [activeGroup, setActiveGroup] = useState<string>(() => loadGroup() ?? ALL);
   const scanCollectedRef = React.useRef<DiskCategory[]>([]);
@@ -175,10 +176,17 @@ export const DiskCleanerTab: React.FC = () => {
     if (!window.confirm(`Clean ${ids.length} item(s) totaling ${formatBytes(selBytes)}?\n\nThis cannot be undone.`)) return;
     setCleaning(true);
     setCleanLog([]);
+    setCleanProgress(null);
     try {
-      await guiCommands.cleanItems(ids, (ev) => {
-        setCleanLog(prev => [...prev, ev.error ? `[ERR] ${ev.id}: ${ev.error}` : `✓ ${ev.id} cleaned`]);
+      await guiCommands.cleanItems(ids, (ev: CleanEvent) => {
+        if (!ev.done) {
+          setCleanProgress({ current: ev.id, step: ev.step, total: ev.total });
+        } else {
+          setCleanProgress({ current: ev.id, step: ev.step, total: ev.total });
+          setCleanLog(prev => [...prev, ev.error ? `[ERR] ${ev.id}: ${ev.error}` : `✓ ${ev.id}`]);
+        }
       });
+      setCleanProgress(null);
       setCleanLog(prev => [...prev, 'Done! Rescanning...']);
       setSelection(new Map());
       clearSelection();
@@ -197,6 +205,7 @@ export const DiskCleanerTab: React.FC = () => {
     finally {
       setCleaning(false);
       setProgress(null);
+      setCleanProgress(null);
       if (scanCollectedRef.current.length > 0) {
         saveScan(scanCollectedRef.current);
         setLastScanAt(Date.now());
@@ -389,20 +398,33 @@ export const DiskCleanerTab: React.FC = () => {
       </ScrollArea>
 
       {/* Action bar */}
-      <div className="flex items-center justify-between px-5 py-3 border-t border-border bg-card shrink-0">
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" onClick={selectSafe} disabled={scanning}>Select safe</Button>
-          <Button variant="outline" size="sm" onClick={() => setSelection(new Map())} disabled={selCount === 0}>Clear</Button>
-          {selCount > 0 && (
-            <span className="text-xs text-muted-foreground">
-              <span className="text-foreground font-semibold">{selCount}</span> selected ·{' '}
-              <span className="text-amber-400 font-semibold">{formatBytes(selBytes)}</span>
+      <div className="flex flex-col border-t border-border bg-card shrink-0">
+        {cleaning && cleanProgress && (
+          <div className="flex items-center gap-3 px-5 py-2 border-b border-border/50">
+            <span className="text-xs text-muted-foreground truncate flex-1">
+              Cleaning <span className="text-foreground font-mono">{cleanProgress.current}</span>...
             </span>
-          )}
+            <div className="flex items-center gap-2 shrink-0">
+              <Progress value={Math.round((cleanProgress.step / cleanProgress.total) * 100)} className="w-24 h-1.5" />
+              <span className="text-xs text-muted-foreground tabular-nums">{cleanProgress.step}/{cleanProgress.total}</span>
+            </div>
+          </div>
+        )}
+        <div className="flex items-center justify-between px-5 py-3">
+          <div className="flex items-center gap-2">
+            <Button variant="outline" size="sm" onClick={selectSafe} disabled={scanning || cleaning}>Select safe</Button>
+            <Button variant="outline" size="sm" onClick={() => setSelection(new Map())} disabled={selCount === 0 || cleaning}>Clear</Button>
+            {selCount > 0 && !cleaning && (
+              <span className="text-xs text-muted-foreground">
+                <span className="text-foreground font-semibold">{selCount}</span> selected ·{' '}
+                <span className="text-amber-400 font-semibold">{formatBytes(selBytes)}</span>
+              </span>
+            )}
+          </div>
+          <Button variant="destructive" size="sm" onClick={handleClean} disabled={selCount === 0 || cleaning}>
+            {cleaning ? 'Cleaning...' : `🗑 Clean (${selCount})`}
+          </Button>
         </div>
-        <Button variant="destructive" size="sm" onClick={handleClean} disabled={selCount === 0 || cleaning}>
-          {cleaning ? 'Cleaning...' : `🗑 Clean (${selCount})`}
-        </Button>
       </div>
     </div>
   );
