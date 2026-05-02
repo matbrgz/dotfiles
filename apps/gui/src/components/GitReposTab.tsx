@@ -1,56 +1,206 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { guiCommands, type GitRepoSummary, type GitRepoDetail } from '@dotfiles/gui-engine';
+import { guiCommands, type GitRepoDetail } from '@dotfiles/gui-engine';
+import { homeDir } from '@tauri-apps/api/path';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { RepoDetail, relativeTime } from './GitRepoDetail';
+import {
+  loadBook, saveBook, mergeRepo, markStale,
+  type ProjectBook, type ProjectEntry,
+} from '../lib/projectBook';
+
+// ── RepoCard ─────────────────────────────────────────────────────────────────
+
+interface RepoCardProps {
+  entry: ProjectEntry;
+  isSelected: boolean;
+  onSelect: (path: string) => void;
+  onPin: (path: string, pinned: boolean) => void;
+  onAddTag: (path: string, tag: string) => void;
+  onRemoveTag: (path: string, tag: string) => void;
+}
+
+function RepoCard({ entry, isSelected, onSelect, onPin, onAddTag, onRemoveTag }: RepoCardProps) {
+  const [addingTag, setAddingTag] = useState(false);
+  const [tagInput, setTagInput] = useState('');
+  const { summary } = entry;
+
+  const commitTag = () => {
+    tagInput.split(',').map(t => t.trim().toLowerCase()).filter(Boolean).forEach(t => onAddTag(entry.path, t));
+    setTagInput('');
+    setAddingTag(false);
+  };
+
+  return (
+    <div
+      className={`relative rounded-xl border p-3 cursor-pointer transition-all ${
+        isSelected
+          ? 'border-primary bg-primary/5'
+          : entry.stale
+          ? 'border-border/40 bg-card opacity-50'
+          : 'border-border bg-card hover:border-border/80 hover:bg-card/80'
+      }`}
+      onClick={() => onSelect(entry.path)}
+    >
+      {entry.stale && (
+        <span className="absolute top-2 right-2 text-[8px] font-bold uppercase tracking-widest text-muted-foreground bg-muted px-1.5 py-0.5 rounded">
+          not found
+        </span>
+      )}
+
+      {/* Header: pin + name */}
+      <div className="flex items-start gap-2 mb-1.5">
+        <button
+          onClick={e => { e.stopPropagation(); onPin(entry.path, !entry.pinned); }}
+          className="text-sm leading-none mt-0.5 shrink-0 hover:opacity-70 transition-opacity"
+          title={entry.pinned ? 'Unpin' : 'Pin'}
+        >
+          {entry.pinned ? '★' : '☆'}
+        </button>
+        <span className="text-xs font-semibold text-foreground truncate flex-1">{entry.name}</span>
+      </div>
+
+      {/* Git status */}
+      {summary ? (
+        <>
+          <div className="flex items-center gap-1.5 mb-1 pl-5">
+            <span className="text-[10px] text-primary font-mono">{summary.current_branch}</span>
+            {summary.is_dirty && <span className="w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0" title="dirty" />}
+            {summary.ahead > 0 && <span className="text-[9px] text-emerald-400 font-mono">↑{summary.ahead}</span>}
+            {summary.behind > 0 && <span className="text-[9px] text-blue-400 font-mono">↓{summary.behind}</span>}
+            {summary.stash_count > 0 && <span className="text-[9px] text-muted-foreground">· {summary.stash_count}s</span>}
+          </div>
+          <p className="text-[10px] text-muted-foreground truncate pl-5 mb-1">{summary.last_commit_msg || 'No commits'}</p>
+          {summary.last_commit_ts > 0 && (
+            <p className="text-[9px] text-muted-foreground/60 pl-5 mb-2">{relativeTime(summary.last_commit_ts)}</p>
+          )}
+        </>
+      ) : (
+        <p className="text-[10px] text-muted-foreground/50 pl-5 mb-2">Not yet scanned</p>
+      )}
+
+      {/* Tags */}
+      <div className="flex items-center flex-wrap gap-1 pl-5" onClick={e => e.stopPropagation()}>
+        {entry.tags.map(tag => (
+          <span
+            key={tag}
+            className="group flex items-center gap-0.5 text-[9px] px-1.5 py-0.5 rounded-full bg-primary/10 border border-primary/20 text-primary cursor-default"
+          >
+            #{tag}
+            <button
+              onClick={() => onRemoveTag(entry.path, tag)}
+              className="opacity-0 group-hover:opacity-100 text-primary hover:text-red-400 leading-none transition-opacity ml-0.5"
+            >
+              ×
+            </button>
+          </span>
+        ))}
+        {addingTag ? (
+          <input
+            autoFocus
+            value={tagInput}
+            onChange={e => setTagInput(e.target.value)}
+            onKeyDown={e => {
+              if (e.key === 'Enter' || e.key === ',') { e.preventDefault(); commitTag(); }
+              if (e.key === 'Escape') { setTagInput(''); setAddingTag(false); }
+            }}
+            onBlur={commitTag}
+            placeholder="tag…"
+            className="text-[9px] w-16 bg-transparent border-b border-primary outline-none text-foreground placeholder:text-muted-foreground"
+          />
+        ) : (
+          <button
+            onClick={() => setAddingTag(true)}
+            className="text-[9px] text-muted-foreground hover:text-primary px-1 py-0.5 rounded-full border border-dashed border-border hover:border-primary transition-colors"
+          >
+            +
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ── GitReposTab ──────────────────────────────────────────────────────────────
 
 export const GitReposTab: React.FC = () => {
-  const [repos, setRepos] = useState<GitRepoSummary[]>([]);
-  const [selected, setSelected] = useState<string | null>(null);
+  const [book, setBook] = useState<ProjectBook>({});
+  const [view, setView] = useState<'pinned' | 'all'>('pinned');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [tagFilters, setTagFilters] = useState<string[]>([]);
+  const [scanning, setScanning] = useState(false);
+  const [scanCount, setScanCount] = useState(0);
+  const [selectedPath, setSelectedPath] = useState<string | null>(null);
   const [detail, setDetail] = useState<GitRepoDetail | null>(null);
   const [detailLoading, setDetailLoading] = useState(false);
-  const [scanning, setScanning] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [scanRoots, setScanRoots] = useState<string[]>(['~']);
-  const [newRoot, setNewRoot] = useState('');
-  const [actionError, setActionError] = useState<string | null>(null);
   const [inProgress, setInProgress] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
-  const [showRoots, setShowRoots] = useState(false);
+  const [scanRoots, setScanRoots] = useState<string[]>(['~']);
+  const [expandedRoots, setExpandedRoots] = useState<string[]>([]);
+  const [collapsedCategories, setCollapsedCategories] = useState<Set<string>>(() => {
+    try {
+      const raw = sessionStorage.getItem('git-repos:collapsed');
+      return raw ? new Set(JSON.parse(raw) as string[]) : new Set();
+    } catch { return new Set(); }
+  });
   const hasScanRan = useRef(false);
 
-  const doScan = useCallback(async (roots: string[]) => {
+  const updateBook = useCallback((updater: (prev: ProjectBook) => ProjectBook) => {
+    setBook(prev => {
+      const next = updater(prev);
+      saveBook(next);
+      return next;
+    });
+  }, []);
+
+  const doScan = useCallback(async (roots: string[], expRoots: string[]) => {
     setScanning(true);
-    setRepos([]);
+    setScanCount(0);
+    const scanStart = Date.now();
     try {
-      await guiCommands.scanGitRepos(
-        roots,
-        (repo) => setRepos(prev => [...prev, repo]),
-      );
+      await guiCommands.scanGitRepos(roots, (repo) => {
+        setScanCount(n => n + 1);
+        updateBook(prev => mergeRepo(prev, repo, expRoots, scanStart));
+      });
+      updateBook(prev => markStale(prev, scanStart));
     } finally {
       setScanning(false);
     }
-  }, []);
+  }, [updateBook]);
 
-  // Load saved roots then auto-scan once on mount
   useEffect(() => {
     if (hasScanRan.current) return;
     hasScanRan.current = true;
     (async () => {
+      setBook(loadBook());
+
       let roots = ['~'];
       try {
         const s = await guiCommands.getUserSettings();
         const saved = (s as any).git_scan_roots as string[] | undefined;
-        if (saved && saved.length > 0) {
-          roots = saved;
-          setScanRoots(saved);
-        }
+        if (saved && saved.length > 0) { roots = saved; setScanRoots(saved); }
       } catch {}
-      doScan(roots);
+
+      let expRoots = roots;
+      try {
+        const home = await homeDir();
+        expRoots = roots.map(r => r.startsWith('~') ? home + r.slice(1) : r);
+      } catch {}
+      setExpandedRoots(expRoots);
+
+      doScan(roots, expRoots);
     })();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') setSelectedPath(null); };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, []);
+
   const selectRepo = async (path: string) => {
-    setSelected(path);
+    if (selectedPath === path) { setSelectedPath(null); return; }
+    setSelectedPath(path);
     setDetail(null);
     setDetailLoading(true);
     setActionError(null);
@@ -63,15 +213,15 @@ export const GitReposTab: React.FC = () => {
   };
 
   const handleAction = async (actionType: string, params: Record<string, unknown> = {}) => {
-    if (!selected || inProgress) return;
+    if (!selectedPath || inProgress) return;
     setInProgress(actionType);
     setActionError(null);
     try {
-      await guiCommands.gitAction(selected, actionType, params);
+      await guiCommands.gitAction(selectedPath, actionType, params);
       if (!['open_terminal', 'open_vscode'].includes(actionType)) {
-        const d = await guiCommands.getRepoDetail(selected);
+        const d = await guiCommands.getRepoDetail(selectedPath);
         setDetail(d);
-        setRepos(prev => prev.map(r => r.path === selected ? d.summary : r));
+        updateBook(prev => mergeRepo(prev, d.summary, expandedRoots, Date.now()));
       }
     } catch (e) {
       setActionError(String(e));
@@ -80,140 +230,193 @@ export const GitReposTab: React.FC = () => {
     }
   };
 
-  const saveScanRoots = async (roots: string[]) => {
-    setScanRoots(roots);
-    try {
-      const s = await guiCommands.getUserSettings();
-      await guiCommands.saveUserSettings({ ...s, git_scan_roots: roots } as any);
-    } catch {}
+  const handlePin = (path: string, pinned: boolean) =>
+    updateBook(prev => ({ ...prev, [path]: { ...prev[path], pinned } }));
+
+  const handleAddTag = (path: string, tag: string) =>
+    updateBook(prev => {
+      const entry = prev[path];
+      if (!entry) return prev;
+      return { ...prev, [path]: { ...entry, tags: Array.from(new Set([...entry.tags, tag])) } };
+    });
+
+  const handleRemoveTag = (path: string, tag: string) =>
+    updateBook(prev => {
+      const entry = prev[path];
+      if (!entry) return prev;
+      return { ...prev, [path]: { ...entry, tags: entry.tags.filter(t => t !== tag) } };
+    });
+
+  const toggleCategory = (category: string) => {
+    setCollapsedCategories(prev => {
+      const next = new Set(prev);
+      if (next.has(category)) next.delete(category); else next.add(category);
+      try { sessionStorage.setItem('git-repos:collapsed', JSON.stringify(Array.from(next))); } catch {}
+      return next;
+    });
   };
 
-  const addRoot = () => {
-    const trimmed = newRoot.trim();
-    if (!trimmed) return;
-    const updated = [...scanRoots, trimmed];
-    saveScanRoots(updated);
-    setNewRoot('');
-  };
+  // Derived: filtered + grouped
+  const allEntries = Object.values(book);
+  const allTags = Array.from(new Set(allEntries.flatMap(e => e.tags))).sort();
 
-  const removeRoot = (root: string) => saveScanRoots(scanRoots.filter(r => r !== root));
+  const filtered = allEntries.filter(entry => {
+    if (view === 'pinned' && !entry.pinned) return false;
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase();
+      if (!entry.name.toLowerCase().includes(q) && !entry.path.toLowerCase().includes(q)) return false;
+    }
+    if (tagFilters.length > 0 && !tagFilters.every(t => entry.tags.includes(t))) return false;
+    return true;
+  });
 
-  const filtered = repos
-    .filter(r => !searchQuery || r.name.toLowerCase().includes(searchQuery.toLowerCase()) || r.path.toLowerCase().includes(searchQuery.toLowerCase()))
-    .sort((a, b) => b.last_commit_ts - a.last_commit_ts);
+  type SubMap = Map<string, ProjectEntry[]>;
+  type GroupedData = Map<string, SubMap>;
+  const grouped: GroupedData = new Map();
+  for (const entry of filtered.sort((a, b) =>
+    (b.summary?.last_commit_ts ?? 0) - (a.summary?.last_commit_ts ?? 0)
+  )) {
+    const cat = entry.category || '(root)';
+    const sub = entry.subcategory || '';
+    if (!grouped.has(cat)) grouped.set(cat, new Map());
+    const subMap = grouped.get(cat)!;
+    if (!subMap.has(sub)) subMap.set(sub, []);
+    subMap.get(sub)!.push(entry);
+  }
+
+  const panelOpen = selectedPath !== null;
 
   return (
     <div className="flex h-full overflow-hidden">
-      {/* ── Left panel ─────────────────────────────────────────────────── */}
-      <div className="w-80 shrink-0 border-r border-border flex flex-col overflow-hidden">
-
-        {/* Scan roots collapsible */}
-        <div className="border-b border-border">
-          <button
-            className="w-full flex items-center justify-between px-4 py-2.5 text-[10px] font-bold uppercase tracking-widest text-muted-foreground hover:text-foreground hover:bg-muted/30 transition-colors"
-            onClick={() => setShowRoots(v => !v)}
-          >
-            <span>Scan Roots</span>
-            <span>{showRoots ? '▲' : '▼'}</span>
-          </button>
-          {showRoots && (
-            <div className="px-3 pb-3 space-y-1.5">
-              {scanRoots.map(root => (
-                <div key={root} className="flex items-center justify-between px-2.5 py-1.5 rounded-md bg-muted/40 border border-border gap-2">
-                  <span className="text-xs font-mono text-foreground truncate">{root}</span>
-                  <button onClick={() => removeRoot(root)} className="text-muted-foreground hover:text-red-400 text-sm shrink-0 leading-none">×</button>
-                </div>
-              ))}
-              <div className="flex gap-1.5">
-                <input
-                  value={newRoot}
-                  onChange={e => setNewRoot(e.target.value)}
-                  onKeyDown={e => e.key === 'Enter' && addRoot()}
-                  placeholder="~/path/to/projects"
-                  className="flex-1 text-xs bg-background border border-border rounded-md px-2 py-1.5 text-foreground placeholder:text-muted-foreground outline-none focus:border-primary"
-                />
-                <button onClick={addRoot} className="text-xs px-2.5 py-1.5 rounded-md bg-primary text-primary-foreground font-semibold">+</button>
-              </div>
+      {/* ── Main area ─────────────────────────────────────────────────── */}
+      <div
+        className="flex flex-col overflow-hidden transition-[width] duration-200 ease-out"
+        style={{ width: panelOpen ? '55%' : '100%' }}
+      >
+        {/* Filter bar */}
+        <div className="flex items-center gap-2 px-4 py-2.5 border-b border-border flex-wrap shrink-0">
+          <div className="flex rounded-lg overflow-hidden border border-border">
+            {(['pinned', 'all'] as const).map(v => (
               <button
-                onClick={() => doScan(scanRoots)}
-                disabled={scanning}
-                className="w-full text-xs py-1.5 rounded-md border border-border hover:bg-accent text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50"
+                key={v}
+                onClick={() => setView(v)}
+                className={`text-[10px] font-semibold px-3 py-1.5 transition-colors ${
+                  view === v ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground hover:bg-accent'
+                }`}
               >
-                {scanning ? 'Scanning…' : '↻ Re-scan'}
+                {v === 'pinned' ? '★ Pinned' : 'All'}
               </button>
-            </div>
-          )}
-        </div>
+            ))}
+          </div>
 
-        {/* Search */}
-        <div className="px-3 py-2 border-b border-border">
           <input
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
-            placeholder="Filter repos…"
-            className="w-full text-xs bg-muted/30 border border-border rounded-md px-3 py-1.5 text-foreground placeholder:text-muted-foreground outline-none focus:border-primary"
+            placeholder="Search repos…"
+            className="text-xs bg-muted/30 border border-border rounded-md px-3 py-1.5 text-foreground placeholder:text-muted-foreground outline-none focus:border-primary w-40"
           />
-        </div>
 
-        {/* Scan status bar */}
-        {scanning && (
-          <div className="px-4 py-2 text-[10px] text-muted-foreground border-b border-border animate-pulse">
-            Scanning… {repos.length} found
-          </div>
-        )}
-        {!scanning && repos.length > 0 && (
-          <div className="px-4 py-1.5 text-[10px] text-muted-foreground border-b border-border">
-            {filtered.length === repos.length ? `${repos.length} repos` : `${filtered.length} of ${repos.length}`}
-          </div>
-        )}
-
-        {/* Repo list */}
-        <ScrollArea className="flex-1">
-          {filtered.length === 0 && !scanning && (
-            <div className="px-4 py-8 text-xs text-muted-foreground text-center">
-              {repos.length === 0
-                ? 'No repos found.\nExpand Scan Roots to configure.'
-                : 'No repos match filter.'}
-            </div>
-          )}
-          {filtered.map(repo => (
+          {allTags.map(tag => (
             <button
-              key={repo.path}
-              onClick={() => selectRepo(repo.path)}
-              className={`w-full text-left px-4 py-3 border-b border-border/50 transition-colors ${
-                selected === repo.path
-                  ? 'bg-primary/10 border-l-2 border-l-primary'
-                  : 'hover:bg-muted/30'
+              key={tag}
+              onClick={() => setTagFilters(prev =>
+                prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag]
+              )}
+              className={`text-[9px] px-2 py-1 rounded-full border font-medium transition-colors ${
+                tagFilters.includes(tag)
+                  ? 'bg-primary/20 border-primary/40 text-primary'
+                  : 'border-border text-muted-foreground hover:text-foreground hover:bg-accent'
               }`}
             >
-              <div className="flex items-center justify-between gap-2 mb-0.5">
-                <span className="text-xs font-semibold text-foreground truncate">{repo.name}</span>
-                <div className="flex items-center gap-1 shrink-0">
-                  {repo.is_dirty && <span className="w-1.5 h-1.5 rounded-full bg-amber-400" title="dirty" />}
-                  {repo.ahead > 0 && <span className="text-[9px] text-emerald-400 font-mono">↑{repo.ahead}</span>}
-                  {repo.behind > 0 && <span className="text-[9px] text-blue-400 font-mono">↓{repo.behind}</span>}
-                </div>
-              </div>
-              <div className="flex items-center gap-1.5 mb-1">
-                <span className="text-[10px] text-primary font-mono">{repo.current_branch}</span>
-                {repo.stash_count > 0 && <span className="text-[9px] text-muted-foreground">· {repo.stash_count} stash</span>}
-              </div>
-              <div className="text-[10px] text-muted-foreground truncate">{repo.last_commit_msg || 'No commits'}</div>
-              {repo.last_commit_ts > 0 && (
-                <div className="text-[9px] text-muted-foreground/60 mt-0.5">{relativeTime(repo.last_commit_ts)}</div>
-              )}
+              #{tag}
             </button>
           ))}
+
+          <button
+            onClick={() => doScan(scanRoots, expandedRoots)}
+            disabled={scanning}
+            className="ml-auto text-xs px-3 py-1.5 rounded-md border border-border text-muted-foreground hover:text-foreground hover:bg-accent disabled:opacity-50 transition-colors"
+          >
+            {scanning ? `Scanning… ${scanCount}` : '↻ Scan'}
+          </button>
+        </div>
+
+        {/* Grouped card grid */}
+        <ScrollArea className="flex-1">
+          <div className="p-4 space-y-4">
+            {grouped.size === 0 && (
+              <div className="py-12 text-center text-xs text-muted-foreground">
+                {view === 'pinned' && !allEntries.some(e => e.pinned)
+                  ? 'No pinned repos yet. Click ☆ on any repo card to pin it.'
+                  : allEntries.length === 0
+                  ? 'No repos found. Click ↻ Scan to discover repos.'
+                  : 'No repos match your search.'}
+              </div>
+            )}
+
+            {Array.from(grouped.entries()).map(([category, subMap]) => {
+              const isCollapsed = collapsedCategories.has(category);
+              const total = Array.from(subMap.values()).reduce((n, arr) => n + arr.length, 0);
+              return (
+                <div key={category}>
+                  <button
+                    onClick={() => toggleCategory(category)}
+                    className="flex items-center gap-2 mb-2 w-full text-left"
+                  >
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+                      {isCollapsed ? '▶' : '▼'} {category}
+                    </span>
+                    <span className="text-[9px] text-muted-foreground/60">({total})</span>
+                    <div className="flex-1 h-px bg-border/50 ml-1" />
+                  </button>
+
+                  {!isCollapsed && Array.from(subMap.entries()).map(([sub, entries]) => (
+                    <div key={sub} className="mb-3">
+                      {sub && (
+                        <p className="text-[9px] text-muted-foreground uppercase tracking-widest mb-2 pl-0.5">{sub}</p>
+                      )}
+                      <div className="grid gap-2" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))' }}>
+                        {entries.map(entry => (
+                          <RepoCard
+                            key={entry.path}
+                            entry={entry}
+                            isSelected={selectedPath === entry.path}
+                            onSelect={selectRepo}
+                            onPin={handlePin}
+                            onAddTag={handleAddTag}
+                            onRemoveTag={handleRemoveTag}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              );
+            })}
+          </div>
         </ScrollArea>
       </div>
 
-      {/* ── Right panel ────────────────────────────────────────────────── */}
-      <div className="flex-1 flex flex-col overflow-hidden">
-        {!selected ? (
-          <div className="flex-1 flex items-center justify-center">
-            <span className="text-xs text-muted-foreground">Select a repo to view details</span>
-          </div>
-        ) : detailLoading ? (
+      {/* ── Detail panel ──────────────────────────────────────────────── */}
+      <div
+        className={`flex flex-col border-l border-border overflow-hidden transition-[width,opacity] duration-200 ease-out ${
+          panelOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
+        }`}
+        style={{ width: panelOpen ? '45%' : '0%' }}
+      >
+        <div className="flex items-center justify-between px-4 py-2 border-b border-border shrink-0 bg-card/50">
+          <span className="text-xs font-semibold text-foreground truncate">
+            {selectedPath ? (book[selectedPath]?.name ?? '') : ''}
+          </span>
+          <button
+            onClick={() => setSelectedPath(null)}
+            className="text-muted-foreground hover:text-foreground text-sm leading-none ml-2 shrink-0"
+          >
+            ×
+          </button>
+        </div>
+
+        {detailLoading ? (
           <div className="flex-1 flex items-center justify-center">
             <span className="text-xs text-muted-foreground animate-pulse">Loading…</span>
           </div>
