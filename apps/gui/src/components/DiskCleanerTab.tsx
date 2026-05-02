@@ -60,7 +60,12 @@ function toggleGroup(sel: Selection, cats: DiskCategory[]): Selection {
 function toggleItem(sel: Selection, catId: string, path: string, cat: DiskCategory): Selection {
   const next = new Map(sel);
   const current = sel.get(catId);
-  if (current === 'all') { next.delete(catId); return next; }
+  if (current === 'all') {
+    const set = new Set(cat.items.map(i => i.path));
+    set.delete(path);
+    if (set.size === 0) next.delete(catId); else next.set(catId, set);
+    return next;
+  }
   const set = new Set(current instanceof Set ? current : []);
   if (set.has(path)) {
     set.delete(path);
