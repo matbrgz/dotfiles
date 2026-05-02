@@ -193,11 +193,16 @@ export const GitReposTab: React.FC = () => {
     })();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
+  const closePanel = useCallback(() => {
+    selectedPathRef.current = null;
+    setSelectedPath(null);
+  }, []);
+
   useEffect(() => {
-    const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') setSelectedPath(null); };
+    const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') closePanel(); };
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
-  }, []);
+  }, [closePanel]);
 
   const selectRepo = useCallback(async (path: string) => {
     if (selectedPathRef.current === path) {
@@ -418,7 +423,7 @@ export const GitReposTab: React.FC = () => {
             {selectedPath ? (book[selectedPath]?.name ?? '') : ''}
           </span>
           <button
-            onClick={() => setSelectedPath(null)}
+            onClick={closePanel}
             className="text-muted-foreground hover:text-foreground text-sm leading-none ml-2 shrink-0"
           >
             ×
