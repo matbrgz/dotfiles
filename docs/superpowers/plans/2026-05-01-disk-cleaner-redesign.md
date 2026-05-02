@@ -21,6 +21,7 @@
 | `apps/gui/src/lib/utils.ts` | Create — `cn()` helper |
 | `apps/gui/src/components/ui/` | Create — shadcn generated components |
 | `apps/gui/src/components/DiskCleanerTab.tsx` | Full rewrite |
+| `apps/gui/src/lib/diskCleanerCache.ts` | Create — localStorage cache layer |
 | `packages/gui-engine/src/index.ts` | Add `DiskItem`, `ScanProgress`; update `scanDisk` |
 | `apps/gui/src-tauri/src/main.rs` | Add structs, helpers, rewrite `scan_disk_usage` |
 
@@ -1035,4 +1036,227 @@ If any visual fixes are needed, apply and commit. Then:
 ```bash
 git add -p
 git commit -m "fix(gui): post-verification tweaks to disk cleaner"
+```
+
+---
+
+## Task 6: localStorage cache layer
+
+**Files:**
+- Create: `apps/gui/src/lib/diskCleanerCache.ts`
+- Modify: `apps/gui/src/components/DiskCleanerTab.tsx`
+
+Persists scan results, selection, and active group filter so the user sees their last state immediately on re-open, without waiting for a new scan.
+
+**What is stored:**
+
+| Key | Value | Invalidated |
+|-----|-------|-------------|
+| `disk-cleaner:scan` | `{ timestamp: number; categories: DiskCategory[] }` | On new scan completes |
+| `disk-cleaner:selection` | `{ [id: string]: 'all' \| string[] }` | On clear / after clean |
+| `disk-cleaner:group` | `string` | Never (user preference) |
+
+- [ ] **Step 6.1 — Create diskCleanerCache.ts**
+
+Create `apps/gui/src/lib/diskCleanerCache.ts`:
+
+```ts
+import type { DiskCategory } from '@dotfiles/gui-engine';
+
+const SCAN_KEY = 'disk-cleaner:scan';
+const SEL_KEY  = 'disk-cleaner:selection';
+const GRP_KEY  = 'disk-cleaner:group';
+
+export interface CachedScan {
+  timestamp: number;
+  categories: DiskCategory[];
+}
+
+// ── scan ────────────────────────────────────────────────────────────────────
+
+export function saveScan(categories: DiskCategory[]): void {
+  try {
+    localStorage.setItem(SCAN_KEY, JSON.stringify({ timestamp: Date.now(), categories }));
+  } catch { /* quota exceeded — ignore */ }
+}
+
+export function loadScan(): CachedScan | null {
+  try {
+    const raw = localStorage.getItem(SCAN_KEY);
+    if (!raw) return null;
+    return JSON.parse(raw) as CachedScan;
+  } catch { return null; }
+}
+
+export function clearScan(): void {
+  localStorage.removeItem(SCAN_KEY);
+}
+
+// ── selection ────────────────────────────────────────────────────────────────
+
+type RawSel = Record<string, 'all' | string[]>;
+
+export function saveSelection(sel: Map<string, 'all' | Set<string>>): void {
+  try {
+    const raw: RawSel = {};
+    for (const [id, v] of sel) {
+      raw[id] = v === 'all' ? 'all' : Array.from(v);
+    }
+    localStorage.setItem(SEL_KEY, JSON.stringify(raw));
+  } catch { /* ignore */ }
+}
+
+export function loadSelection(): Map<string, 'all' | Set<string>> {
+  try {
+    const raw = localStorage.getItem(SEL_KEY);
+    if (!raw) return new Map();
+    const parsed = JSON.parse(raw) as RawSel;
+    const m = new Map<string, 'all' | Set<string>>();
+    for (const [id, v] of Object.entries(parsed)) {
+      m.set(id, v === 'all' ? 'all' : new Set(v));
+    }
+    return m;
+  } catch { return new Map(); }
+}
+
+export function clearSelection(): void {
+  localStorage.removeItem(SEL_KEY);
+}
+
+// ── active group ─────────────────────────────────────────────────────────────
+
+export function saveGroup(group: string): void {
+  try { localStorage.setItem(GRP_KEY, group); } catch { /* ignore */ }
+}
+
+export function loadGroup(): string | null {
+  try { return localStorage.getItem(GRP_KEY); } catch { return null; }
+}
+```
+
+- [ ] **Step 6.2 — Wire cache into DiskCleanerTab**
+
+At the top of `DiskCleanerTab.tsx`, add this import after the existing imports:
+
+```ts
+import {
+  saveScan, loadScan,
+  saveSelection, loadSelection, clearSelection,
+  saveGroup, loadGroup,
+  type CachedScan,
+} from '@/lib/diskCleanerCache';
+```
+
+Replace the initial state declarations for `categories`, `selection`, and `activeGroup` with cache-aware versions. Find this block:
+
+```ts
+  const [categories, setCategories] = useState<DiskCategory[]>([]);
+  const [selection, setSelection] = useState<Selection>(new Map());
+  const [scanning, setScanning] = useState(false);
+  const [progress, setProgress] = useState<ScanProgress | null>(null);
+  const [cleaning, setCleaning] = useState(false);
+  const [cleanLog, setCleanLog] = useState<string[]>([]);
+  const [activeGroup, setActiveGroup] = useState<string>(ALL);
+```
+
+Replace with:
+
+```ts
+  const cached = useMemo(() => loadScan(), []);
+  const [categories, setCategories] = useState<DiskCategory[]>(cached?.categories ?? []);
+  const [lastScanAt] = useState<number | null>(cached?.timestamp ?? null);
+  const [selection, setSelection] = useState<Selection>(() => loadSelection());
+  const [scanning, setScanning] = useState(false);
+  const [progress, setProgress] = useState<ScanProgress | null>(null);
+  const [cleaning, setCleaning] = useState(false);
+  const [cleanLog, setCleanLog] = useState<string[]>([]);
+  const [activeGroup, setActiveGroup] = useState<string>(() => loadGroup() ?? ALL);
+```
+
+Add save-on-change effects. Insert these `useEffect` calls right after the state declarations (before `groups = useMemo...`):
+
+```ts
+  // Persist selection changes
+  useEffect(() => { saveSelection(selection); }, [selection]);
+
+  // Persist active group
+  useEffect(() => { saveGroup(activeGroup); }, [activeGroup]);
+```
+
+In `handleScan`, after `await runScan(...)` completes (right before the `finally`), add a save call. Find:
+
+```ts
+    } catch (e) { console.error('Scan error:', e); }
+    finally { setScanning(false); setProgress(null); }
+```
+
+Replace with:
+
+```ts
+    } catch (e) { console.error('Scan error:', e); }
+    finally {
+      setScanning(false);
+      setProgress(null);
+      setCategories(prev => { saveScan(prev); return prev; });
+    }
+```
+
+In `handleClean`, after `setSelection(new Map())`, add `clearSelection()`:
+
+```ts
+      setCleanLog(prev => [...prev, 'Done! Rescanning...']);
+      setSelection(new Map());
+      clearSelection();
+```
+
+Add a "last scanned" indicator in the toolbar. In the toolbar section, find:
+
+```tsx
+        {!scanning && categories.length > 0 && (
+          <span className="text-xs text-muted-foreground">
+            {categories.length} categories ·{' '}
+            <span className="text-foreground font-semibold">
+              {formatBytes(categories.reduce((s, c) => s + c.size_bytes, 0))}
+            </span>
+          </span>
+        )}
+```
+
+Replace with:
+
+```tsx
+        {!scanning && categories.length > 0 && (
+          <span className="text-xs text-muted-foreground">
+            {categories.length} categories ·{' '}
+            <span className="text-foreground font-semibold">
+              {formatBytes(categories.reduce((s, c) => s + c.size_bytes, 0))}
+            </span>
+            {lastScanAt != null && (
+              <> · <span className="text-muted-foreground/60">scanned {formatRelative(Math.floor(lastScanAt / 1000))}</span></>
+            )}
+          </span>
+        )}
+```
+
+- [ ] **Step 6.3 — Type-check**
+
+```bash
+cd apps/gui && yarn type-check 2>&1
+```
+
+Expected: no errors. If `useMemo` is not imported, add it to the React import line.
+
+- [ ] **Step 6.4 — Verify cache behaviour**
+
+Start the app with `bash run-gui.sh`, open Disk Cleaner, run a scan. Close the app and reopen. Expected:
+- Categories from the last scan appear immediately without clicking Scan
+- "scanned X ago" label shows in the toolbar
+- Previously selected items are still checked
+- Active group pill is remembered
+
+- [ ] **Step 6.5 — Commit**
+
+```bash
+git add apps/gui/src/lib/diskCleanerCache.ts apps/gui/src/components/DiskCleanerTab.tsx
+git commit -m "feat(gui): add localStorage cache for scan results, selection, and group filter"
 ```
