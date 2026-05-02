@@ -7,6 +7,12 @@ export interface LogEntry {
   is_error: boolean;
 }
 
+export interface DiskItem {
+  path: string;
+  size_bytes: number;
+  modified_at: number | null;
+}
+
 export interface DiskCategory {
   id: string;
   label: string;
@@ -15,6 +21,13 @@ export interface DiskCategory {
   size_bytes: number;
   item_count: number;
   safe: boolean;
+  items: DiskItem[];
+}
+
+export interface ScanProgress {
+  current: string;
+  step: number;
+  total: number;
 }
 
 export interface CleanEvent {
@@ -138,12 +151,19 @@ export const guiCommands = {
     });
   },
 
-  scanDisk: async (onCategory?: (cat: DiskCategory) => void): Promise<void> => {
+  scanDisk: async (
+    onCategory?: (cat: DiskCategory) => void,
+    onProgress?: (prog: ScanProgress) => void,
+  ): Promise<void> => {
     return new Promise(async (resolve, reject) => {
       const unlisteners: Array<() => void> = [];
 
       if (onCategory) {
         const ul = await listen<DiskCategory>('scan-category', (e) => onCategory(e.payload));
+        unlisteners.push(ul);
+      }
+      if (onProgress) {
+        const ul = await listen<ScanProgress>('scan-progress', (e) => onProgress(e.payload));
         unlisteners.push(ul);
       }
 
