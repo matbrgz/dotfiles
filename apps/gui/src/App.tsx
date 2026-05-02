@@ -38,7 +38,7 @@ export default function App() {
     { id: 'profile',      label: 'Profile',       icon: User },
     { id: 'disk-cleaner', label: 'Disk Cleaner',  icon: HardDrive },
     { id: 'memory',       label: 'Memory',        icon: Cpu },
-    { id: 'git-repos',   label: 'Git Repos',     icon: GitBranch },
+    { id: 'git-repos',  label: 'Git Repos',     icon: GitBranch },
   ];
 
   useEffect(() => {
