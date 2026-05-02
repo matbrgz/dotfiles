@@ -1,6 +1,7 @@
 import React from 'react';
 import { type ProgramManifest } from '@dotfiles/schema';
 import { ProgramCard } from './ProgramCard';
+import { useTranslation } from 'react-i18next';
 
 interface InventoryTabProps {
   registry: Record<string, ProgramManifest>;
@@ -14,17 +15,17 @@ interface InventoryTabProps {
 export const InventoryTab: React.FC<InventoryTabProps> = ({
   registry, searchQuery, installing, onInstall, installedStatus, scanning,
 }) => {
+  const { t } = useTranslation('inventory');
   const term = searchQuery.toLowerCase();
   const filtered = Object.entries(registry).filter(([id, p]) =>
     !term || id.includes(term) || p.name.toLowerCase().includes(term) || p.description.toLowerCase().includes(term)
   );
-
   const categories = Array.from(new Set(filtered.map(([, p]) => p.category))).sort();
 
   if (filtered.length === 0) {
     return (
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '60px 0' }}>
-        <p style={{ color: 'var(--color-text-3)', fontSize: 12 }}>No packages match "{searchQuery}"</p>
+        <p style={{ color: 'var(--color-text-3)', fontSize: 12 }}>{t('emptySearch', { query: searchQuery })}</p>
       </div>
     );
   }
@@ -37,7 +38,7 @@ export const InventoryTab: React.FC<InventoryTabProps> = ({
           background: 'var(--color-amber-bg)', border: '1px solid rgba(251,191,36,0.2)',
           borderRadius: 6, fontSize: 11, color: 'var(--color-amber)',
         }}>
-          Scanning installed packages...
+          {t('scanning')}
         </div>
       )}
 
@@ -46,9 +47,7 @@ export const InventoryTab: React.FC<InventoryTabProps> = ({
         if (!items.length) return null;
         return (
           <section key={cat} style={{ marginBottom: 32 }}>
-            <div style={{
-              display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12,
-            }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
               <span style={{ fontSize: 10, fontWeight: 600, color: 'var(--color-text-3)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
                 {cat}
               </span>
@@ -58,11 +57,7 @@ export const InventoryTab: React.FC<InventoryTabProps> = ({
               <div style={{ flex: 1, height: 1, background: 'var(--color-border)' }} />
             </div>
 
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))',
-              gap: 10,
-            }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 10 }}>
               {items.map(([id, prog]) => (
                 <ProgramCard
                   key={id}
@@ -71,10 +66,10 @@ export const InventoryTab: React.FC<InventoryTabProps> = ({
                   category={prog.category}
                   onAction={() => onInstall(id)}
                   actionLabel={
-                    installing[id] ? 'Installing...' :
-                    installedStatus[id] ? 'Reinstall' :
+                    installing[id] ? t('installing') :
+                    installedStatus[id] ? t('reinstall') :
                     scanning ? '...' :
-                    'Install'
+                    t('install')
                   }
                   status={
                     installing[id] ? 'installing' :

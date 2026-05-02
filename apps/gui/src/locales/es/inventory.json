@@ -1,1 +1,8 @@
-{}
+{
+  "install": "Instalar",
+  "reinstall": "Reinstalar",
+  "installing": "Instalando...",
+  "scanning": "Verificando paquetes instalados...",
+  "statsInstalled": "{{count}} / {{total}} instalados",
+  "emptySearch": "Ningún paquete coincide con \"{{query}}\""
+}
