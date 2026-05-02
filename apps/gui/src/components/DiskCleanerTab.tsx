@@ -102,7 +102,7 @@ const ALL = 'All';
 export const DiskCleanerTab: React.FC = () => {
   const cached = useMemo(() => loadScan(), []);
   const [categories, setCategories] = useState<DiskCategory[]>(cached?.categories ?? []);
-  const [lastScanAt] = useState<number | null>(cached?.timestamp ?? null);
+  const [lastScanAt, setLastScanAt] = useState<number | null>(cached?.timestamp ?? null);
   const [selection, setSelection] = useState<Selection>(() => loadSelection());
   const [scanning, setScanning] = useState(false);
   const [progress, setProgress] = useState<ScanProgress | null>(null);
@@ -158,7 +158,7 @@ export const DiskCleanerTab: React.FC = () => {
     finally {
       setScanning(false);
       setProgress(null);
-      setCategories(prev => { saveScan(prev); return prev; });
+      setCategories(prev => { const ts = Date.now(); saveScan(prev); setLastScanAt(ts); return prev; });
     }
   }, [runScan]);
 
