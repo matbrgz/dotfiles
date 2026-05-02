@@ -253,8 +253,8 @@ fn scan_git_repos(roots: Vec<String>, window: tauri::Window) {
         for root in &roots {
             let expanded = expand(root, &home);
             let found = Command::new("find")
-                .args([expanded.as_str(), "-name", ".git", "-type", "d",
-                       "-not", "-path", "*/.git/*", "-maxdepth", "8"])
+                .args([expanded.as_str(), "-maxdepth", "8", "-name", ".git", "-type", "d",
+                       "-not", "-path", "*/.git/*"])
                 .stderr(Stdio::null())
                 .output()
                 .map(|o| String::from_utf8_lossy(&o.stdout).to_string())

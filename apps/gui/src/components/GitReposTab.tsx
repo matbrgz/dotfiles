@@ -253,17 +253,15 @@ interface RepoDetailProps {
   setConfirmDelete: (v: string | null) => void;
 }
 
-function RepoDetail({ detail, onAction, inProgress, actionError, onClearError, confirmDelete, setConfirmDelete }: RepoDetailProps) {
-  const { summary, branches, commits, remotes, stashes, tags } = detail;
-  const localBranches = branches.filter(b => !b.is_remote);
-  const remoteBranches = branches.filter(b => b.is_remote);
-  const [newBranchName, setNewBranchName] = useState('');
-  const [showNewBranch, setShowNewBranch] = useState(false);
-  const [stashMsg, setStashMsg] = useState('');
-  const [showStashInput, setShowStashInput] = useState(false);
-  const defaultRemote = remotes[0]?.name ?? 'origin';
-
-  const ActionBtn = ({ label, type, params, danger = false }: { label: string; type: string; params?: Record<string, unknown>; danger?: boolean }) => (
+function ActionBtn({ label, type, params, danger = false, inProgress, onAction }: {
+  label: string;
+  type: string;
+  params?: Record<string, unknown>;
+  danger?: boolean;
+  inProgress: string | null;
+  onAction: (type: string, params?: Record<string, unknown>) => Promise<void>;
+}) {
+  return (
     <button
       onClick={() => onAction(type, params)}
       disabled={!!inProgress}
@@ -276,6 +274,17 @@ function RepoDetail({ detail, onAction, inProgress, actionError, onClearError, c
       {inProgress === type ? '…' : label}
     </button>
   );
+}
+
+function RepoDetail({ detail, onAction, inProgress, actionError, onClearError, confirmDelete, setConfirmDelete }: RepoDetailProps) {
+  const { summary, branches, commits, remotes, stashes, tags } = detail;
+  const localBranches = branches.filter(b => !b.is_remote);
+  const remoteBranches = branches.filter(b => b.is_remote);
+  const [newBranchName, setNewBranchName] = useState('');
+  const [showNewBranch, setShowNewBranch] = useState(false);
+  const [stashMsg, setStashMsg] = useState('');
+  const [showStashInput, setShowStashInput] = useState(false);
+  const defaultRemote = remotes[0]?.name ?? 'origin';
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
@@ -296,12 +305,12 @@ function RepoDetail({ detail, onAction, inProgress, actionError, onClearError, c
 
         {/* Action bar */}
         <div className="flex items-center gap-2 flex-wrap">
-          <ActionBtn label="Fetch" type="fetch" params={{ remote: defaultRemote }} />
-          <ActionBtn label="Pull" type="pull" params={{ remote: defaultRemote, branch: summary.current_branch }} />
-          <ActionBtn label="Push" type="push" params={{ remote: defaultRemote, branch: summary.current_branch }} />
+          <ActionBtn label="Fetch" type="fetch" params={{ remote: defaultRemote }} inProgress={inProgress} onAction={onAction} />
+          <ActionBtn label="Pull" type="pull" params={{ remote: defaultRemote, branch: summary.current_branch }} inProgress={inProgress} onAction={onAction} />
+          <ActionBtn label="Push" type="push" params={{ remote: defaultRemote, branch: summary.current_branch }} inProgress={inProgress} onAction={onAction} />
           <div className="w-px h-4 bg-border mx-1" />
-          <ActionBtn label="Terminal" type="open_terminal" />
-          <ActionBtn label="VS Code" type="open_vscode" />
+          <ActionBtn label="Terminal" type="open_terminal" inProgress={inProgress} onAction={onAction} />
+          <ActionBtn label="VS Code" type="open_vscode" inProgress={inProgress} onAction={onAction} />
         </div>
 
         {actionError && (
