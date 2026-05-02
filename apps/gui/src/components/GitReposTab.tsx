@@ -362,7 +362,7 @@ export const GitReposTab: React.FC = () => {
                 {view === 'pinned' && !allEntries.some(e => e.pinned)
                   ? 'No pinned repos yet. Click ☆ on any repo card to pin it.'
                   : allEntries.length === 0
-                  ? 'No repos found. Click ↻ Scan to discover repos.'
+                  ? 'No repos found. Click ↻ Scan to discover repos under your configured roots.'
                   : 'No repos match your search.'}
               </div>
             )}
