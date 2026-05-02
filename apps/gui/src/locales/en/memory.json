@@ -1,1 +1,20 @@
-{}
+{
+  "loading": "Loading memory info...",
+  "titleRam": "RAM Usage",
+  "statTotal": "{{mb}} total",
+  "statUsed": "Used",
+  "statWired": "Wired",
+  "statInactive": "Inactive",
+  "statAvailable": "Available",
+  "titleProcesses": "Top Processes by Memory",
+  "btnRefresh": "↻ Refresh",
+  "colName": "Name",
+  "colPid": "PID",
+  "colMemory": "Memory",
+  "colCpu": "CPU",
+  "colKill": "Kill",
+  "emptyState": "No process data available",
+  "btnKillConfirm": "Sure?",
+  "btnKill": "✕",
+  "btnKilling": "..."
+}
