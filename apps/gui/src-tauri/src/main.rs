@@ -21,6 +21,13 @@ struct LogEvent {
 }
 
 #[derive(Serialize, Clone)]
+struct DiskItem {
+    path: String,
+    size_bytes: u64,
+    modified_at: Option<u64>,
+}
+
+#[derive(Serialize, Clone)]
 struct DiskCategory {
     id: String,
     label: String,
@@ -29,6 +36,14 @@ struct DiskCategory {
     size_bytes: u64,
     item_count: u32,
     safe: bool,
+    items: Vec<DiskItem>,
+}
+
+#[derive(Serialize, Clone)]
+struct ScanProgress {
+    current: String,
+    step: u32,
+    total: u32,
 }
 
 #[derive(Serialize, Clone)]
@@ -107,6 +122,36 @@ fn paths_size(paths: &[&str]) -> (u64, u32) {
 
 fn expand(path: &str, home: &str) -> String {
     path.replace('~', home)
+}
+
+fn file_mtime(path: &str) -> Option<u64> {
+    sh(&format!("stat -f %m \"{}\" 2>/dev/null", path))
+        .trim()
+        .parse::<u64>()
+        .ok()
+}
+
+fn paths_size_items(paths: &[&str]) -> (u64, u32, Vec<DiskItem>) {
+    let existing: Vec<&str> = paths.iter().copied()
+        .filter(|p| std::path::Path::new(p).exists())
+        .collect();
+    if existing.is_empty() { return (0, 0, vec![]); }
+    let quoted = existing.iter()
+        .map(|p| format!("\"{}\"", p))
+        .collect::<Vec<_>>()
+        .join(" ");
+    let raw = sh(&format!("nice -n 10 du -sk {} 2>/dev/null", quoted));
+    let mut total_kb: u64 = 0;
+    let items: Vec<DiskItem> = raw.lines().filter(|l| !l.is_empty()).filter_map(|line| {
+        let mut parts = line.splitn(2, '\t');
+        let kb = parts.next().and_then(|s| s.trim().parse::<u64>().ok()).unwrap_or(0);
+        let path = parts.next()?.trim().to_string();
+        if path.is_empty() { return None; }
+        total_kb += kb;
+        Some(DiskItem { path: path.clone(), size_bytes: kb * 1024, modified_at: file_mtime(&path) })
+    }).collect();
+    let count = items.len() as u32;
+    (total_kb * 1024, count, items)
 }
 
 // ── Tauri commands ─────────────────────────────────────────────────────────────
@@ -280,356 +325,182 @@ fn scan_disk_usage(window: tauri::Window) {
     std::thread::spawn(move || {
         let home = std::env::var("HOME").unwrap_or_else(|_| "/tmp".to_string());
         let h = |p: &str| expand(p, &home);
+        let mut step: u32 = 0;
+        let total: u32 = 26;
 
-    // ── Development ───────────────────────────────────────────────────────────
+        macro_rules! progress {
+            ($label:expr) => { step += 1; let _ = window.emit("scan-progress", ScanProgress { current: format!("Scanning {}...", $label), step, total }); };
+        }
 
-    // node_modules
-    {
-        let (size_bytes, item_count) = if let Some(dev) = dev_dir(&home) {
-            let dirs_raw = sh(&format!(
-                "find {} -maxdepth 6 -name node_modules -type d -prune 2>/dev/null",
-                dev
-            ));
-            let dirs: Vec<&str> = dirs_raw.lines().filter(|l| !l.is_empty()).collect();
-            let count = dirs.len() as u32;
-            let kb = if dirs.is_empty() { 0 } else {
-                let quoted = dirs.iter().map(|p| format!("\"{}\"", p)).collect::<Vec<_>>().join(" ");
-                sh(&format!(
-                    "du -sk {} 2>/dev/null | awk '{{t+=$1}} END{{print t}}'",
-                    quoted
-                )).trim().parse::<u64>().unwrap_or(0)
-            };
-            (kb * 1024, count)
-        } else { (0, 0) };
-        emit_cat(&window, DiskCategory {
-            id: "node_modules".into(), label: "node_modules".into(),
-            icon: "📦".into(), group: "Development".into(),
-            size_bytes, item_count, safe: true,
-        });
-    }
+        // ── Development ──────────────────────────────────────────────────────
 
-    // build_outputs
-    {
-        let (size_bytes, item_count) = if let Some(dev) = dev_dir(&home) {
-            let dirs_raw = sh(&format!(
-                "find {} -maxdepth 5 -type d \\( -name dist -o -name build -o -name .next -o -name .turbo -o -name .cache -o -name out -o -name .nuxt -o -name .svelte-kit \\) -prune 2>/dev/null",
-                dev
-            ));
-            let dirs: Vec<&str> = dirs_raw.lines().filter(|l| !l.is_empty()).collect();
-            let count = dirs.len() as u32;
-            let kb = if dirs.is_empty() { 0 } else {
-                let quoted = dirs.iter().map(|p| format!("\"{}\"", p)).collect::<Vec<_>>().join(" ");
-                sh(&format!(
-                    "du -sk {} 2>/dev/null | awk '{{t+=$1}} END{{print t}}'",
-                    quoted
-                )).trim().parse::<u64>().unwrap_or(0)
-            };
-            (kb * 1024, count)
-        } else { (0, 0) };
-        emit_cat(&window, DiskCategory {
-            id: "build_outputs".into(), label: "Build outputs".into(),
-            icon: "🏗".into(), group: "Development".into(),
-            size_bytes, item_count, safe: true,
-        });
-    }
+        progress!("node_modules");
+        {
+            let (size_bytes, item_count, mut items) = if let Some(dev) = dev_dir(&home) {
+                let dirs_raw = sh(&format!("find {} -maxdepth 6 -name node_modules -type d -prune 2>/dev/null", dev));
+                let dirs: Vec<&str> = dirs_raw.lines().filter(|l| !l.is_empty()).collect();
+                if dirs.is_empty() { (0, 0, vec![]) } else {
+                    let quoted = dirs.iter().map(|p| format!("\"{}\"", p)).collect::<Vec<_>>().join(" ");
+                    let raw = sh(&format!("nice -n 10 du -sk {} 2>/dev/null", quoted));
+                    let mut total_kb: u64 = 0;
+                    let mut items: Vec<DiskItem> = raw.lines().filter(|l| !l.is_empty()).filter_map(|line| {
+                        let mut parts = line.splitn(2, '\t');
+                        let kb = parts.next().and_then(|s| s.trim().parse::<u64>().ok()).unwrap_or(0);
+                        let path = parts.next()?.trim().to_string();
+                        if path.is_empty() { return None; }
+                        total_kb += kb;
+                        Some(DiskItem { path: path.clone(), size_bytes: kb * 1024, modified_at: file_mtime(&path) })
+                    }).collect();
+                    items.sort_by(|a, b| b.size_bytes.cmp(&a.size_bytes));
+                    (total_kb * 1024, dirs.len() as u32, items)
+                }
+            } else { (0, 0, vec![]) };
+            items.truncate(20);
+            let _ = window.emit("scan-category", DiskCategory { id: "node_modules".into(), label: "node_modules".into(), icon: "📦".into(), group: "Development".into(), size_bytes, item_count, safe: true, items });
+        }
 
-    // .DS_Store
-    {
-        let (size_bytes, item_count) = if let Some(dev) = dev_dir(&home) {
-            let files_raw = sh(&format!("find {} -name .DS_Store 2>/dev/null", dev));
-            let count = files_raw.lines().filter(|l| !l.is_empty()).count() as u32;
-            (count as u64 * 6144, count)
-        } else { (0, 0) };
-        emit_cat(&window, DiskCategory {
-            id: "ds_store".into(), label: ".DS_Store files".into(),
-            icon: "🫧".into(), group: "Development".into(),
-            size_bytes, item_count, safe: true,
-        });
-    }
+        progress!("build outputs");
+        {
+            let (size_bytes, item_count, mut items) = if let Some(dev) = dev_dir(&home) {
+                let dirs_raw = sh(&format!("find {} -maxdepth 5 -type d \\( -name dist -o -name build -o -name .next -o -name .turbo -o -name .cache -o -name out -o -name .nuxt -o -name .svelte-kit \\) -prune 2>/dev/null", dev));
+                let dirs: Vec<&str> = dirs_raw.lines().filter(|l| !l.is_empty()).collect();
+                if dirs.is_empty() { (0, 0, vec![]) } else {
+                    let quoted = dirs.iter().map(|p| format!("\"{}\"", p)).collect::<Vec<_>>().join(" ");
+                    let raw = sh(&format!("nice -n 10 du -sk {} 2>/dev/null", quoted));
+                    let mut total_kb: u64 = 0;
+                    let mut items: Vec<DiskItem> = raw.lines().filter(|l| !l.is_empty()).filter_map(|line| {
+                        let mut parts = line.splitn(2, '\t');
+                        let kb = parts.next().and_then(|s| s.trim().parse::<u64>().ok()).unwrap_or(0);
+                        let path = parts.next()?.trim().to_string();
+                        if path.is_empty() { return None; }
+                        total_kb += kb;
+                        Some(DiskItem { path: path.clone(), size_bytes: kb * 1024, modified_at: file_mtime(&path) })
+                    }).collect();
+                    items.sort_by(|a, b| b.size_bytes.cmp(&a.size_bytes));
+                    (total_kb * 1024, dirs.len() as u32, items)
+                }
+            } else { (0, 0, vec![]) };
+            items.truncate(20);
+            let _ = window.emit("scan-category", DiskCategory { id: "build_outputs".into(), label: "Build outputs".into(), icon: "🏗".into(), group: "Development".into(), size_bytes, item_count, safe: true, items });
+        }
 
-    // ── Package Caches ────────────────────────────────────────────────────────
+        progress!(".DS_Store files");
+        {
+            let (size_bytes, item_count, items) = if let Some(dev) = dev_dir(&home) {
+                let files_raw = sh(&format!("find {} -name .DS_Store 2>/dev/null", dev));
+                let files: Vec<&str> = files_raw.lines().filter(|l| !l.is_empty()).collect();
+                let count = files.len() as u32;
+                let items: Vec<DiskItem> = files.iter().take(20).map(|f| DiskItem { path: f.to_string(), size_bytes: 6144, modified_at: file_mtime(f) }).collect();
+                (count as u64 * 6144, count, items)
+            } else { (0, 0, vec![]) };
+            let _ = window.emit("scan-category", DiskCategory { id: "ds_store".into(), label: ".DS_Store files".into(), icon: "🫧".into(), group: "Development".into(), size_bytes, item_count, safe: true, items });
+        }
 
-    // npm_cache
-    {
-        let p = h("~/.npm/_cacache");
-        let (size_bytes, item_count) = paths_size(&[&p]);
-        emit_cat(&window, DiskCategory {
-            id: "npm_cache".into(), label: "npm cache".into(),
-            icon: "📦".into(), group: "Package Caches".into(),
-            size_bytes, item_count, safe: true,
-        });
-    }
+        // ── Package Caches ───────────────────────────────────────────────────
 
-    // yarn_cache
-    {
-        let p = h("~/Library/Caches/Yarn");
-        let (size_bytes, item_count) = paths_size(&[&p]);
-        emit_cat(&window, DiskCategory {
-            id: "yarn_cache".into(), label: "Yarn cache".into(),
-            icon: "🧶".into(), group: "Package Caches".into(),
-            size_bytes, item_count, safe: true,
-        });
-    }
+        progress!("npm cache");
+        { let p = h("~/.npm/_cacache"); let (size_bytes, item_count, items) = paths_size_items(&[&p]); let _ = window.emit("scan-category", DiskCategory { id: "npm_cache".into(), label: "npm cache".into(), icon: "📦".into(), group: "Package Caches".into(), size_bytes, item_count, safe: true, items }); }
 
-    // pnpm_store
-    {
-        let p = h("~/Library/pnpm/store");
-        let (size_bytes, item_count) = paths_size(&[&p]);
-        emit_cat(&window, DiskCategory {
-            id: "pnpm_store".into(), label: "pnpm store".into(),
-            icon: "⚡".into(), group: "Package Caches".into(),
-            size_bytes, item_count, safe: true,
-        });
-    }
+        progress!("Yarn cache");
+        { let p = h("~/Library/Caches/Yarn"); let (size_bytes, item_count, items) = paths_size_items(&[&p]); let _ = window.emit("scan-category", DiskCategory { id: "yarn_cache".into(), label: "Yarn cache".into(), icon: "🧶".into(), group: "Package Caches".into(), size_bytes, item_count, safe: true, items }); }
 
-    // pip_cache
-    {
-        let pip_dir = sh("python3 -m pip cache dir 2>/dev/null").trim().to_string();
-        let (size_bytes, item_count) = if pip_dir.is_empty() || !std::path::Path::new(&pip_dir).exists() {
-            (0, 0)
-        } else {
-            paths_size(&[&pip_dir])
-        };
-        emit_cat(&window, DiskCategory {
-            id: "pip_cache".into(), label: "pip cache".into(),
-            icon: "🐍".into(), group: "Package Caches".into(),
-            size_bytes, item_count, safe: true,
-        });
-    }
+        progress!("pnpm store");
+        { let p = h("~/Library/pnpm/store"); let (size_bytes, item_count, items) = paths_size_items(&[&p]); let _ = window.emit("scan-category", DiskCategory { id: "pnpm_store".into(), label: "pnpm store".into(), icon: "⚡".into(), group: "Package Caches".into(), size_bytes, item_count, safe: true, items }); }
 
-    // cargo_cache
-    {
-        let p1 = h("~/.cargo/registry/cache");
-        let p2 = h("~/.cargo/git/db");
-        let (size_bytes, item_count) = paths_size(&[&p1, &p2]);
-        emit_cat(&window, DiskCategory {
-            id: "cargo_cache".into(), label: "Cargo cache".into(),
-            icon: "🦀".into(), group: "Package Caches".into(),
-            size_bytes, item_count, safe: true,
-        });
-    }
+        progress!("pip cache");
+        {
+            let pip_dir = sh("python3 -m pip cache dir 2>/dev/null").trim().to_string();
+            let (size_bytes, item_count, items) = if pip_dir.is_empty() || !std::path::Path::new(&pip_dir).exists() { (0, 0, vec![]) } else { paths_size_items(&[&pip_dir]) };
+            let _ = window.emit("scan-category", DiskCategory { id: "pip_cache".into(), label: "pip cache".into(), icon: "🐍".into(), group: "Package Caches".into(), size_bytes, item_count, safe: true, items });
+        }
 
-    // gradle_cache
-    {
-        let p = h("~/.gradle/caches");
-        let (size_bytes, item_count) = paths_size(&[&p]);
-        emit_cat(&window, DiskCategory {
-            id: "gradle_cache".into(), label: "Gradle cache".into(),
-            icon: "🐘".into(), group: "Package Caches".into(),
-            size_bytes, item_count, safe: true,
-        });
-    }
+        progress!("Cargo cache");
+        { let p1 = h("~/.cargo/registry/cache"); let p2 = h("~/.cargo/git/db"); let (size_bytes, item_count, items) = paths_size_items(&[&p1, &p2]); let _ = window.emit("scan-category", DiskCategory { id: "cargo_cache".into(), label: "Cargo cache".into(), icon: "🦀".into(), group: "Package Caches".into(), size_bytes, item_count, safe: true, items }); }
 
-    // maven_cache
-    {
-        let p = h("~/.m2/repository");
-        let (size_bytes, item_count) = paths_size(&[&p]);
-        emit_cat(&window, DiskCategory {
-            id: "maven_cache".into(), label: "Maven cache".into(),
-            icon: "☕".into(), group: "Package Caches".into(),
-            size_bytes, item_count, safe: true,
-        });
-    }
+        progress!("Gradle cache");
+        { let p = h("~/.gradle/caches"); let (size_bytes, item_count, items) = paths_size_items(&[&p]); let _ = window.emit("scan-category", DiskCategory { id: "gradle_cache".into(), label: "Gradle cache".into(), icon: "🐘".into(), group: "Package Caches".into(), size_bytes, item_count, safe: true, items }); }
 
-    // go_cache
-    {
-        let go_dir = sh("go env GOCACHE 2>/dev/null").trim().to_string();
-        let (size_bytes, item_count) = if go_dir.is_empty() || !std::path::Path::new(&go_dir).exists() {
-            (0, 0)
-        } else {
-            paths_size(&[&go_dir])
-        };
-        emit_cat(&window, DiskCategory {
-            id: "go_cache".into(), label: "Go cache".into(),
-            icon: "🐹".into(), group: "Package Caches".into(),
-            size_bytes, item_count, safe: true,
-        });
-    }
+        progress!("Maven cache");
+        { let p = h("~/.m2/repository"); let (size_bytes, item_count, items) = paths_size_items(&[&p]); let _ = window.emit("scan-category", DiskCategory { id: "maven_cache".into(), label: "Maven cache".into(), icon: "☕".into(), group: "Package Caches".into(), size_bytes, item_count, safe: true, items }); }
 
-    // gem_cache
-    {
-        let p = h("~/.gem");
-        let (size_bytes, item_count) = paths_size(&[&p]);
-        emit_cat(&window, DiskCategory {
-            id: "gem_cache".into(), label: "Ruby gems".into(),
-            icon: "💎".into(), group: "Package Caches".into(),
-            size_bytes, item_count, safe: true,
-        });
-    }
+        progress!("Go cache");
+        {
+            let go_dir = sh("go env GOCACHE 2>/dev/null").trim().to_string();
+            let (size_bytes, item_count, items) = if go_dir.is_empty() || !std::path::Path::new(&go_dir).exists() { (0, 0, vec![]) } else { paths_size_items(&[&go_dir]) };
+            let _ = window.emit("scan-category", DiskCategory { id: "go_cache".into(), label: "Go cache".into(), icon: "🐹".into(), group: "Package Caches".into(), size_bytes, item_count, safe: true, items });
+        }
 
-    // ── macOS ─────────────────────────────────────────────────────────────────
+        progress!("Ruby gems");
+        { let p = h("~/.gem"); let (size_bytes, item_count, items) = paths_size_items(&[&p]); let _ = window.emit("scan-category", DiskCategory { id: "gem_cache".into(), label: "Ruby gems".into(), icon: "💎".into(), group: "Package Caches".into(), size_bytes, item_count, safe: true, items }); }
 
-    // brew_cache
-    {
-        let brew_cache = sh("brew --cache 2>/dev/null").trim().to_string();
-        let (size_bytes, item_count) = if brew_cache.is_empty() || !std::path::Path::new(&brew_cache).exists() {
-            (0, 0)
-        } else {
-            paths_size(&[&brew_cache])
-        };
-        emit_cat(&window, DiskCategory {
-            id: "brew_cache".into(), label: "Homebrew cache".into(),
-            icon: "🍺".into(), group: "macOS".into(),
-            size_bytes, item_count, safe: true,
-        });
-    }
+        // ── macOS ─────────────────────────────────────────────────────────────
 
-    // brew_logs
-    {
-        let p = h("~/Library/Logs/Homebrew");
-        let (size_bytes, item_count) = paths_size(&[&p]);
-        emit_cat(&window, DiskCategory {
-            id: "brew_logs".into(), label: "Homebrew logs".into(),
-            icon: "🍺".into(), group: "macOS".into(),
-            size_bytes, item_count, safe: true,
-        });
-    }
+        progress!("Homebrew cache");
+        {
+            let brew_cache = sh("brew --cache 2>/dev/null").trim().to_string();
+            let (size_bytes, item_count, items) = if brew_cache.is_empty() || !std::path::Path::new(&brew_cache).exists() { (0, 0, vec![]) } else { paths_size_items(&[&brew_cache]) };
+            let _ = window.emit("scan-category", DiskCategory { id: "brew_cache".into(), label: "Homebrew cache".into(), icon: "🍺".into(), group: "macOS".into(), size_bytes, item_count, safe: true, items });
+        }
 
-    // xcode_derived
-    {
-        let p = h("~/Library/Developer/Xcode/DerivedData");
-        let (size_bytes, item_count) = paths_size(&[&p]);
-        emit_cat(&window, DiskCategory {
-            id: "xcode_derived".into(), label: "Xcode DerivedData".into(),
-            icon: "🔨".into(), group: "macOS".into(),
-            size_bytes, item_count, safe: true,
-        });
-    }
+        progress!("Homebrew logs");
+        { let p = h("~/Library/Logs/Homebrew"); let (size_bytes, item_count, items) = paths_size_items(&[&p]); let _ = window.emit("scan-category", DiskCategory { id: "brew_logs".into(), label: "Homebrew logs".into(), icon: "🍺".into(), group: "macOS".into(), size_bytes, item_count, safe: true, items }); }
 
-    // xcode_archives
-    {
-        let p = h("~/Library/Developer/Xcode/Archives");
-        let (size_bytes, item_count) = paths_size(&[&p]);
-        emit_cat(&window, DiskCategory {
-            id: "xcode_archives".into(), label: "Xcode Archives".into(),
-            icon: "📦".into(), group: "macOS".into(),
-            size_bytes, item_count, safe: false,
-        });
-    }
+        progress!("Xcode DerivedData");
+        { let p = h("~/Library/Developer/Xcode/DerivedData"); let (size_bytes, item_count, items) = paths_size_items(&[&p]); let _ = window.emit("scan-category", DiskCategory { id: "xcode_derived".into(), label: "Xcode DerivedData".into(), icon: "🔨".into(), group: "macOS".into(), size_bytes, item_count, safe: true, items }); }
 
-    // ios_sims
-    {
-        let p = h("~/Library/Developer/CoreSimulator/Devices");
-        let (size_bytes, item_count) = paths_size(&[&p]);
-        emit_cat(&window, DiskCategory {
-            id: "ios_sims".into(), label: "iOS Simulators (unavailable)".into(),
-            icon: "📱".into(), group: "macOS".into(),
-            size_bytes, item_count, safe: true,
-        });
-    }
+        progress!("Xcode Archives");
+        { let p = h("~/Library/Developer/Xcode/Archives"); let (size_bytes, item_count, items) = paths_size_items(&[&p]); let _ = window.emit("scan-category", DiskCategory { id: "xcode_archives".into(), label: "Xcode Archives".into(), icon: "📦".into(), group: "macOS".into(), size_bytes, item_count, safe: false, items }); }
 
-    // lib_caches
-    {
-        let p = h("~/Library/Caches");
-        let (size_bytes, item_count) = paths_size(&[&p]);
-        emit_cat(&window, DiskCategory {
-            id: "lib_caches".into(), label: "~/Library/Caches".into(),
-            icon: "📂".into(), group: "macOS".into(),
-            size_bytes, item_count, safe: false,
-        });
-    }
+        progress!("iOS Simulators");
+        { let p = h("~/Library/Developer/CoreSimulator/Devices"); let (size_bytes, item_count, items) = paths_size_items(&[&p]); let _ = window.emit("scan-category", DiskCategory { id: "ios_sims".into(), label: "iOS Simulators (unavailable)".into(), icon: "📱".into(), group: "macOS".into(), size_bytes, item_count, safe: true, items }); }
 
-    // trash
-    {
-        let p = h("~/.Trash");
-        let (size_bytes, item_count) = paths_size(&[&p]);
-        emit_cat(&window, DiskCategory {
-            id: "trash".into(), label: "Trash".into(),
-            icon: "🗑".into(), group: "macOS".into(),
-            size_bytes, item_count, safe: false,
-        });
-    }
+        progress!("Library/Caches");
+        {
+            let p = h("~/Library/Caches");
+            let (size_bytes, item_count, _) = paths_size_items(&[&p]);
+            let items: Vec<DiskItem> = if std::path::Path::new(&p).exists() {
+                let raw = sh(&format!("nice -n 10 du -sk \"{}\"/* 2>/dev/null | sort -rn | head -20", p));
+                raw.lines().filter(|l| !l.is_empty()).filter_map(|line| {
+                    let mut parts = line.splitn(2, '\t');
+                    let kb = parts.next().and_then(|s| s.trim().parse::<u64>().ok()).unwrap_or(0);
+                    let path = parts.next()?.trim().to_string();
+                    if path.is_empty() { return None; }
+                    Some(DiskItem { path: path.clone(), size_bytes: kb * 1024, modified_at: file_mtime(&path) })
+                }).collect()
+            } else { vec![] };
+            let _ = window.emit("scan-category", DiskCategory { id: "lib_caches".into(), label: "~/Library/Caches".into(), icon: "📂".into(), group: "macOS".into(), size_bytes, item_count, safe: false, items });
+        }
 
-    // ── AI Tools ──────────────────────────────────────────────────────────────
+        progress!("Trash");
+        { let p = h("~/.Trash"); let (size_bytes, item_count, items) = paths_size_items(&[&p]); let _ = window.emit("scan-category", DiskCategory { id: "trash".into(), label: "Trash".into(), icon: "🗑".into(), group: "macOS".into(), size_bytes, item_count, safe: false, items }); }
 
-    // claude_cache
-    {
-        let p1 = h("~/.claude/cache");
-        let p2 = h("~/.claude/paste-cache");
-        let p3 = h("~/.claude/shell-snapshots");
-        let p4 = h("~/.claude/telemetry");
-        let p5 = h("~/.claude/file-history");
-        let (size_bytes, item_count) = paths_size(&[&p1, &p2, &p3, &p4, &p5]);
-        emit_cat(&window, DiskCategory {
-            id: "claude_cache".into(), label: "Claude Code cache".into(),
-            icon: "🤖".into(), group: "AI Tools".into(),
-            size_bytes, item_count, safe: true,
-        });
-    }
+        // ── AI Tools ─────────────────────────────────────────────────────────
 
-    // codex_cache
-    {
-        let p1 = h("~/.codex/log");
-        let p2 = h("~/.codex/sessions");
-        let p3 = h("~/Library/Application Support/Codex");
-        let (size_bytes, item_count) = paths_size(&[&p1, &p2, &p3]);
-        emit_cat(&window, DiskCategory {
-            id: "codex_cache".into(), label: "Codex cache".into(),
-            icon: "🤖".into(), group: "AI Tools".into(),
-            size_bytes, item_count, safe: true,
-        });
-    }
+        progress!("Claude Code cache");
+        { let p1 = h("~/.claude/cache"); let p2 = h("~/.claude/paste-cache"); let p3 = h("~/.claude/shell-snapshots"); let p4 = h("~/.claude/telemetry"); let p5 = h("~/.claude/file-history"); let (size_bytes, item_count, items) = paths_size_items(&[&p1, &p2, &p3, &p4, &p5]); let _ = window.emit("scan-category", DiskCategory { id: "claude_cache".into(), label: "Claude Code cache".into(), icon: "🤖".into(), group: "AI Tools".into(), size_bytes, item_count, safe: true, items }); }
 
-    // gemini_tmp
-    {
-        let p = h("~/.gemini/tmp");
-        let (size_bytes, item_count) = paths_size(&[&p]);
-        emit_cat(&window, DiskCategory {
-            id: "gemini_tmp".into(), label: "Gemini CLI temp".into(),
-            icon: "🤖".into(), group: "AI Tools".into(),
-            size_bytes, item_count, safe: true,
-        });
-    }
+        progress!("Codex cache");
+        { let p1 = h("~/.codex/log"); let p2 = h("~/.codex/sessions"); let p3 = h("~/Library/Application Support/Codex"); let (size_bytes, item_count, items) = paths_size_items(&[&p1, &p2, &p3]); let _ = window.emit("scan-category", DiskCategory { id: "codex_cache".into(), label: "Codex cache".into(), icon: "🤖".into(), group: "AI Tools".into(), size_bytes, item_count, safe: true, items }); }
 
-    // fly_logs
-    {
-        let p1 = h("~/.fly/agent-logs");
-        let p2 = h("~/.fly/logs");
-        let (size_bytes, item_count) = paths_size(&[&p1, &p2]);
-        emit_cat(&window, DiskCategory {
-            id: "fly_logs".into(), label: "Fly.io logs".into(),
-            icon: "🪰".into(), group: "AI Tools".into(),
-            size_bytes, item_count, safe: true,
-        });
-    }
+        progress!("Gemini CLI temp");
+        { let p = h("~/.gemini/tmp"); let (size_bytes, item_count, items) = paths_size_items(&[&p]); let _ = window.emit("scan-category", DiskCategory { id: "gemini_tmp".into(), label: "Gemini CLI temp".into(), icon: "🤖".into(), group: "AI Tools".into(), size_bytes, item_count, safe: true, items }); }
 
-    // npm_logs
-    {
-        let p = h("~/.npm/_logs");
-        let (size_bytes, item_count) = paths_size(&[&p]);
-        emit_cat(&window, DiskCategory {
-            id: "npm_logs".into(), label: "npm logs".into(),
-            icon: "📋".into(), group: "AI Tools".into(),
-            size_bytes, item_count, safe: true,
-        });
-    }
+        progress!("Fly.io logs");
+        { let p1 = h("~/.fly/agent-logs"); let p2 = h("~/.fly/logs"); let (size_bytes, item_count, items) = paths_size_items(&[&p1, &p2]); let _ = window.emit("scan-category", DiskCategory { id: "fly_logs".into(), label: "Fly.io logs".into(), icon: "🪰".into(), group: "AI Tools".into(), size_bytes, item_count, safe: true, items }); }
 
-    // ── Other ─────────────────────────────────────────────────────────────────
+        progress!("npm logs");
+        { let p = h("~/.npm/_logs"); let (size_bytes, item_count, items) = paths_size_items(&[&p]); let _ = window.emit("scan-category", DiskCategory { id: "npm_logs".into(), label: "npm logs".into(), icon: "📋".into(), group: "AI Tools".into(), size_bytes, item_count, safe: true, items }); }
 
-    // downloads
-    {
-        let p = h("~/Downloads");
-        let (size_bytes, item_count) = paths_size(&[&p]);
-        emit_cat(&window, DiskCategory {
-            id: "downloads".into(), label: "Downloads folder".into(),
-            icon: "📥".into(), group: "Other".into(),
-            size_bytes, item_count, safe: false,
-        });
-    }
+        // ── Other ─────────────────────────────────────────────────────────────
 
-    // zsh_sessions
-    {
-        let p = h("~/.zsh_sessions");
-        let (size_bytes, item_count) = paths_size(&[&p]);
-        emit_cat(&window, DiskCategory {
-            id: "zsh_sessions".into(), label: "zsh sessions".into(),
-            icon: "🐚".into(), group: "Other".into(),
-            size_bytes, item_count, safe: true,
-        });
-    }
+        progress!("Downloads folder");
+        { let p = h("~/Downloads"); let (size_bytes, item_count, items) = paths_size_items(&[&p]); let _ = window.emit("scan-category", DiskCategory { id: "downloads".into(), label: "Downloads folder".into(), icon: "📥".into(), group: "Other".into(), size_bytes, item_count, safe: false, items }); }
+
+        progress!("zsh sessions");
+        { let p = h("~/.zsh_sessions"); let (size_bytes, item_count, items) = paths_size_items(&[&p]); let _ = window.emit("scan-category", DiskCategory { id: "zsh_sessions".into(), label: "zsh sessions".into(), icon: "🐚".into(), group: "Other".into(), size_bytes, item_count, safe: true, items }); }
 
         let _ = window.emit("scan-done", ());
-    }); // end thread::spawn
+    });
 }
 
 #[tauri::command]
