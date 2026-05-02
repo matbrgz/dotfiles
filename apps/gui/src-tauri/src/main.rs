@@ -217,8 +217,14 @@ struct GitRepoDetail {
     tags: Vec<String>,
 }
 
-fn git(repo: &str, args: &str) -> String {
-    sh(&format!("git -C \"{}\" {} 2>/dev/null", repo, args))
+fn git(repo: &str, args: &[&str]) -> String {
+    Command::new("git")
+        .arg("-C").arg(repo)
+        .args(args)
+        .stderr(Stdio::null())
+        .output()
+        .map(|o| String::from_utf8_lossy(&o.stdout).to_string())
+        .unwrap_or_default()
 }
 
 fn repo_summary(path: &str) -> GitRepoSummary {
@@ -227,15 +233,15 @@ fn repo_summary(path: &str) -> GitRepoSummary {
         .and_then(|n| n.to_str())
         .unwrap_or(path)
         .to_string();
-    let current_branch = git(path, "rev-parse --abbrev-ref HEAD").trim().to_string();
-    let is_dirty = !git(path, "status --porcelain").trim().is_empty();
-    let ahead: u32 = git(path, "rev-list --count @{u}..HEAD").trim().parse().unwrap_or(0);
-    let behind: u32 = git(path, "rev-list --count HEAD..@{u}").trim().parse().unwrap_or(0);
-    let last_log = git(path, "log -1 --format=%s|%ct");
-    let mut parts = last_log.trim().splitn(2, '|');
+    let current_branch = git(path, &["rev-parse", "--abbrev-ref", "HEAD"]).trim().to_string();
+    let is_dirty = !git(path, &["status", "--porcelain"]).trim().is_empty();
+    let ahead: u32 = git(path, &["rev-list", "--count", "@{u}..HEAD"]).trim().parse().unwrap_or(0);
+    let behind: u32 = git(path, &["rev-list", "--count", "HEAD..@{u}"]).trim().parse().unwrap_or(0);
+    let last_log = git(path, &["log", "-1", "--format=%s\x1f%ct"]);
+    let mut parts = last_log.trim().splitn(2, '\x1f');
     let last_commit_msg = parts.next().unwrap_or("").trim().to_string();
     let last_commit_ts: i64 = parts.next().and_then(|s| s.trim().parse().ok()).unwrap_or(0);
-    let stash_count: u32 = git(path, "stash list").lines().filter(|l| !l.is_empty()).count() as u32;
+    let stash_count: u32 = git(path, &["stash", "list"]).lines().filter(|l| !l.is_empty()).count() as u32;
     GitRepoSummary { path: path.to_string(), name, current_branch, is_dirty, ahead, behind, last_commit_msg, last_commit_ts, stash_count }
 }
 
@@ -246,10 +252,13 @@ fn scan_git_repos(roots: Vec<String>, window: tauri::Window) {
         let mut all_paths: Vec<String> = Vec::new();
         for root in &roots {
             let expanded = expand(root, &home);
-            let found = sh(&format!(
-                "find \"{}\" -name .git -type d -not -path '*/.git/*' -maxdepth 8 2>/dev/null",
-                expanded
-            ));
+            let found = Command::new("find")
+                .args([expanded.as_str(), "-name", ".git", "-type", "d",
+                       "-not", "-path", "*/.git/*", "-maxdepth", "8"])
+                .stderr(Stdio::null())
+                .output()
+                .map(|o| String::from_utf8_lossy(&o.stdout).to_string())
+                .unwrap_or_default();
             for line in found.lines() {
                 let line = line.trim();
                 if line.is_empty() { continue; }
