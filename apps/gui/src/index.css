@@ -19,6 +19,25 @@
   --color-red:       #fb7185;
   --color-red-bg:    rgba(251,113,133,0.06);
   --color-blue:      #60a5fa;
+
+  --color-background: #0d0d0f;
+  --color-foreground: #e2e2e6;
+  --color-card: #141417;
+  --color-card-foreground: #e2e2e6;
+  --color-popover: #141417;
+  --color-popover-foreground: #e2e2e6;
+  --color-primary: #34d399;
+  --color-primary-foreground: #000000;
+  --color-secondary: #1a1a1e;
+  --color-secondary-foreground: #e2e2e6;
+  --color-muted: #1a1a1e;
+  --color-muted-foreground: #909098;
+  --color-accent: #252528;
+  --color-accent-foreground: #e2e2e6;
+  --color-destructive: #fb7185;
+  --color-destructive-foreground: #000000;
+  --color-input: #252528;
+  --color-ring: #34d399;
 }
 
 @layer base {
@@ -35,4 +54,28 @@
   ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb { background: var(--color-border-2); border-radius: 2px; }
   ::-webkit-scrollbar-thumb:hover { background: var(--color-text-3); }
+}
+
+/* shadcn/ui token mappings — dark theme matching the project design system */
+:root {
+  --background: #0d0d0f;
+  --foreground: #e2e2e6;
+  --card: #141417;
+  --card-foreground: #e2e2e6;
+  --popover: #141417;
+  --popover-foreground: #e2e2e6;
+  --primary: #34d399;
+  --primary-foreground: #000000;
+  --secondary: #1a1a1e;
+  --secondary-foreground: #e2e2e6;
+  --muted: #1a1a1e;
+  --muted-foreground: #909098;
+  --accent: #252528;
+  --accent-foreground: #e2e2e6;
+  --destructive: #fb7185;
+  --destructive-foreground: #000000;
+  --border: #252528;
+  --input: #252528;
+  --ring: #34d399;
+  --radius: 0.375rem;
 }

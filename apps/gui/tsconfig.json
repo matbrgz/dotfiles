@@ -5,7 +5,10 @@
     "moduleResolution": "Bundler",
     "jsx": "react-jsx",
     "rootDir": ".",
-    "outDir": "dist"
+    "outDir": "dist",
+    "baseUrl": ".",
+    "paths": { "@/*": ["./src/*"] },
+    "ignoreDeprecations": "6.0"
   },
   "include": ["src/**/*", "vite.config.ts"]
 }
