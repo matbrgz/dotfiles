@@ -1,1 +1,20 @@
-{}
+{
+  "loading": "Carregando informações de memória...",
+  "titleRam": "Uso de RAM",
+  "statTotal": "{{mb}} total",
+  "statUsed": "Usado",
+  "statWired": "Fixo",
+  "statInactive": "Inativo",
+  "statAvailable": "Disponível",
+  "titleProcesses": "Principais Processos por Memória",
+  "btnRefresh": "↻ Atualizar",
+  "colName": "Nome",
+  "colPid": "PID",
+  "colMemory": "Memória",
+  "colCpu": "CPU",
+  "colKill": "Matar",
+  "emptyState": "Nenhum dado de processo disponível",
+  "btnKillConfirm": "Tem certeza?",
+  "btnKill": "✕",
+  "btnKilling": "..."
+}

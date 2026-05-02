@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { guiCommands, type MemoryInfo, type ProcInfo } from '@dotfiles/gui-engine';
+import { useTranslation } from 'react-i18next';
 
 function formatMB(mb: number): string {
   if (mb < 1024) return `${mb} MB`;
@@ -7,6 +8,7 @@ function formatMB(mb: number): string {
 }
 
 export const MemoryTab: React.FC = () => {
+  const { t } = useTranslation('memory');
   const [memInfo, setMemInfo] = useState<MemoryInfo | null>(null);
   const [procs, setProcs] = useState<ProcInfo[]>([]);
   const [loading, setLoading] = useState(true);
@@ -55,7 +57,7 @@ export const MemoryTab: React.FC = () => {
   if (loading && !memInfo) {
     return (
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
-        <span style={{ fontSize: 11, color: 'var(--color-text-3)' }}>Loading memory info...</span>
+        <span style={{ fontSize: 11, color: 'var(--color-text-3)' }}>{t('loading')}</span>
       </div>
     );
   }
@@ -78,8 +80,8 @@ export const MemoryTab: React.FC = () => {
         borderRadius: 10, padding: '20px 24px', marginBottom: 20,
       }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 16 }}>
-          <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--color-text)' }}>RAM Usage</span>
-          <span style={{ fontSize: 11, color: 'var(--color-text-3)' }}>{formatMB(mem.total_mb)} total</span>
+          <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--color-text)' }}>{t('titleRam')}</span>
+          <span style={{ fontSize: 11, color: 'var(--color-text-3)' }}>{t('statTotal', { mb: formatMB(mem.total_mb) })}</span>
         </div>
 
         {/* Bar */}
@@ -96,10 +98,10 @@ export const MemoryTab: React.FC = () => {
 
         {/* Legend */}
         <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap' }}>
-          <Stat label="Used" value={formatMB(mem.used_mb)} color="var(--color-blue, #3b82f6)" />
-          <Stat label="Wired" value={formatMB(mem.wired_mb)} color="var(--color-red, #ef4444)" />
-          <Stat label="Inactive" value={formatMB(mem.inactive_mb)} color="#f59e0b" />
-          <Stat label="Available" value={formatMB(mem.available_mb)} color="var(--color-green)" />
+          <Stat label={t('statUsed')} value={formatMB(mem.used_mb)} color="var(--color-blue, #3b82f6)" />
+          <Stat label={t('statWired')} value={formatMB(mem.wired_mb)} color="var(--color-red, #ef4444)" />
+          <Stat label={t('statInactive')} value={formatMB(mem.inactive_mb)} color="#f59e0b" />
+          <Stat label={t('statAvailable')} value={formatMB(mem.available_mb)} color="var(--color-green)" />
         </div>
       </div>
 
@@ -113,7 +115,7 @@ export const MemoryTab: React.FC = () => {
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
           padding: '14px 20px', borderBottom: '1px solid var(--color-border)',
         }}>
-          <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--color-text)' }}>Top Processes by Memory</span>
+          <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--color-text)' }}>{t('titleProcesses')}</span>
           <button
             onClick={refresh}
             style={{
@@ -124,7 +126,7 @@ export const MemoryTab: React.FC = () => {
               fontSize: 11, fontFamily: 'inherit', cursor: 'pointer',
             }}
           >
-            ↻ Refresh
+            {t('btnRefresh')}
           </button>
         </div>
 
@@ -135,14 +137,14 @@ export const MemoryTab: React.FC = () => {
           borderBottom: '1px solid var(--color-border)',
           background: 'var(--color-bg)',
         }}>
-          {['Name', 'PID', 'Memory', 'CPU', 'Kill'].map(h => (
+          {[t('colName'), t('colPid'), t('colMemory'), t('colCpu'), t('colKill')].map(h => (
             <span key={h} style={{ fontSize: 9, fontWeight: 700, color: 'var(--color-text-3)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>{h}</span>
           ))}
         </div>
 
         {procs.length === 0 && (
           <div style={{ padding: '20px', textAlign: 'center', fontSize: 11, color: 'var(--color-text-3)' }}>
-            No process data available
+            {t('emptyState')}
           </div>
         )}
 
@@ -192,7 +194,7 @@ export const MemoryTab: React.FC = () => {
                   transition: 'all 0.15s ease',
                 }}
               >
-                {isKilling ? '...' : isConfirming ? 'Sure?' : '✕'}
+                {isKilling ? t('btnKilling') : isConfirming ? t('btnKillConfirm') : t('btnKill')}
               </button>
             </div>
           );
