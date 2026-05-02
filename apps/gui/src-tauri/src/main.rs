@@ -52,6 +52,8 @@ struct CleanEvent {
     freed_bytes: u64,
     error: Option<String>,
     done: bool,
+    step: u32,
+    total: u32,
 }
 
 #[derive(Serialize, Clone)]
@@ -509,7 +511,18 @@ fn clean_items(ids: Vec<String>, window: tauri::Window) {
         let home = std::env::var("HOME").unwrap_or_else(|_| "/tmp".to_string());
         let h = |p: &str| expand(p, &home);
 
-        for id in &ids {
+        let total = ids.len() as u32;
+        for (step, id) in ids.iter().enumerate() {
+            // Notify UI that this category is starting
+            let _ = window.emit("clean-progress", CleanEvent {
+                id: id.clone(),
+                freed_bytes: 0,
+                error: None,
+                done: false,
+                step: (step + 1) as u32,
+                total,
+            });
+
             let result: Result<(), String> = (|| {
                 match id.as_str() {
                     "node_modules" => {
@@ -539,10 +552,13 @@ fn clean_items(ids: Vec<String>, window: tauri::Window) {
                             sh(&format!("find {} -name .DS_Store -delete 2>/dev/null", dev));
                         }
                     }
-                "npm_cache" => { sh("npm cache clean --force 2>/dev/null"); }
-                "yarn_cache" => { sh("yarn cache clean 2>/dev/null"); }
-                "pnpm_store" => { sh("pnpm store prune 2>/dev/null"); }
-                "pip_cache"  => { sh("python3 -m pip cache purge 2>/dev/null"); }
+                "npm_cache"  => { sh(&format!("rm -rf \"{}\" 2>/dev/null", h("~/.npm/_cacache"))); }
+                "yarn_cache" => { sh(&format!("rm -rf \"{}\" 2>/dev/null", h("~/Library/Caches/Yarn"))); }
+                "pnpm_store" => { sh(&format!("rm -rf \"{}\" 2>/dev/null", h("~/Library/pnpm/store"))); }
+                "pip_cache"  => {
+                    let pip_dir = sh("python3 -m pip cache dir 2>/dev/null").trim().to_string();
+                    if !pip_dir.is_empty() { sh(&format!("rm -rf \"{}\" 2>/dev/null", pip_dir)); }
+                }
                 "cargo_cache" => {
                     sh(&format!("rm -rf \"{}\" 2>/dev/null", h("~/.cargo/registry/cache")));
                     sh(&format!("rm -rf \"{}\" 2>/dev/null", h("~/.cargo/git/db")));
@@ -550,32 +566,39 @@ fn clean_items(ids: Vec<String>, window: tauri::Window) {
                 "gradle_cache" => { sh(&format!("rm -rf \"{}\" 2>/dev/null", h("~/.gradle/caches"))); }
                 "maven_cache"  => { sh(&format!("rm -rf \"{}\" 2>/dev/null", h("~/.m2/repository"))); }
                 "gem_cache"    => { sh(&format!("rm -rf \"{}\" 2>/dev/null", h("~/.gem"))); }
-                "go_cache"     => { sh("go clean -cache -testcache -modcache 2>/dev/null"); }
-                "brew_cache"   => { sh("brew cleanup --prune=all 2>/dev/null"); }
-                "brew_logs"    => { sh(&format!("rm -rf {}/Library/Logs/Homebrew/* 2>/dev/null", home)); }
-                "xcode_derived"  => { sh(&format!("rm -rf {}/Library/Developer/Xcode/DerivedData/* 2>/dev/null", home)); }
-                "xcode_archives" => { sh(&format!("rm -rf {}/Library/Developer/Xcode/Archives/* 2>/dev/null", home)); }
+                "go_cache"     => {
+                    let go_dir = sh("go env GOCACHE 2>/dev/null").trim().to_string();
+                    if !go_dir.is_empty() { sh(&format!("rm -rf \"{}\" 2>/dev/null", go_dir)); }
+                }
+                "brew_cache"   => {
+                    let brew_cache = sh("brew --cache 2>/dev/null").trim().to_string();
+                    if !brew_cache.is_empty() { sh(&format!("rm -rf \"{}\" 2>/dev/null", brew_cache)); }
+                }
+                "brew_logs"    => { sh(&format!("rm -rf \"{}/Library/Logs/Homebrew\" 2>/dev/null", home)); }
+                "xcode_derived"  => { sh(&format!("rm -rf \"{}/Library/Developer/Xcode/DerivedData\" 2>/dev/null", home)); }
+                "xcode_archives" => { sh(&format!("rm -rf \"{}/Library/Developer/Xcode/Archives\" 2>/dev/null", home)); }
                 "ios_sims"     => { sh("xcrun simctl delete unavailable 2>/dev/null"); }
-                "lib_caches"   => { sh(&format!("rm -rf {}/Library/Caches/* 2>/dev/null", home)); }
-                "trash"        => { sh(&format!("rm -rf {}/.Trash/* 2>/dev/null", home)); }
+                "lib_caches"   => { sh(&format!("rm -rf \"{}/Library/Caches\" 2>/dev/null", home)); }
+                "trash"        => { sh(&format!("rm -rf \"{}/.Trash\" 2>/dev/null", home)); }
                 "claude_cache" => {
                     for p in &["~/.claude/cache", "~/.claude/paste-cache", "~/.claude/shell-snapshots", "~/.claude/telemetry", "~/.claude/file-history"] {
-                        sh(&format!("rm -rf {}/* 2>/dev/null", h(p)));
+                        sh(&format!("rm -rf \"{}\" 2>/dev/null", h(p)));
                     }
                 }
                 "codex_cache" => {
-                    for p in &["~/.codex/log", "~/.codex/sessions", "~/Library/Application Support/Codex"] {
-                        sh(&format!("rm -rf \"{}\"/* 2>/dev/null", h(p)));
+                    for p in &["~/.codex/log", "~/.codex/sessions"] {
+                        sh(&format!("rm -rf \"{}\" 2>/dev/null", h(p)));
                     }
+                    sh(&format!("rm -rf \"{}/Library/Application Support/Codex\" 2>/dev/null", home));
                 }
-                "gemini_tmp" => { sh(&format!("rm -rf {}/* 2>/dev/null", h("~/.gemini/tmp"))); }
+                "gemini_tmp" => { sh(&format!("rm -rf \"{}\" 2>/dev/null", h("~/.gemini/tmp"))); }
                 "fly_logs"   => {
-                    sh(&format!("rm -rf {}/* 2>/dev/null", h("~/.fly/agent-logs")));
-                    sh(&format!("rm -rf {}/* 2>/dev/null", h("~/.fly/logs")));
+                    sh(&format!("rm -rf \"{}\" 2>/dev/null", h("~/.fly/agent-logs")));
+                    sh(&format!("rm -rf \"{}\" 2>/dev/null", h("~/.fly/logs")));
                 }
-                "npm_logs"     => { sh(&format!("rm -rf {}/* 2>/dev/null", h("~/.npm/_logs"))); }
-                "downloads"    => { sh(&format!("rm -rf {}/Downloads/* 2>/dev/null", home)); }
-                "zsh_sessions" => { sh(&format!("rm -rf {}/* 2>/dev/null", h("~/.zsh_sessions"))); }
+                "npm_logs"     => { sh(&format!("rm -rf \"{}\" 2>/dev/null", h("~/.npm/_logs"))); }
+                "downloads"    => { sh(&format!("rm -rf \"{}/Downloads\" 2>/dev/null", home)); }
+                "zsh_sessions" => { sh(&format!("rm -rf \"{}\" 2>/dev/null", h("~/.zsh_sessions"))); }
                 _ => {}
                 }
                 Ok(())
@@ -586,6 +609,8 @@ fn clean_items(ids: Vec<String>, window: tauri::Window) {
                 freed_bytes: 0,
                 error: result.err(),
                 done: true,
+                step: (step + 1) as u32,
+                total,
             });
         }
         let _ = window.emit("clean-done", ());

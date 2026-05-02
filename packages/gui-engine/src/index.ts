@@ -35,6 +35,8 @@ export interface CleanEvent {
   freed_bytes: number;
   error: string | null;
   done: boolean;
+  step: number;
+  total: number;
 }
 
 export interface LargeFile {
