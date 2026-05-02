@@ -7,6 +7,11 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
+import {
+  saveScan, loadScan,
+  saveSelection, loadSelection, clearSelection,
+  saveGroup, loadGroup,
+} from '@/lib/diskCleanerCache';
 
 type CatSel = 'all' | Set<string>;
 type Selection = Map<string, CatSel>;
@@ -95,13 +100,18 @@ function selectedBytes(sel: Selection, categories: DiskCategory[]): number {
 const ALL = 'All';
 
 export const DiskCleanerTab: React.FC = () => {
-  const [categories, setCategories] = useState<DiskCategory[]>([]);
-  const [selection, setSelection] = useState<Selection>(new Map());
+  const cached = useMemo(() => loadScan(), []);
+  const [categories, setCategories] = useState<DiskCategory[]>(cached?.categories ?? []);
+  const [lastScanAt] = useState<number | null>(cached?.timestamp ?? null);
+  const [selection, setSelection] = useState<Selection>(() => loadSelection());
   const [scanning, setScanning] = useState(false);
   const [progress, setProgress] = useState<ScanProgress | null>(null);
   const [cleaning, setCleaning] = useState(false);
   const [cleanLog, setCleanLog] = useState<string[]>([]);
-  const [activeGroup, setActiveGroup] = useState<string>(ALL);
+  const [activeGroup, setActiveGroup] = useState<string>(() => loadGroup() ?? ALL);
+
+  useEffect(() => { saveSelection(selection); }, [selection]);
+  useEffect(() => { saveGroup(activeGroup); }, [activeGroup]);
 
   const groups = useMemo(() => [ALL, ...Array.from(new Set(categories.map(c => c.group)))], [categories]);
 
@@ -145,7 +155,11 @@ export const DiskCleanerTab: React.FC = () => {
         setProgress,
       );
     } catch (e) { console.error('Scan error:', e); }
-    finally { setScanning(false); setProgress(null); }
+    finally {
+      setScanning(false);
+      setProgress(null);
+      setCategories(prev => { saveScan(prev); return prev; });
+    }
   }, [runScan]);
 
   const handleClean = useCallback(async () => {
@@ -160,6 +174,7 @@ export const DiskCleanerTab: React.FC = () => {
       });
       setCleanLog(prev => [...prev, 'Done! Rescanning...']);
       setSelection(new Map());
+      clearSelection();
       setCategories([]);
       await runScan(
         (cat) => setCategories(prev => {
@@ -202,6 +217,9 @@ export const DiskCleanerTab: React.FC = () => {
             <span className="text-foreground font-semibold">
               {formatBytes(categories.reduce((s, c) => s + c.size_bytes, 0))}
             </span>
+            {lastScanAt != null && (
+              <> · <span className="text-muted-foreground/60">scanned {formatRelative(Math.floor(lastScanAt / 1000))}</span></>
+            )}
           </span>
         )}
       </div>
