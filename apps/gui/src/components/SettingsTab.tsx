@@ -1,5 +1,6 @@
 import React from 'react';
 import { type UserSettings } from '@dotfiles/schema';
+import { useTranslation } from 'react-i18next';
 
 interface SettingsTabProps {
   settings: UserSettings;
@@ -54,6 +55,7 @@ const Toggle: React.FC<{ label: string; desc: string; value: boolean; onChange: 
 );
 
 export const SettingsTab: React.FC<SettingsTabProps> = ({ settings, setSettings, onSave, isSaving }) => {
+  const { t } = useTranslation('settings');
   const updatePersonal = (key: string, value: string) =>
     setSettings({ ...settings, personal: { ...settings.personal, [key]: value } });
 
@@ -66,22 +68,22 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({ settings, setSettings,
 
         {/* Identity */}
         <section>
-          <SectionTitle>Identity</SectionTitle>
+          <SectionTitle>{t('sectionIdentity')}</SectionTitle>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-            <Input label="Name" value={settings.personal.name} onChange={v => updatePersonal('name', v)} />
-            <Input label="Email" type="email" value={settings.personal.email} onChange={v => updatePersonal('email', v)} />
-            <Input label="GitHub user" value={(settings.personal as any).githubuser ?? ''} onChange={v => updatePersonal('githubuser', v)} />
+            <Input label={t('labelName')} value={settings.personal.name} onChange={v => updatePersonal('name', v)} />
+            <Input label={t('labelEmail')} type="email" value={settings.personal.email} onChange={v => updatePersonal('email', v)} />
+            <Input label={t('labelGithubUser')} value={(settings.personal as any).githubuser ?? ''} onChange={v => updatePersonal('githubuser', v)} />
           </div>
         </section>
 
         {/* Behavior */}
         <section>
-          <SectionTitle>Behavior</SectionTitle>
+          <SectionTitle>{t('sectionBehavior')}</SectionTitle>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            <Toggle label="Debug mode" desc="Verbose output during operations" value={(settings.system.behavior as any).debug_mode ?? false} onChange={v => updateBehavior('debug_mode', v)} />
-            <Toggle label="Auto backup" desc="Backup existing files before overwriting" value={(settings.system.behavior as any).backup_configs ?? false} onChange={v => updateBehavior('backup_configs', v)} />
-            <Toggle label="Purge mode" desc="Remove old configs during sync" value={(settings.system.behavior as any).purge_mode ?? false} onChange={v => updateBehavior('purge_mode', v)} />
-            <Toggle label="Parallel installs" desc="Install multiple packages simultaneously" value={(settings.system.behavior as any).parallel_installs ?? false} onChange={v => updateBehavior('parallel_installs', v)} />
+            <Toggle label={t('toggleDebugMode')} desc={t('toggleDebugModeDesc')} value={(settings.system.behavior as any).debug_mode ?? false} onChange={v => updateBehavior('debug_mode', v)} />
+            <Toggle label={t('toggleAutoBackup')} desc={t('toggleAutoBackupDesc')} value={(settings.system.behavior as any).backup_configs ?? false} onChange={v => updateBehavior('backup_configs', v)} />
+            <Toggle label={t('togglePurgeMode')} desc={t('togglePurgeModeDesc')} value={(settings.system.behavior as any).purge_mode ?? false} onChange={v => updateBehavior('purge_mode', v)} />
+            <Toggle label={t('toggleParallelInstalls')} desc={t('toggleParallelInstallsDesc')} value={(settings.system.behavior as any).parallel_installs ?? false} onChange={v => updateBehavior('parallel_installs', v)} />
           </div>
         </section>
 
@@ -97,7 +99,7 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({ settings, setSettings,
             cursor: isSaving ? 'not-allowed' : 'pointer', transition: 'all 0.15s ease',
           }}
         >
-          {isSaving ? 'Saving...' : 'Save settings'}
+          {isSaving ? t('btnSaving') : t('btnSave')}
         </button>
       </div>
     </div>
