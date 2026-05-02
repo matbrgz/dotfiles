@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@plugin "tailwindcss-animate";
 
 @theme {
   --font-mono: 'IBM Plex Mono', ui-monospace, 'SF Mono', 'Menlo', monospace;
