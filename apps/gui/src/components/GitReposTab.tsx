@@ -19,7 +19,7 @@ interface RepoCardProps {
   onRemoveTag: (path: string, tag: string) => void;
 }
 
-function RepoCard({ entry, isSelected, onSelect, onPin, onAddTag, onRemoveTag }: RepoCardProps) {
+const RepoCard = React.memo(function RepoCard({ entry, isSelected, onSelect, onPin, onAddTag, onRemoveTag }: RepoCardProps) {
   const [addingTag, setAddingTag] = useState(false);
   const [tagInput, setTagInput] = useState('');
   const { summary } = entry;
@@ -118,7 +118,7 @@ function RepoCard({ entry, isSelected, onSelect, onPin, onAddTag, onRemoveTag }:
       </div>
     </div>
   );
-}
+});
 
 // ── GitReposTab ──────────────────────────────────────────────────────────────
 
@@ -199,7 +199,7 @@ export const GitReposTab: React.FC = () => {
     return () => window.removeEventListener('keydown', handler);
   }, []);
 
-  const selectRepo = async (path: string) => {
+  const selectRepo = useCallback(async (path: string) => {
     if (selectedPathRef.current === path) {
       setSelectedPath(null);
       selectedPathRef.current = null;
@@ -217,7 +217,7 @@ export const GitReposTab: React.FC = () => {
     } finally {
       if (selectedPathRef.current === path) setDetailLoading(false);
     }
-  };
+  }, []);
 
   const handleAction = useCallback(async (actionType: string, params: Record<string, unknown> = {}) => {
     if (!selectedPath || inProgress) return;
@@ -225,8 +225,10 @@ export const GitReposTab: React.FC = () => {
     setActionError(null);
     try {
       await guiCommands.gitAction(selectedPath, actionType, params);
+      if (selectedPathRef.current !== selectedPath) return;
       if (!['open_terminal', 'open_vscode'].includes(actionType)) {
         const d = await guiCommands.getRepoDetail(selectedPath);
+        if (selectedPathRef.current !== selectedPath) return;
         setDetail(d);
         updateBook(prev => mergeRepo(prev, d.summary, expandedRoots, Date.now()));
       }
@@ -237,22 +239,22 @@ export const GitReposTab: React.FC = () => {
     }
   }, [selectedPath, expandedRoots, inProgress, updateBook]);
 
-  const handlePin = (path: string, pinned: boolean) =>
-    updateBook(prev => ({ ...prev, [path]: { ...prev[path], pinned } }));
+  const handlePin = useCallback((path: string, pinned: boolean) =>
+    updateBook(prev => ({ ...prev, [path]: { ...prev[path], pinned } })), [updateBook]);
 
-  const handleAddTag = (path: string, tag: string) =>
+  const handleAddTag = useCallback((path: string, tag: string) =>
     updateBook(prev => {
       const entry = prev[path];
       if (!entry) return prev;
       return { ...prev, [path]: { ...entry, tags: Array.from(new Set([...entry.tags, tag])) } };
-    });
+    }), [updateBook]);
 
-  const handleRemoveTag = (path: string, tag: string) =>
+  const handleRemoveTag = useCallback((path: string, tag: string) =>
     updateBook(prev => {
       const entry = prev[path];
       if (!entry) return prev;
       return { ...prev, [path]: { ...entry, tags: entry.tags.filter(t => t !== tag) } };
-    });
+    }), [updateBook]);
 
   const toggleCategory = (category: string) => {
     setCollapsedCategories(prev => {
