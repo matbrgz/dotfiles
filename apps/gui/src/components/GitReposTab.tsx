@@ -206,8 +206,7 @@ export const GitReposTab: React.FC = () => {
 
   const selectRepo = useCallback(async (path: string) => {
     if (selectedPathRef.current === path) {
-      setSelectedPath(null);
-      selectedPathRef.current = null;
+      closePanel();
       return;
     }
     selectedPathRef.current = path;
@@ -222,7 +221,7 @@ export const GitReposTab: React.FC = () => {
     } finally {
       if (selectedPathRef.current === path) setDetailLoading(false);
     }
-  }, []);
+  }, [closePanel]);
 
   const handleAction = useCallback(async (actionType: string, params: Record<string, unknown> = {}) => {
     if (!selectedPath || inProgress) return;
