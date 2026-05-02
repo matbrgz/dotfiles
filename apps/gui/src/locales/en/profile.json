@@ -1,1 +1,12 @@
-{}
+{
+  "sectionEnvironment": "Environment",
+  "sectionRegistry": "Registry",
+  "sectionDotfiles": "Dotfiles",
+  "statOs": "OS",
+  "statArchitecture": "Architecture",
+  "statNode": "Node",
+  "statTauri": "Tauri",
+  "statTotalPackages": "Total packages",
+  "statCategories": "Categories",
+  "statManagedFiles": "Managed files"
+}

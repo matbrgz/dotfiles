@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { guiCommands } from '@dotfiles/gui-engine';
 import { type UserSettings, type ProgramManifest, type DotfileManifest } from '@dotfiles/schema';
+import { useTranslation } from 'react-i18next';
 
 interface ProfileTabProps {
   settings: UserSettings;
@@ -10,6 +11,7 @@ interface ProfileTabProps {
 }
 
 export const ProfileTab: React.FC<ProfileTabProps> = ({ settings, registry, dotfiles, osInfo }) => {
+  const { t } = useTranslation('profile');
   const [runtimeInfo, setRuntimeInfo] = useState({ node: '...', tauri: '...' });
 
   useEffect(() => {
@@ -17,10 +19,10 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({ settings, registry, dotf
   }, []);
 
   const telemetry = [
-    { label: 'OS',           value: osInfo.os },
-    { label: 'Architecture', value: osInfo.platform },
-    { label: 'Node',         value: runtimeInfo.node },
-    { label: 'Tauri',        value: runtimeInfo.tauri },
+    { label: t('statOs'),           value: osInfo.os },
+    { label: t('statArchitecture'), value: osInfo.platform },
+    { label: t('statNode'),         value: runtimeInfo.node },
+    { label: t('statTauri'),        value: runtimeInfo.tauri },
   ];
 
   return (
@@ -55,25 +57,25 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({ settings, registry, dotf
         </div>
 
         {/* Stats */}
-        <StatCard title="Registry" items={[
-          { label: 'Total packages', value: Object.keys(registry).length },
-          { label: 'Categories', value: new Set(Object.values(registry).map(p => p.category)).size },
+        <StatCard title={t('sectionRegistry')} items={[
+          { label: t('statTotalPackages'), value: Object.keys(registry).length },
+          { label: t('statCategories'), value: new Set(Object.values(registry).map(p => p.category)).size },
         ]} />
 
-        <StatCard title="Dotfiles" items={[
-          { label: 'Managed files', value: Object.keys(dotfiles).length },
+        <StatCard title={t('sectionDotfiles')} items={[
+          { label: t('statManagedFiles'), value: Object.keys(dotfiles).length },
         ]} />
 
         {/* Environment */}
         <div style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: 10, padding: 20, gridColumn: '1 / -1' }}>
           <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--color-text-3)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 16 }}>
-            Environment
+            {t('sectionEnvironment')}
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16 }}>
-            {telemetry.map(t => (
-              <div key={t.label}>
-                <div style={{ fontSize: 9, color: 'var(--color-text-3)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 }}>{t.label}</div>
-                <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--color-text)' }}>{t.value}</div>
+            {telemetry.map(item => (
+              <div key={item.label}>
+                <div style={{ fontSize: 9, color: 'var(--color-text-3)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 }}>{item.label}</div>
+                <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--color-text)' }}>{item.value}</div>
               </div>
             ))}
           </div>
