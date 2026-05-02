@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { type GitRepoDetail } from '@dotfiles/gui-engine';
+import { useTranslation } from 'react-i18next';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
@@ -47,6 +48,7 @@ export interface RepoDetailProps {
 }
 
 export function RepoDetail({ detail, onAction, inProgress, actionError, onClearError, confirmDelete, setConfirmDelete }: RepoDetailProps) {
+  const { t } = useTranslation('git');
   const { summary, branches, commits, remotes, stashes, tags } = detail;
   const localBranches = branches.filter(b => !b.is_remote);
   const remoteBranches = branches.filter(b => b.is_remote);
@@ -75,12 +77,12 @@ export function RepoDetail({ detail, onAction, inProgress, actionError, onClearE
 
         {/* Action bar */}
         <div className="flex items-center gap-2 flex-wrap">
-          <ActionBtn label="Fetch" type="fetch" params={{ remote: defaultRemote }} inProgress={inProgress} onAction={onAction} />
-          <ActionBtn label="Pull" type="pull" params={{ remote: defaultRemote, branch: summary.current_branch }} inProgress={inProgress} onAction={onAction} />
-          <ActionBtn label="Push" type="push" params={{ remote: defaultRemote, branch: summary.current_branch }} inProgress={inProgress} onAction={onAction} />
+          <ActionBtn label={t('actionFetch')} type="fetch" params={{ remote: defaultRemote }} inProgress={inProgress} onAction={onAction} />
+          <ActionBtn label={t('actionPull')} type="pull" params={{ remote: defaultRemote, branch: summary.current_branch }} inProgress={inProgress} onAction={onAction} />
+          <ActionBtn label={t('actionPush')} type="push" params={{ remote: defaultRemote, branch: summary.current_branch }} inProgress={inProgress} onAction={onAction} />
           <div className="w-px h-4 bg-border mx-1" />
-          <ActionBtn label="Terminal" type="open_terminal" inProgress={inProgress} onAction={onAction} />
-          <ActionBtn label="VS Code" type="open_vscode" inProgress={inProgress} onAction={onAction} />
+          <ActionBtn label={t('actionTerminal')} type="open_terminal" inProgress={inProgress} onAction={onAction} />
+          <ActionBtn label={t('actionVscode')} type="open_vscode" inProgress={inProgress} onAction={onAction} />
         </div>
 
         {actionError && (
@@ -98,9 +100,9 @@ export function RepoDetail({ detail, onAction, inProgress, actionError, onClearE
           {/* Branches */}
           <AccordionItem value="branches">
             <AccordionTrigger className="text-xs font-semibold py-3">
-              Branches
+              {t('sectionBranches')}
               <span className="text-muted-foreground font-normal ml-1.5">
-                ({localBranches.length} local{remoteBranches.length > 0 ? `, ${remoteBranches.length} remote` : ''})
+                {t('branchesCount', { local: localBranches.length, remote: remoteBranches.length > 0 ? `, ${remoteBranches.length} remote` : '' })}
               </span>
             </AccordionTrigger>
             <AccordionContent className="space-y-1 pb-3">
@@ -119,7 +121,7 @@ export function RepoDetail({ detail, onAction, inProgress, actionError, onClearE
                         disabled={!!inProgress}
                         className="text-[10px] px-2 py-0.5 rounded border border-border text-muted-foreground hover:text-foreground hover:bg-accent disabled:opacity-50"
                       >
-                        Checkout
+                        {t('btnCheckout')}
                       </button>
                       <button
                         onClick={() => {
@@ -138,7 +140,7 @@ export function RepoDetail({ detail, onAction, inProgress, actionError, onClearE
                             : 'border-border text-muted-foreground hover:text-red-400'
                         }`}
                       >
-                        {confirmDelete === b.name ? 'Sure?' : '✕'}
+                        {confirmDelete === b.name ? t('btnDeleteBranchConfirm') : t('btnDeleteBranch')}
                       </button>
                     </div>
                   )}
@@ -147,7 +149,7 @@ export function RepoDetail({ detail, onAction, inProgress, actionError, onClearE
 
               {remoteBranches.length > 0 && (
                 <div className="mt-3 space-y-1">
-                  <p className="text-[9px] text-muted-foreground uppercase tracking-widest px-1 mb-1.5">Remote</p>
+                  <p className="text-[9px] text-muted-foreground uppercase tracking-widest px-1 mb-1.5">{t('sectionRemoteBranches')}</p>
                   {remoteBranches.map(b => (
                     <div key={b.name} className="flex items-center justify-between gap-2 px-2.5 py-1.5 rounded-md hover:bg-muted/20">
                       <span className="text-[10px] font-mono text-muted-foreground truncate">{b.name}</span>
@@ -156,7 +158,7 @@ export function RepoDetail({ detail, onAction, inProgress, actionError, onClearE
                         disabled={!!inProgress}
                         className="text-[10px] px-2 py-0.5 rounded border border-border text-muted-foreground hover:text-foreground hover:bg-accent disabled:opacity-50"
                       >
-                        Track
+                        {t('btnCheckout')}
                       </button>
                     </div>
                   ))}
@@ -176,7 +178,7 @@ export function RepoDetail({ detail, onAction, inProgress, actionError, onClearE
                           setShowNewBranch(false);
                         }
                       }}
-                      placeholder="new-branch-name"
+                      placeholder={t('placeholderBranchName')}
                       className="flex-1 text-xs bg-background border border-border rounded-md px-2 py-1.5 text-foreground placeholder:text-muted-foreground outline-none focus:border-primary"
                       autoFocus
                     />
@@ -184,12 +186,12 @@ export function RepoDetail({ detail, onAction, inProgress, actionError, onClearE
                       onClick={() => { if (newBranchName.trim()) { onAction('create_branch', { name: newBranchName.trim(), from: 'HEAD' }); setNewBranchName(''); setShowNewBranch(false); } }}
                       className="text-xs px-3 py-1.5 rounded-md bg-primary text-primary-foreground"
                     >
-                      Create
+                      {t('btnCreate')}
                     </button>
-                    <button onClick={() => setShowNewBranch(false)} className="text-xs px-2 py-1.5 rounded-md border border-border text-muted-foreground">Cancel</button>
+                    <button onClick={() => setShowNewBranch(false)} className="text-xs px-2 py-1.5 rounded-md border border-border text-muted-foreground">{t('btnCancel')}</button>
                   </div>
                 ) : (
-                  <button onClick={() => setShowNewBranch(true)} className="text-xs text-primary hover:opacity-80">+ New branch</button>
+                  <button onClick={() => setShowNewBranch(true)} className="text-xs text-primary hover:opacity-80">{t('btnNewBranch')}</button>
                 )}
               </div>
             </AccordionContent>
@@ -198,7 +200,7 @@ export function RepoDetail({ detail, onAction, inProgress, actionError, onClearE
           {/* Commits */}
           <AccordionItem value="commits">
             <AccordionTrigger className="text-xs font-semibold py-3">
-              Commits <span className="text-muted-foreground font-normal ml-1.5">({commits.length})</span>
+              {t('sectionCommits')} <span className="text-muted-foreground font-normal ml-1.5">({commits.length})</span>
             </AccordionTrigger>
             <AccordionContent className="space-y-0.5 pb-3">
               {commits.map(c => (
@@ -216,11 +218,11 @@ export function RepoDetail({ detail, onAction, inProgress, actionError, onClearE
           {/* Remotes */}
           <AccordionItem value="remotes">
             <AccordionTrigger className="text-xs font-semibold py-3">
-              Remotes <span className="text-muted-foreground font-normal ml-1.5">({remotes.length})</span>
+              {t('sectionRemotes')} <span className="text-muted-foreground font-normal ml-1.5">({remotes.length})</span>
             </AccordionTrigger>
             <AccordionContent className="pb-3">
               {remotes.length === 0 ? (
-                <p className="text-xs text-muted-foreground px-2">No remotes configured</p>
+                <p className="text-xs text-muted-foreground px-2">{t('emptyRemotes')}</p>
               ) : (
                 <div className="space-y-1">
                   {remotes.map(r => (
@@ -245,7 +247,7 @@ export function RepoDetail({ detail, onAction, inProgress, actionError, onClearE
           {/* Stashes */}
           <AccordionItem value="stashes">
             <AccordionTrigger className="text-xs font-semibold py-3">
-              Stashes <span className="text-muted-foreground font-normal ml-1.5">({stashes.length})</span>
+              {t('sectionStashes')} <span className="text-muted-foreground font-normal ml-1.5">({stashes.length})</span>
             </AccordionTrigger>
             <AccordionContent className="pb-3">
               <div className="mb-2">
@@ -261,7 +263,7 @@ export function RepoDetail({ detail, onAction, inProgress, actionError, onClearE
                           setShowStashInput(false);
                         }
                       }}
-                      placeholder="Stash message (optional)"
+                      placeholder={t('placeholderStashMessage')}
                       className="flex-1 text-xs bg-background border border-border rounded-md px-2 py-1.5 text-foreground placeholder:text-muted-foreground outline-none focus:border-primary"
                       autoFocus
                     />
@@ -269,16 +271,16 @@ export function RepoDetail({ detail, onAction, inProgress, actionError, onClearE
                       onClick={() => { onAction('stash_push', { message: stashMsg.trim() || null }); setStashMsg(''); setShowStashInput(false); }}
                       className="text-xs px-3 py-1.5 rounded-md bg-primary text-primary-foreground"
                     >
-                      Stash
+                      {t('btnStash')}
                     </button>
-                    <button onClick={() => setShowStashInput(false)} className="text-xs px-2 py-1.5 rounded-md border border-border text-muted-foreground">Cancel</button>
+                    <button onClick={() => setShowStashInput(false)} className="text-xs px-2 py-1.5 rounded-md border border-border text-muted-foreground">{t('btnCancel')}</button>
                   </div>
                 ) : (
-                  <button onClick={() => setShowStashInput(true)} className="text-xs text-primary hover:opacity-80">+ Stash changes</button>
+                  <button onClick={() => setShowStashInput(true)} className="text-xs text-primary hover:opacity-80">{t('btnStashChanges')}</button>
                 )}
               </div>
               {stashes.length === 0 ? (
-                <p className="text-xs text-muted-foreground px-2">No stashes</p>
+                <p className="text-xs text-muted-foreground px-2">{t('emptyStashes')}</p>
               ) : (
                 <div className="space-y-1">
                   {stashes.map(s => (
@@ -288,8 +290,8 @@ export function RepoDetail({ detail, onAction, inProgress, actionError, onClearE
                         {s.ts > 0 && <p className="text-[9px] text-muted-foreground">{relativeTime(s.ts)}</p>}
                       </div>
                       <div className="flex gap-1 shrink-0">
-                        <button onClick={() => onAction('stash_pop', { index: s.index })} disabled={!!inProgress} className="text-[10px] px-2 py-0.5 rounded border border-border text-muted-foreground hover:text-foreground hover:bg-accent disabled:opacity-50">Pop</button>
-                        <button onClick={() => onAction('stash_drop', { index: s.index })} disabled={!!inProgress} className="text-[10px] px-2 py-0.5 rounded border border-red-400/30 text-red-400 hover:bg-red-500/10 disabled:opacity-50">Drop</button>
+                        <button onClick={() => onAction('stash_pop', { index: s.index })} disabled={!!inProgress} className="text-[10px] px-2 py-0.5 rounded border border-border text-muted-foreground hover:text-foreground hover:bg-accent disabled:opacity-50">{t('btnStashPop')}</button>
+                        <button onClick={() => onAction('stash_drop', { index: s.index })} disabled={!!inProgress} className="text-[10px] px-2 py-0.5 rounded border border-red-400/30 text-red-400 hover:bg-red-500/10 disabled:opacity-50">{t('btnStashDrop')}</button>
                       </div>
                     </div>
                   ))}
@@ -302,7 +304,7 @@ export function RepoDetail({ detail, onAction, inProgress, actionError, onClearE
           {tags.length > 0 && (
             <AccordionItem value="tags">
               <AccordionTrigger className="text-xs font-semibold py-3">
-                Tags <span className="text-muted-foreground font-normal ml-1.5">({tags.length})</span>
+                {t('sectionTags')} <span className="text-muted-foreground font-normal ml-1.5">({tags.length})</span>
               </AccordionTrigger>
               <AccordionContent className="pb-3">
                 <div className="flex flex-wrap gap-1.5">
