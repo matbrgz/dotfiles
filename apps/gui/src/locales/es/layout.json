@@ -1,1 +1,19 @@
-{}
+{
+  "appName": "Dotfiles",
+  "appVersion": "v1.0.0",
+  "appFooter": "matbrgz/dotfiles",
+  "navSection": "Navegación",
+  "tabPackages": "Paquetes",
+  "tabDotfiles": "Dotfiles",
+  "tabSettings": "Ajustes",
+  "tabProfile": "Perfil",
+  "tabDiskCleaner": "Limpieza de Disco",
+  "tabMemory": "Memoria",
+  "tabGitRepos": "Repositorios Git",
+  "statsScanning": "Escaneando...",
+  "statsInstalled": "{{count}} / {{total}} instalados",
+  "statsSynced": "{{count}} / {{total}} sincronizados",
+  "searchPlaceholder": "Buscar paquetes...",
+  "btnSync": "Sincronizar dotfiles",
+  "btnSyncing": "Sincronizando..."
+}
