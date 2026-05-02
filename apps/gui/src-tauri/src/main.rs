@@ -77,6 +77,9 @@ struct ProcInfo {
     name: String,
     memory_mb: f64,
     cpu_pct: f64,
+    elapsed_secs: u64,
+    status: String,
+    user: String,
 }
 
 // ── Shell helpers ──────────────────────────────────────────────────────────────
@@ -154,6 +157,116 @@ fn paths_size_items(paths: &[&str]) -> (u64, u32, Vec<DiskItem>) {
     }).collect();
     let count = items.len() as u32;
     (total_kb * 1024, count, items)
+}
+
+// ── Git Repos ──────────────────────────────────────────────────────────────────
+
+#[derive(Serialize, Clone)]
+struct GitRepoSummary {
+    path: String,
+    name: String,
+    current_branch: String,
+    is_dirty: bool,
+    ahead: u32,
+    behind: u32,
+    last_commit_msg: String,
+    last_commit_ts: i64,
+    stash_count: u32,
+}
+
+#[derive(Serialize, Clone)]
+struct GitBranch {
+    name: String,
+    is_remote: bool,
+    is_current: bool,
+    ahead: Option<u32>,
+    behind: Option<u32>,
+    last_commit_hash: String,
+    last_commit_msg: String,
+}
+
+#[derive(Serialize, Clone)]
+struct GitCommit {
+    short_hash: String,
+    full_hash: String,
+    message: String,
+    author: String,
+    ts: i64,
+}
+
+#[derive(Serialize, Clone)]
+struct GitRemote {
+    name: String,
+    url: String,
+}
+
+#[derive(Serialize, Clone)]
+struct GitStash {
+    index: u32,
+    message: String,
+    ts: i64,
+}
+
+#[derive(Serialize, Clone)]
+struct GitRepoDetail {
+    summary: GitRepoSummary,
+    branches: Vec<GitBranch>,
+    commits: Vec<GitCommit>,
+    remotes: Vec<GitRemote>,
+    stashes: Vec<GitStash>,
+    tags: Vec<String>,
+}
+
+fn git(repo: &str, args: &str) -> String {
+    sh(&format!("git -C \"{}\" {} 2>/dev/null", repo, args))
+}
+
+fn repo_summary(path: &str) -> GitRepoSummary {
+    let name = std::path::Path::new(path)
+        .file_name()
+        .and_then(|n| n.to_str())
+        .unwrap_or(path)
+        .to_string();
+    let current_branch = git(path, "rev-parse --abbrev-ref HEAD").trim().to_string();
+    let is_dirty = !git(path, "status --porcelain").trim().is_empty();
+    let ahead: u32 = git(path, "rev-list --count @{u}..HEAD").trim().parse().unwrap_or(0);
+    let behind: u32 = git(path, "rev-list --count HEAD..@{u}").trim().parse().unwrap_or(0);
+    let last_log = git(path, "log -1 --format=%s|%ct");
+    let mut parts = last_log.trim().splitn(2, '|');
+    let last_commit_msg = parts.next().unwrap_or("").trim().to_string();
+    let last_commit_ts: i64 = parts.next().and_then(|s| s.trim().parse().ok()).unwrap_or(0);
+    let stash_count: u32 = git(path, "stash list").lines().filter(|l| !l.is_empty()).count() as u32;
+    GitRepoSummary { path: path.to_string(), name, current_branch, is_dirty, ahead, behind, last_commit_msg, last_commit_ts, stash_count }
+}
+
+#[tauri::command]
+fn scan_git_repos(roots: Vec<String>, window: tauri::Window) {
+    std::thread::spawn(move || {
+        let home = std::env::var("HOME").unwrap_or_default();
+        let mut all_paths: Vec<String> = Vec::new();
+        for root in &roots {
+            let expanded = expand(root, &home);
+            let found = sh(&format!(
+                "find \"{}\" -name .git -type d -not -path '*/.git/*' -maxdepth 8 2>/dev/null",
+                expanded
+            ));
+            for line in found.lines() {
+                let line = line.trim();
+                if line.is_empty() { continue; }
+                if let Some(repo_root) = line.strip_suffix("/.git") {
+                    all_paths.push(repo_root.to_string());
+                }
+            }
+        }
+        all_paths.sort();
+        all_paths.dedup();
+        let _ = window.emit("git-scan-count", all_paths.len() as u32);
+        for path in &all_paths {
+            let summary = repo_summary(path);
+            let _ = window.emit("git-repo-found", summary);
+        }
+        let _ = window.emit("git-scan-done", ());
+    });
 }
 
 // ── Tauri commands ─────────────────────────────────────────────────────────────
@@ -738,22 +851,26 @@ fn get_memory_info() -> MemoryInfo {
 fn get_top_processes(limit: u32) -> Vec<ProcInfo> {
     #[cfg(any(target_os = "macos", target_os = "linux"))]
     {
-        let raw = sh("ps aux 2>/dev/null");
+        // pid, %cpu, rss(KB), comm(basename), stat, etimes(seconds), user
+        let raw = sh("ps ax -o pid=,pcpu=,rss=,comm=,stat=,etimes=,user= 2>/dev/null");
         let mut procs: Vec<ProcInfo> = Vec::new();
 
-        for line in raw.lines().skip(1) {
+        for line in raw.lines() {
             let cols: Vec<&str> = line.split_whitespace().collect();
-            if cols.len() < 11 { continue; }
-            let pid: u32 = match cols[1].parse() { Ok(v) => v, Err(_) => continue };
+            if cols.len() < 7 { continue; }
+            let pid: u32 = match cols[0].parse() { Ok(v) => v, Err(_) => continue };
             if pid == 0 { continue; }
-            let cpu_pct: f64 = cols[2].parse().unwrap_or(0.0);
-            let rss_kb: f64 = cols[5].parse().unwrap_or(0.0);
+            let cpu_pct: f64 = cols[1].parse().unwrap_or(0.0);
+            let rss_kb: f64 = cols[2].parse().unwrap_or(0.0);
             let memory_mb = rss_kb / 1024.0;
-            let cmd = cols[10];
-            let name = cmd.split('/').last().unwrap_or(cmd).to_string();
-            procs.push(ProcInfo { pid, name, memory_mb, cpu_pct });
+            let name = cols[3].split('/').last().unwrap_or(cols[3]).to_string();
+            let status = cols[4].to_string();
+            let elapsed_secs: u64 = cols[5].parse().unwrap_or(0);
+            let user = cols[6].to_string();
+            procs.push(ProcInfo { pid, name, memory_mb, cpu_pct, elapsed_secs, status, user });
         }
 
+        // Return all processes (frontend filters/sorts)
         procs.sort_by(|a, b| b.memory_mb.partial_cmp(&a.memory_mb).unwrap_or(std::cmp::Ordering::Equal));
         procs.truncate(limit as usize);
         return procs;
@@ -772,7 +889,7 @@ fn get_top_processes(limit: u32) -> Vec<ProcInfo> {
             let mem_str = cols[4].trim_matches('"').replace(",", "").replace(" K", "");
             let rss_kb: f64 = mem_str.trim().parse().unwrap_or(0.0);
             let memory_mb = rss_kb / 1024.0;
-            procs.push(ProcInfo { pid, name, memory_mb, cpu_pct: 0.0 });
+            procs.push(ProcInfo { pid, name, memory_mb, cpu_pct: 0.0, elapsed_secs: 0, status: "S".into(), user: "unknown".into() });
         }
         procs.sort_by(|a, b| b.memory_mb.partial_cmp(&a.memory_mb).unwrap_or(std::cmp::Ordering::Equal));
         procs.truncate(limit as usize);
