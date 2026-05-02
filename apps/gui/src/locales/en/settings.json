@@ -1,1 +1,17 @@
-{}
+{
+  "sectionIdentity": "Identity",
+  "sectionBehavior": "Behavior",
+  "labelName": "Name",
+  "labelEmail": "Email",
+  "labelGithubUser": "GitHub user",
+  "toggleDebugMode": "Debug mode",
+  "toggleDebugModeDesc": "Verbose output during operations",
+  "toggleAutoBackup": "Auto backup",
+  "toggleAutoBackupDesc": "Backup existing files before overwriting",
+  "togglePurgeMode": "Purge mode",
+  "togglePurgeModeDesc": "Remove old configs during sync",
+  "toggleParallelInstalls": "Parallel installs",
+  "toggleParallelInstallsDesc": "Install multiple packages simultaneously",
+  "btnSave": "Save settings",
+  "btnSaving": "Saving..."
+}
