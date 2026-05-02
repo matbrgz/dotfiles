@@ -1,1 +1,20 @@
-{}
+{
+  "btnScan": "⟳ Scan System",
+  "btnScanning": "Scanning...",
+  "emptyState": "Click \"Scan System\" to analyze disk usage",
+  "statsFound": "Total: {{bytes}} found in {{count}} categories",
+  "sectionLargeFiles": "Large Files (>100 MB)",
+  "scanningLargeFiles": "Scanning for large files...",
+  "btnSelectSafe": "Select safe",
+  "btnClear": "Clear",
+  "statsSelected": "{{count}} selected · {{bytes}}",
+  "btnCleaning": "Cleaning...",
+  "btnCleanSelected": "🗑 Clean ({{count}})",
+  "confirmClean": "Clean {{count}} item(s) totaling {{bytes}}?\n\nThis cannot be undone.",
+  "badgeSafe": "safe",
+  "badgeCaution": "caution",
+  "logCleaned": "✓ {{id}} cleaned",
+  "logError": "[ERR] {{id}}: {{error}}",
+  "logDone": "Done! Rescanning...",
+  "logFatalError": "[ERR] {{error}}"
+}
