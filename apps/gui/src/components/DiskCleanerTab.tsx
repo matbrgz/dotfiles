@@ -1,5 +1,6 @@
 import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import { guiCommands, type DiskCategory, type ScanProgress, type CleanEvent } from '@dotfiles/gui-engine';
+import { useTranslation } from 'react-i18next';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Progress } from '@/components/ui/progress';
@@ -100,6 +101,7 @@ function selectedBytes(sel: Selection, categories: DiskCategory[]): number {
 const ALL = 'All';
 
 export const DiskCleanerTab: React.FC = () => {
+  const { t } = useTranslation('disk');
   const cached = useMemo(() => loadScan(), []);
   const [categories, setCategories] = useState<DiskCategory[]>(cached?.categories ?? []);
   const [lastScanAt, setLastScanAt] = useState<number | null>(cached?.timestamp ?? null);
@@ -173,7 +175,7 @@ export const DiskCleanerTab: React.FC = () => {
   const handleClean = useCallback(async () => {
     if (selCount === 0 || cleaning) return;
     const ids = Array.from(selection.keys());
-    if (!window.confirm(`Clean ${ids.length} item(s) totaling ${formatBytes(selBytes)}?\n\nThis cannot be undone.`)) return;
+    if (!window.confirm(t('confirmClean', { count: ids.length, bytes: formatBytes(selBytes) }))) return;
     setCleaning(true);
     setCleanLog([]);
     setCleanProgress(null);
@@ -183,11 +185,11 @@ export const DiskCleanerTab: React.FC = () => {
           setCleanProgress({ current: ev.id, step: ev.step, total: ev.total });
         } else {
           setCleanProgress({ current: ev.id, step: ev.step, total: ev.total });
-          setCleanLog(prev => [...prev, ev.error ? `[ERR] ${ev.id}: ${ev.error}` : `✓ ${ev.id}`]);
+          setCleanLog(prev => [...prev, ev.error ? t('logError', { id: ev.id, error: ev.error }) : t('logCleaned', { id: ev.id })]);
         }
       });
       setCleanProgress(null);
-      setCleanLog(prev => [...prev, 'Done! Rescanning...']);
+      setCleanLog(prev => [...prev, t('logDone')]);
       setSelection(new Map());
       clearSelection();
       setCategories([]);
@@ -201,7 +203,7 @@ export const DiskCleanerTab: React.FC = () => {
         }),
         setProgress,
       );
-    } catch (e) { setCleanLog(prev => [...prev, `[ERR] ${e}`]); }
+    } catch (e) { setCleanLog(prev => [...prev, t('logFatalError', { error: e })]); }
     finally {
       setCleaning(false);
       setProgress(null);
@@ -226,7 +228,7 @@ export const DiskCleanerTab: React.FC = () => {
       {/* Toolbar */}
       <div className="flex items-center gap-3 px-5 py-3 border-b border-border sticky top-0 bg-card z-10 shrink-0">
         <Button variant="default" size="sm" onClick={handleScan} disabled={scanning} className="shrink-0">
-          {scanning ? 'Scanning...' : '⟳ Scan System'}
+          {scanning ? t('btnScanning') : t('btnScan')}
         </Button>
         {scanning && progress && (
           <div className="flex-1 flex items-center gap-3 min-w-0">
@@ -274,11 +276,11 @@ export const DiskCleanerTab: React.FC = () => {
         <div className="px-5 py-4 space-y-1">
           {categories.length === 0 && !scanning && (
             <p className="text-center text-muted-foreground text-xs mt-14">
-              Click "Scan System" to analyze disk usage
+              {t('emptyState')}
             </p>
           )}
           {scanning && categories.length === 0 && (
-            <p className="text-center text-muted-foreground text-xs mt-14 animate-pulse">Scanning...</p>
+            <p className="text-center text-muted-foreground text-xs mt-14 animate-pulse">{t('btnScanning')}</p>
           )}
 
           <Accordion type="multiple">
@@ -334,7 +336,7 @@ export const DiskCleanerTab: React.FC = () => {
                             variant={cat.safe ? 'outline' : 'destructive'}
                             className="shrink-0 text-[9px] px-1.5 py-0"
                           >
-                            {cat.safe ? 'safe' : 'caution'}
+                            {cat.safe ? t('badgeSafe') : t('badgeCaution')}
                           </Badge>
                         </div>
                       </AccordionTrigger>
@@ -412,8 +414,8 @@ export const DiskCleanerTab: React.FC = () => {
         )}
         <div className="flex items-center justify-between px-5 py-3">
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" onClick={selectSafe} disabled={scanning || cleaning}>Select safe</Button>
-            <Button variant="outline" size="sm" onClick={() => setSelection(new Map())} disabled={selCount === 0 || cleaning}>Clear</Button>
+            <Button variant="outline" size="sm" onClick={selectSafe} disabled={scanning || cleaning}>{t('btnSelectSafe')}</Button>
+            <Button variant="outline" size="sm" onClick={() => setSelection(new Map())} disabled={selCount === 0 || cleaning}>{t('btnClear')}</Button>
             {selCount > 0 && !cleaning && (
               <span className="text-xs text-muted-foreground">
                 <span className="text-foreground font-semibold">{selCount}</span> selected ·{' '}
@@ -422,7 +424,7 @@ export const DiskCleanerTab: React.FC = () => {
             )}
           </div>
           <Button variant="destructive" size="sm" onClick={handleClean} disabled={selCount === 0 || cleaning}>
-            {cleaning ? 'Cleaning...' : `🗑 Clean (${selCount})`}
+            {cleaning ? t('btnCleaning') : t('btnCleanSelected', { count: selCount })}
           </Button>
         </div>
       </div>

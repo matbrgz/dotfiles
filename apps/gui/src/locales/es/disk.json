@@ -1,1 +1,20 @@
-{}
+{
+  "btnScan": "⟳ Escanear Sistema",
+  "btnScanning": "Escaneando...",
+  "emptyState": "Haz clic en \"Escanear Sistema\" para analizar el uso del disco",
+  "statsFound": "Total: {{bytes}} encontrados en {{count}} categorías",
+  "sectionLargeFiles": "Archivos Grandes (>100 MB)",
+  "scanningLargeFiles": "Buscando archivos grandes...",
+  "btnSelectSafe": "Seleccionar seguros",
+  "btnClear": "Limpiar selección",
+  "statsSelected": "{{count}} seleccionados · {{bytes}}",
+  "btnCleaning": "Limpiando...",
+  "btnCleanSelected": "🗑 Limpiar ({{count}})",
+  "confirmClean": "¿Limpiar {{count}} elemento(s) con un total de {{bytes}}?\n\nEsta acción no se puede deshacer.",
+  "badgeSafe": "seguro",
+  "badgeCaution": "precaución",
+  "logCleaned": "✓ {{id}} limpiado",
+  "logError": "[ERR] {{id}}: {{error}}",
+  "logDone": "¡Hecho! Reescaneando...",
+  "logFatalError": "[ERR] {{error}}"
+}
