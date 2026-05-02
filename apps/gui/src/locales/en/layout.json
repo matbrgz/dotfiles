@@ -1,1 +1,19 @@
-{}
+{
+  "appName": "Dotfiles",
+  "appVersion": "v1.0.0",
+  "appFooter": "matbrgz/dotfiles",
+  "navSection": "Navigation",
+  "tabPackages": "Packages",
+  "tabDotfiles": "Dotfiles",
+  "tabSettings": "Settings",
+  "tabProfile": "Profile",
+  "tabDiskCleaner": "Disk Cleaner",
+  "tabMemory": "Memory",
+  "tabGitRepos": "Git Repos",
+  "statsScanning": "Scanning...",
+  "statsInstalled": "{{count}} / {{total}} installed",
+  "statsSynced": "{{count}} / {{total}} synced",
+  "searchPlaceholder": "Search packages...",
+  "btnSync": "Sync dotfiles",
+  "btnSyncing": "Syncing..."
+}

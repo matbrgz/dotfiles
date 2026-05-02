@@ -1,1 +1,8 @@
-{}
+{
+  "loading": "Carregando...",
+  "cancel": "Cancelar",
+  "copy": "Copiar",
+  "copied": "Copiado",
+  "sure": "Tem certeza?",
+  "error": "Erro"
+}
