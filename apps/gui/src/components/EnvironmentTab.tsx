@@ -1,6 +1,7 @@
 import React from 'react';
 import { type DotfileManifest } from '@dotfiles/schema';
 import { Check, X, RefreshCw } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 interface EnvironmentTabProps {
   dotfiles: Record<string, DotfileManifest>;
@@ -10,6 +11,7 @@ interface EnvironmentTabProps {
 }
 
 export const EnvironmentTab: React.FC<EnvironmentTabProps> = ({ dotfiles, dotfileStatus, onApply, isApplying }) => {
+  const { t } = useTranslation('environment');
   const entries = Object.entries(dotfiles);
   const syncedCount = Object.values(dotfileStatus).filter(Boolean).length;
 
@@ -23,9 +25,9 @@ export const EnvironmentTab: React.FC<EnvironmentTabProps> = ({ dotfiles, dotfil
         borderRadius: 8,
       }}>
         <div style={{ display: 'flex', gap: 20 }}>
-          <Stat label="Total" value={entries.length} />
-          <Stat label="Synced" value={syncedCount} color="green" />
-          <Stat label="Missing" value={entries.length - syncedCount} color={entries.length - syncedCount > 0 ? 'red' : undefined} />
+          <Stat label={t('statTotal')} value={entries.length} />
+          <Stat label={t('statSynced')} value={syncedCount} color="green" />
+          <Stat label={t('statMissing')} value={entries.length - syncedCount} color={entries.length - syncedCount > 0 ? 'red' : undefined} />
         </div>
         <button
           onClick={onApply}
@@ -41,7 +43,7 @@ export const EnvironmentTab: React.FC<EnvironmentTabProps> = ({ dotfiles, dotfil
           }}
         >
           <RefreshCw size={11} style={{ animation: isApplying ? 'spin 1s linear infinite' : 'none' }} />
-          Sync all
+          {t('btnSyncAll')}
         </button>
       </div>
 

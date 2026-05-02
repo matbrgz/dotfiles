@@ -1,1 +1,6 @@
-{}
+{
+  "statTotal": "Total",
+  "statSynced": "Sincronizados",
+  "statMissing": "Faltantes",
+  "btnSyncAll": "Sincronizar todo"
+}
