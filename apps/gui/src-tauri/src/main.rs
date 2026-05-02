@@ -283,14 +283,15 @@ fn get_repo_detail(path: String) -> GitRepoDetail {
     let summary = repo_summary(&path);
 
     // Branches
-    let branches_raw = git(&path, &["branch", "-a", "--format=%(refname:short)|%(objectname:short)|%(subject)|%(upstream:track)"]);
+    let branches_raw = git(&path, &["branch", "-a", "--format=%(refname)\x1f%(refname:short)\x1f%(objectname:short)\x1f%(subject)\x1f%(upstream:track)"]);
     let branches: Vec<GitBranch> = branches_raw.lines().filter(|l| !l.is_empty()).map(|line| {
-        let parts: Vec<&str> = line.splitn(4, '|').collect();
-        let name = parts.first().copied().unwrap_or("").to_string();
-        let last_commit_hash = parts.get(1).copied().unwrap_or("").to_string();
-        let last_commit_msg = parts.get(2).copied().unwrap_or("").to_string();
-        let track = parts.get(3).copied().unwrap_or("");
-        let is_remote = name.contains('/');
+        let parts: Vec<&str> = line.splitn(5, '\x1f').collect();
+        let refname = parts.first().copied().unwrap_or("");
+        let name = parts.get(1).copied().unwrap_or("").to_string();
+        let last_commit_hash = parts.get(2).copied().unwrap_or("").to_string();
+        let last_commit_msg = parts.get(3).copied().unwrap_or("").to_string();
+        let track = parts.get(4).copied().unwrap_or("");
+        let is_remote = refname.starts_with("refs/remotes/");
         let is_current = name == summary.current_branch;
         let ahead = if track.contains("ahead") {
             track.split("ahead ").nth(1)
@@ -362,8 +363,20 @@ fn git_action(path: String, action_type: String, params: serde_json::Value) -> R
     };
     match action_type.as_str() {
         "fetch" => run(&["fetch", params["remote"].as_str().unwrap_or("origin")]),
-        "pull"  => run(&["pull", params["remote"].as_str().unwrap_or("origin"), params["branch"].as_str().unwrap_or("")]),
-        "push"  => run(&["push", params["remote"].as_str().unwrap_or("origin"), params["branch"].as_str().unwrap_or("")]),
+        "pull" => {
+            let remote = params["remote"].as_str().unwrap_or("origin");
+            match params["branch"].as_str().filter(|b| !b.is_empty()) {
+                Some(branch) => run(&["pull", remote, branch]),
+                None => run(&["pull", remote]),
+            }
+        }
+        "push" => {
+            let remote = params["remote"].as_str().unwrap_or("origin");
+            match params["branch"].as_str().filter(|b| !b.is_empty()) {
+                Some(branch) => run(&["push", remote, branch]),
+                None => run(&["push", remote]),
+            }
+        }
         "checkout"      => run(&["checkout", params["branch"].as_str().ok_or("missing branch")?]),
         "create_branch" => run(&["checkout", "-b", params["name"].as_str().ok_or("missing name")?, params["from"].as_str().unwrap_or("HEAD")]),
         "delete_branch" => {
