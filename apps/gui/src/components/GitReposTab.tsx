@@ -103,7 +103,7 @@ function RepoCard({ entry, isSelected, onSelect, onPin, onAddTag, onRemoveTag }:
               if (e.key === 'Enter' || e.key === ',') { e.preventDefault(); commitTag(); }
               if (e.key === 'Escape') { setTagInput(''); setAddingTag(false); }
             }}
-            onBlur={commitTag}
+            onBlur={() => { if (tagInput.trim()) commitTag(); else { setTagInput(''); setAddingTag(false); } }}
             placeholder="tag…"
             className="text-[9px] w-16 bg-transparent border-b border-primary outline-none text-foreground placeholder:text-muted-foreground"
           />
@@ -144,6 +144,7 @@ export const GitReposTab: React.FC = () => {
     } catch { return new Set(); }
   });
   const hasScanRan = useRef(false);
+  const selectedPathRef = useRef<string | null>(null);
 
   const updateBook = useCallback((updater: (prev: ProjectBook) => ProjectBook) => {
     setBook(prev => {
@@ -199,20 +200,26 @@ export const GitReposTab: React.FC = () => {
   }, []);
 
   const selectRepo = async (path: string) => {
-    if (selectedPath === path) { setSelectedPath(null); return; }
+    if (selectedPathRef.current === path) {
+      setSelectedPath(null);
+      selectedPathRef.current = null;
+      return;
+    }
+    selectedPathRef.current = path;
     setSelectedPath(path);
     setDetail(null);
     setDetailLoading(true);
     setActionError(null);
     try {
       const d = await guiCommands.getRepoDetail(path);
+      if (selectedPathRef.current !== path) return;
       setDetail(d);
     } finally {
-      setDetailLoading(false);
+      if (selectedPathRef.current === path) setDetailLoading(false);
     }
   };
 
-  const handleAction = async (actionType: string, params: Record<string, unknown> = {}) => {
+  const handleAction = useCallback(async (actionType: string, params: Record<string, unknown> = {}) => {
     if (!selectedPath || inProgress) return;
     setInProgress(actionType);
     setActionError(null);
@@ -228,7 +235,7 @@ export const GitReposTab: React.FC = () => {
     } finally {
       setInProgress(null);
     }
-  };
+  }, [selectedPath, expandedRoots, inProgress, updateBook]);
 
   const handlePin = (path: string, pinned: boolean) =>
     updateBook(prev => ({ ...prev, [path]: { ...prev[path], pinned } }));
