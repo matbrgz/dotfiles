@@ -50,4 +50,5 @@ node_modules
 dist/
 .turbo/
 apps/gui/src-tauri/target/
-LICENSE
+.worktrees/
+
