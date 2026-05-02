@@ -352,7 +352,7 @@ fn scan_disk_usage(window: tauri::Window) {
                         Some(DiskItem { path: path.clone(), size_bytes: kb * 1024, modified_at: file_mtime(&path) })
                     }).collect();
                     items.sort_by(|a, b| b.size_bytes.cmp(&a.size_bytes));
-                    (total_kb * 1024, dirs.len() as u32, items)
+                    (total_kb * 1024, items.len() as u32, items)
                 }
             } else { (0, 0, vec![]) };
             items.truncate(20);
@@ -377,7 +377,7 @@ fn scan_disk_usage(window: tauri::Window) {
                         Some(DiskItem { path: path.clone(), size_bytes: kb * 1024, modified_at: file_mtime(&path) })
                     }).collect();
                     items.sort_by(|a, b| b.size_bytes.cmp(&a.size_bytes));
-                    (total_kb * 1024, dirs.len() as u32, items)
+                    (total_kb * 1024, items.len() as u32, items)
                 }
             } else { (0, 0, vec![]) };
             items.truncate(20);
@@ -459,7 +459,7 @@ fn scan_disk_usage(window: tauri::Window) {
             let p = h("~/Library/Caches");
             let (size_bytes, item_count, _) = paths_size_items(&[&p]);
             let items: Vec<DiskItem> = if std::path::Path::new(&p).exists() {
-                let raw = sh(&format!("nice -n 10 du -sk \"{}\"/* 2>/dev/null | sort -rn | head -20", p));
+                let raw = sh(&format!("nice -n 10 find \"{}\" -maxdepth 1 -mindepth 1 -exec du -sk {{}} + 2>/dev/null | sort -rn | head -20", p));
                 raw.lines().filter(|l| !l.is_empty()).filter_map(|line| {
                     let mut parts = line.splitn(2, '\t');
                     let kb = parts.next().and_then(|s| s.trim().parse::<u64>().ok()).unwrap_or(0);
