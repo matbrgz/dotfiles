@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { guiCommands, type GitRepoDetail } from '@dotfiles/gui-engine';
+import { useTranslation } from 'react-i18next';
 import { homeDir } from '@tauri-apps/api/path';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { RepoDetail, relativeTime } from './GitRepoDetail';
@@ -20,6 +21,7 @@ interface RepoCardProps {
 }
 
 const RepoCard = React.memo(function RepoCard({ entry, isSelected, onSelect, onPin, onAddTag, onRemoveTag }: RepoCardProps) {
+  const { t } = useTranslation('git');
   const [addingTag, setAddingTag] = useState(false);
   const [tagInput, setTagInput] = useState('');
   const { summary } = entry;
@@ -43,7 +45,7 @@ const RepoCard = React.memo(function RepoCard({ entry, isSelected, onSelect, onP
     >
       {entry.stale && (
         <span className="absolute top-2 right-2 text-[8px] font-bold uppercase tracking-widest text-muted-foreground bg-muted px-1.5 py-0.5 rounded">
-          not found
+          {t('badgeNotFound')}
         </span>
       )}
 
@@ -52,7 +54,7 @@ const RepoCard = React.memo(function RepoCard({ entry, isSelected, onSelect, onP
         <button
           onClick={e => { e.stopPropagation(); onPin(entry.path, !entry.pinned); }}
           className="text-sm leading-none mt-0.5 shrink-0 hover:opacity-70 transition-opacity"
-          title={entry.pinned ? 'Unpin' : 'Pin'}
+          title={entry.pinned ? t('tooltipUnpin') : t('tooltipPin')}
         >
           {entry.pinned ? '★' : '☆'}
         </button>
@@ -69,13 +71,13 @@ const RepoCard = React.memo(function RepoCard({ entry, isSelected, onSelect, onP
             {summary.behind > 0 && <span className="text-[9px] text-blue-400 font-mono">↓{summary.behind}</span>}
             {summary.stash_count > 0 && <span className="text-[9px] text-muted-foreground">· {summary.stash_count}s</span>}
           </div>
-          <p className="text-[10px] text-muted-foreground truncate pl-5 mb-1">{summary.last_commit_msg || 'No commits'}</p>
+          <p className="text-[10px] text-muted-foreground truncate pl-5 mb-1">{summary.last_commit_msg || t('statusNoCommits')}</p>
           {summary.last_commit_ts > 0 && (
             <p className="text-[9px] text-muted-foreground/60 pl-5 mb-2">{relativeTime(summary.last_commit_ts)}</p>
           )}
         </>
       ) : (
-        <p className="text-[10px] text-muted-foreground/50 pl-5 mb-2">Not yet scanned</p>
+        <p className="text-[10px] text-muted-foreground/50 pl-5 mb-2">{t('statusNotScanned')}</p>
       )}
 
       {/* Tags */}
@@ -104,7 +106,7 @@ const RepoCard = React.memo(function RepoCard({ entry, isSelected, onSelect, onP
               if (e.key === 'Escape') { setTagInput(''); setAddingTag(false); }
             }}
             onBlur={() => { if (tagInput.trim()) commitTag(); else { setTagInput(''); setAddingTag(false); } }}
-            placeholder="tag…"
+            placeholder={t('tagPlaceholder')}
             className="text-[9px] w-16 bg-transparent border-b border-primary outline-none text-foreground placeholder:text-muted-foreground"
           />
         ) : (
@@ -123,6 +125,7 @@ const RepoCard = React.memo(function RepoCard({ entry, isSelected, onSelect, onP
 // ── GitReposTab ──────────────────────────────────────────────────────────────
 
 export const GitReposTab: React.FC = () => {
+  const { t } = useTranslation('git');
   const [book, setBook] = useState<ProjectBook>({});
   const [view, setView] = useState<'pinned' | 'all'>('pinned');
   const [searchQuery, setSearchQuery] = useState('');
@@ -317,7 +320,7 @@ export const GitReposTab: React.FC = () => {
                   view === v ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground hover:bg-accent'
                 }`}
               >
-                {v === 'pinned' ? '★ Pinned' : 'All'}
+                {v === 'pinned' ? t('viewPinned') : t('viewAll')}
               </button>
             ))}
           </div>
@@ -325,7 +328,7 @@ export const GitReposTab: React.FC = () => {
           <input
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
-            placeholder="Search repos…"
+            placeholder={t('searchPlaceholder')}
             className="text-xs bg-muted/30 border border-border rounded-md px-3 py-1.5 text-foreground placeholder:text-muted-foreground outline-none focus:border-primary w-40"
           />
 
@@ -350,7 +353,7 @@ export const GitReposTab: React.FC = () => {
             disabled={scanning}
             className="ml-auto text-xs px-3 py-1.5 rounded-md border border-border text-muted-foreground hover:text-foreground hover:bg-accent disabled:opacity-50 transition-colors"
           >
-            {scanning ? `Scanning… ${scanCount}` : '↻ Scan'}
+            {scanning ? t('btnScanning', { count: scanCount }) : t('btnScan')}
           </button>
         </div>
 
@@ -360,10 +363,10 @@ export const GitReposTab: React.FC = () => {
             {grouped.size === 0 && (
               <div className="py-12 text-center text-xs text-muted-foreground">
                 {view === 'pinned' && !allEntries.some(e => e.pinned)
-                  ? 'No pinned repos yet. Click ☆ on any repo card to pin it.'
+                  ? t('emptyNoPinned')
                   : allEntries.length === 0
-                  ? 'No repos found. Click ↻ Scan to discover repos under your configured roots.'
-                  : 'No repos match your search.'}
+                  ? t('emptyNoRepos')
+                  : t('emptyNoMatches')}
               </div>
             )}
 
