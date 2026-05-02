@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { guiCommands, type LogEntry } from '@dotfiles/gui-engine';
 import { type ProgramManifest, type UserSettings, type DotfileManifest } from '@dotfiles/schema';
+import { useTranslation } from 'react-i18next';
 import { Sidebar } from './components/Sidebar';
 import { Header } from './components/Header';
 import { TerminalPanel } from './components/TerminalPanel';
@@ -14,6 +15,7 @@ import { GitReposTab } from './components/GitReposTab';
 import { Package, Settings, User, FileCode, HardDrive, Cpu, GitBranch } from 'lucide-react';
 
 export default function App() {
+  const { t } = useTranslation('layout');
   const [registry, setRegistry] = useState<Record<string, ProgramManifest>>({});
   const [dotfiles, setDotfiles] = useState<Record<string, DotfileManifest>>({});
   const [settings, setSettings] = useState<UserSettings | null>(null);
@@ -32,13 +34,13 @@ export default function App() {
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const TABS = [
-    { id: 'inventory',    label: 'Packages',      icon: Package },
-    { id: 'environment',  label: 'Dotfiles',      icon: FileCode },
-    { id: 'settings',     label: 'Settings',      icon: Settings },
-    { id: 'profile',      label: 'Profile',       icon: User },
-    { id: 'disk-cleaner', label: 'Disk Cleaner',  icon: HardDrive },
-    { id: 'memory',       label: 'Memory',        icon: Cpu },
-    { id: 'git-repos',  label: 'Git Repos',     icon: GitBranch },
+    { id: 'inventory',    label: t('tabPackages'),    icon: Package },
+    { id: 'environment',  label: t('tabDotfiles'),    icon: FileCode },
+    { id: 'settings',     label: t('tabSettings'),    icon: Settings },
+    { id: 'profile',      label: t('tabProfile'),     icon: User },
+    { id: 'disk-cleaner', label: t('tabDiskCleaner'), icon: HardDrive },
+    { id: 'memory',       label: t('tabMemory'),      icon: Cpu },
+    { id: 'git-repos',    label: t('tabGitRepos'),    icon: GitBranch },
   ];
 
   useEffect(() => {
@@ -157,7 +159,7 @@ export default function App() {
   if (loading) return (
     <div className="flex h-screen items-center justify-center" style={{ background: 'var(--color-bg)' }}>
       <div style={{ color: 'var(--color-green)', fontFamily: 'var(--font-mono)' }} className="text-xs tracking-widest animate-pulse">
-        Loading...
+        {t('loading', { ns: 'common' })}
       </div>
     </div>
   );

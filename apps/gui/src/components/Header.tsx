@@ -1,5 +1,7 @@
 import React from 'react';
 import { Search, RefreshCw } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import i18n from '../i18n';
 
 interface HeaderProps {
   osInfo: { os: string; platform: string };
@@ -15,17 +17,31 @@ interface HeaderProps {
   scanning: boolean;
 }
 
+const LANGUAGES = [
+  { code: 'en', label: 'EN' },
+  { code: 'pt-BR', label: 'PT' },
+  { code: 'es', label: 'ES' },
+] as const;
+
 export const Header: React.FC<HeaderProps> = ({
   osInfo, isApplying, onApplyDotfiles, searchQuery, onSearchChange,
   activeTab, installedCount, totalCount, syncedCount, totalDotfiles, scanning,
 }) => {
+  const { t, i18n: i18nInstance } = useTranslation('layout');
+
   const tabTitles: Record<string, string> = {
-    inventory:    'Packages',
-    environment:  'Dotfiles',
-    settings:     'Settings',
-    profile:      'Profile',
-    'disk-cleaner': 'Disk Cleaner',
-    memory:       'Memory',
+    inventory:     t('tabPackages'),
+    environment:   t('tabDotfiles'),
+    settings:      t('tabSettings'),
+    profile:       t('tabProfile'),
+    'disk-cleaner': t('tabDiskCleaner'),
+    memory:        t('tabMemory'),
+    'git-repos':   t('tabGitRepos'),
+  };
+
+  const handleLangChange = (code: string) => {
+    i18n.changeLanguage(code);
+    try { localStorage.setItem('dotfiles-lang', code); } catch {}
   };
 
   return (
@@ -45,17 +61,16 @@ export const Header: React.FC<HeaderProps> = ({
           {tabTitles[activeTab] ?? activeTab}
         </h1>
 
-        {/* Stats pills */}
         <div style={{ display: 'flex', gap: 8 }}>
           {activeTab === 'inventory' && (
             <Pill
-              label={scanning ? 'Scanning...' : `${installedCount} / ${totalCount} installed`}
+              label={scanning ? t('statsScanning') : t('statsInstalled', { count: installedCount, total: totalCount })}
               color={scanning ? 'amber' : installedCount === totalCount ? 'green' : 'text'}
             />
           )}
           {activeTab === 'environment' && (
             <Pill
-              label={`${syncedCount} / ${totalDotfiles} synced`}
+              label={t('statsSynced', { count: syncedCount, total: totalDotfiles })}
               color={syncedCount === totalDotfiles ? 'green' : 'text'}
             />
           )}
@@ -63,16 +78,16 @@ export const Header: React.FC<HeaderProps> = ({
         </div>
       </div>
 
-      {/* Right: search + sync */}
+      {/* Right: search + lang switcher + sync */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-        {(activeTab === 'inventory') && (
+        {activeTab === 'inventory' && (
           <div style={{ position: 'relative' }}>
             <Search size={12} style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-3)', pointerEvents: 'none' }} />
             <input
               type="text"
               value={searchQuery}
               onChange={e => onSearchChange(e.target.value)}
-              placeholder="Search packages..."
+              placeholder={t('searchPlaceholder')}
               style={{
                 background: 'var(--color-bg)',
                 border: '1px solid var(--color-border)',
@@ -89,6 +104,32 @@ export const Header: React.FC<HeaderProps> = ({
             />
           </div>
         )}
+
+        {/* Language switcher */}
+        <div style={{ display: 'flex', borderRadius: 6, border: '1px solid var(--color-border)', overflow: 'hidden' }}>
+          {LANGUAGES.map(({ code, label }) => {
+            const active = i18nInstance.language === code;
+            return (
+              <button
+                key={code}
+                onClick={() => handleLangChange(code)}
+                style={{
+                  padding: '4px 8px',
+                  border: 'none',
+                  background: active ? 'var(--color-green-bg)' : 'transparent',
+                  color: active ? 'var(--color-green)' : 'var(--color-text-3)',
+                  fontSize: 10,
+                  fontWeight: 700,
+                  fontFamily: 'inherit',
+                  cursor: 'pointer',
+                  transition: 'all 0.1s ease',
+                }}
+              >
+                {label}
+              </button>
+            );
+          })}
+        </div>
 
         <button
           onClick={onApplyDotfiles}
@@ -110,7 +151,7 @@ export const Header: React.FC<HeaderProps> = ({
           }}
         >
           <RefreshCw size={11} style={{ animation: isApplying ? 'spin 1s linear infinite' : 'none' }} />
-          {isApplying ? 'Syncing...' : 'Sync dotfiles'}
+          {isApplying ? t('btnSyncing') : t('btnSync')}
         </button>
       </div>
 
