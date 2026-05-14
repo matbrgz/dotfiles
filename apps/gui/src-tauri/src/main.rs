@@ -96,7 +96,7 @@ fn paths_size(paths: &[&str]) -> (u64, u32) {
         .collect::<Vec<_>>()
         .join(" ");
     let kb = sh(&format!(
-        "du -sk {} 2>/dev/null | awk '{{t+=$1}} END{{print t}}'",
+        "nice -n 10 du -sk {} 2>/dev/null | awk '{{t+=$1}} END{{print t}}'",
         quoted
     ))
     .trim()
@@ -295,7 +295,7 @@ fn scan_disk_usage(window: tauri::Window) {
             let kb = if dirs.is_empty() { 0 } else {
                 let quoted = dirs.iter().map(|p| format!("\"{}\"", p)).collect::<Vec<_>>().join(" ");
                 sh(&format!(
-                    "du -sk {} 2>/dev/null | awk '{{t+=$1}} END{{print t}}'",
+                    "nice -n 10 du -sk {} 2>/dev/null | awk '{{t+=$1}} END{{print t}}'",
                     quoted
                 )).trim().parse::<u64>().unwrap_or(0)
             };
@@ -320,7 +320,7 @@ fn scan_disk_usage(window: tauri::Window) {
             let kb = if dirs.is_empty() { 0 } else {
                 let quoted = dirs.iter().map(|p| format!("\"{}\"", p)).collect::<Vec<_>>().join(" ");
                 sh(&format!(
-                    "du -sk {} 2>/dev/null | awk '{{t+=$1}} END{{print t}}'",
+                    "nice -n 10 du -sk {} 2>/dev/null | awk '{{t+=$1}} END{{print t}}'",
                     quoted
                 )).trim().parse::<u64>().unwrap_or(0)
             };
@@ -748,13 +748,13 @@ fn scan_large_files(window: tauri::Window) {
             .join(" ");
 
         let raw = sh(&format!(
-            "find {} -not \\( -path '*/node_modules*' -prune \\) -not \\( -path '*/.git*' -prune \\) -not \\( -path '*/Library/Caches*' -prune \\) -size +100M -type f 2>/dev/null | head -30",
+            "nice -n 10 find {} -maxdepth 6 \\( -name node_modules -o -name .git -o -name target -o -name .build -o -name .gradle \\) -prune -o -type f -size +100M -print 2>/dev/null | head -30",
             dirs_arg
         ));
 
         let mut files: Vec<LargeFile> = Vec::new();
         for line in raw.lines().filter(|l| !l.is_empty()) {
-            let size_kb = sh(&format!("du -sk \"{}\" 2>/dev/null", line))
+            let size_kb = sh(&format!("nice -n 10 du -sk \"{}\" 2>/dev/null", line))
                 .split_whitespace().next()
                 .and_then(|s| s.parse::<u64>().ok())
                 .unwrap_or(0);
