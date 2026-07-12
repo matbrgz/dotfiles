@@ -83,17 +83,14 @@ alias gstp='git stash pop'
 alias brew-up='brew update && brew upgrade && brew cleanup --prune=all'
 
 # ─────────────────────────────────────────────
-# ALIASES — LIMPEZA MANUAL
+# ASSISTENTE DE ATUALIZAÇÃO E LIMPEZA
 # ─────────────────────────────────────────────
-alias clean='startup_menu'
+alias jarvis='startup_menu'
+alias update='_startup_updates'
+alias clean='_startup_cleanup'
 alias clean-nm='find ~/dev -name "node_modules" -type d -prune -exec rm -rf {} +'
 alias clean-next='find ~/dev -name ".next" -type d -prune -exec rm -rf {} +'
 alias clean-build='find ~/dev -maxdepth 5 \( -name "dist" -o -name "build" -o -name "out" -o -name ".cache" -o -name ".turbo" \) -type d -prune -exec rm -rf {} +'
 alias clean-ds='find ~/dev -name ".DS_Store" -delete'
 alias clean-yarn='yarn cache clean'
 alias clean-docker='docker image prune -f && docker builder prune -f && docker network prune -f'
-
-# ─────────────────────────────────────────────
-# MENU AO ABRIR (sessões interativas)
-# ─────────────────────────────────────────────
-[[ $- == *i* ]] && startup_menu

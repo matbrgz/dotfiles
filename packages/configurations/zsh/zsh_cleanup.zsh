@@ -479,11 +479,11 @@ _startup_cleanup() {
 }
 
 # ─────────────────────────────────────────────
-# MENU INICIAL
+# ASSISTENTE JARVIS
 # ─────────────────────────────────────────────
 startup_menu() {
   _divider
-  print -P "\n  %F{yellow}O que deseja fazer agora?%f"
+  print -P "\n  %F{yellow}JARVIS — O que deseja fazer agora?%f"
   print -P "  %F{white}[1]%f  Atualizações + Limpeza"
   print -P "  %F{white}[2]%f  Só Atualizações"
   print -P "  %F{white}[3]%f  Só Limpeza"
