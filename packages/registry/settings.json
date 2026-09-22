@@ -18,5 +18,6 @@
       "continue_on_error": false,
       "backup_configs": true
     }
-  }
+  },
+  "git_scan_roots": []
 }
